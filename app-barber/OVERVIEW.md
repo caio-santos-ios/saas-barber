@@ -23,11 +23,11 @@ O **app-barber** é o aplicativo mobile único do SaaS APP Barbearia + Web (Vers
 
 ### Cliente (`customer`)
 
-O cliente navega por Home, Meus Agendamentos e Perfil. Na **Home** vê o card de boas-vindas, o próximo agendamento e quatro indicadores (total, cancelados, fazendo e feitos). Em **Meus Agendamentos** lista, filtra, adiciona, edita, cancela e exclui agendamentos — sempre buscando e exibindo apenas os seus próprios registros. O **novo agendamento** segue o fluxo: escolher barbearia/serviço → barbeiro → data e horário disponíveis → confirmação com resumo. Ao confirmar, o agendamento recebe o status `marcado`; edição e cancelamento são permitidos, sendo o cancelamento com justificativa.
+O cliente navega por Home, Meus Agendamentos e Perfil. Na **Home** vê o card de boas-vindas, o próximo agendamento e quatro indicadores (total, cancelados, fazendo e feitos). Em **Meus Agendamentos** lista, filtra, adiciona, edita, cancela e exclui agendamentos — sempre buscando e exibindo apenas os seus próprios registros. O **novo agendamento** segue o fluxo: seletor com os **barbeiros** e os **serviços** disponíveis → **data disponível daquele barbeiro** → **horário disponível daquele barbeiro** → confirmação com resumo; o único campo opcional é a **observação**. Ao confirmar, o agendamento recebe o status `marcado`. **Regra de edição:** o botão de editar só aparece **até 24 horas antes** do horário agendado; o cancelamento é permitido para agendamentos não finalizados.
 
 ### Barbeiro (`barber`)
 
-O barbeiro visualiza seus **agendamentos do dia**, marca cada um como `fazendo` e depois `feito` (status que dispara notificação ao cliente e ao admin). Também consulta seu perfil e pode visualizar sua agenda.
+O barbeiro **sempre usa o ID do usuário logado** para exibir e buscar informações de agendamentos. Ele visualiza seus **agendamentos do dia**, marca cada um como `fazendo` e depois `feito` (status que dispara notificação ao cliente e ao admin). Também consulta seu perfil e pode visualizar sua agenda.
 
 ### Barbeiro Admin (`admin` no app)
 

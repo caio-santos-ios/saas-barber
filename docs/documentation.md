@@ -8,11 +8,15 @@
 > 	3. v1.2 (12/08/2026) — seção 9 (Arquitetura da API), catálogo de endpoints, autenticação JWT, integração Asaas (webhooks, assinatura, recorrente e cancelamento), coleção `notifications` oficial e referência atualizada com os 5 cartões.
 > 	4. v1.3 (12/08/2026) — seção 12 (Landing Page) com 8 seções definidas, `durationMinutes` em `services`/`services_types` e referência atualizada.
 > 	5. v1.4 (12/08/2026) — seção 9.1: adicionada a pasta **Interfaces** (IService e IRepository) conforme ajuste no cartão "Arquitetura na API".
+> 	6. v1.5 (12/08/2026) — cartão "Requisitos/Telas do App": modo escuro e claro como requisito geral do app; e-mail e WhatsApp como chaves únicas no cadastro do cliente; fluxo detalhado do novo agendamento (seletores de barbeiro e serviço, data/horário disponíveis por barbeiro e observação opcional); regra de edição com janela de 24 horas antes do horário agendado; regra de segurança do ID do usuário logado nos apps de barbeiro.
 
 # 1. Visão Geral do Produto 
 Este projeto consiste em um **SaaS de agendamentos para barbearias**, composto por dois fronts: um **aplicativo mobile (App)** e uma **plataforma web (Web)**. A solução digitaliza a rotina de uma barbearia, permitindo que clientes agendem serviços, que barbeiros gerenciem sua agenda e que o dono da barbearia administre toda a operação — serviços, equipe, escala e plano de assinatura — em um ambiente único e integrado.
 O modelo de negócio é de **assinatura (SaaS)** voltado às barbearias, com o plano padrão custando **R$ 39,99/mês**. A plataforma web é utilizada pelo dono da barbearia (admin) para gerir o negócio, enquanto o aplicativo mobile atende dois públicos: os **clientes da barbearia** e os **barbeiros** (com e sem permissões administrativas).
 # 2. Escopo do Produto 
+## 2.1 Requisitos gerais do App
+O aplicativo mobile deve suportar **modo escuro e claro**, com a opção de alternância disponível ao usuário e persistência da escolha entre sessões.
+## 2.2 Interfaces do sistema
 O sistema é composto por três interfaces de uso, cada uma com público e responsabilidades próprias:
 | Interface | Público | Finalidade principal |
 |---|---|---|
@@ -49,7 +53,7 @@ O sistema é composto por três interfaces de uso, cada uma com público e respo
 # 4. Requisitos Funcionais — App Mobile (Cliente) 
 ## 4.1 Autenticação
 **Login:** o cliente pode autenticar-se de duas formas: via **Google** (OAuth) ou com **credenciais cadastradas** (e-mail e senha). No fluxo de credenciais, e-mail e senha são obrigatórios.
-**Cadastro:** o formulário contém os campos **nome, e-mail, WhatsApp, senha e confirmação de senha**, além do aceite dos **termos e condições**. Campos obrigatórios: nome, e-mail e senha.
+**Cadastro:** o formulário contém os campos **nome, e-mail, WhatsApp, senha e confirmação de senha**, além do aceite dos **termos e condições**. Campos obrigatórios: nome, e-mail e senha. Os campos **e-mail e WhatsApp são chaves únicas** do sistema: não pode existir mais de um cadastro com o mesmo e-mail ou o mesmo WhatsApp. Os campos **e-mail e WhatsApp são chaves únicas** do sistema: não pode existir mais de um cadastro com o mesmo e-mail ou o mesmo WhatsApp.
 **Recuperação de senha ("Esqueci minha senha"):** tela com campo de e-mail obrigatório; o sistema envia ao e-mail do usuário um **link para redefinição de senha**.
 ## 4.2 Tela Home
 - **Header:** foto de perfil à esquerda e ícone de **notificações** à direita.
@@ -65,8 +69,9 @@ Foto de perfil ampliada, com ação de toque para **editar ou remover**, além d
 - **Editar** um agendamento existente.
 - **Excluir** um agendamento.
 - **Filtrar** agendamentos (por data, status, serviço etc.).
-- **Editar** agendamentos em rascunho.
 - **Cancelar** agendamentos não finalizados.
+**Fluxo de novo agendamento (cadastro):** ao entrar na tela de cadastro do agendamento, o cliente preenche um seletor com os **barbeiros** e os **serviços** disponíveis, seguido do **campo de data disponível daquele barbeiro** e do **campo de horário disponível daquele barbeiro** (a disponibilidade é calculada a partir da escala do barbeiro e da duração dos serviços). Há ainda um **campo de observação**, que é o único campo opcional do formulário.
+**Regra de edição com janela de 24 horas:** o cliente pode editar um agendamento somente **até 24 horas antes do horário agendado**. Caso não cumpra a regra, o botão de editar **não deve aparecer** na interface.
 **Notificações automáticas do cliente:**
 | Evento | Notificados |
 |---|---|
@@ -75,6 +80,7 @@ Foto de perfil ampliada, com ação de toque para **editar ou remover**, além d
 | Agendamento finalizado | Cliente e Admin |
 
 # 5. Requisitos Funcionais — App Mobile (Barbeiro não Admin) 
+> **Regra de segurança:** todas as telas do barbeiro não admin devem **sempre usar o ID do usuário logado** para exibir e buscar informações de agendamentos. A interface nunca deve aceitar agendamentos de outros usuários como parâmetro de busca.
 ## 5.1 Autenticação
 O login é realizado com **e-mail e senha** (ambos obrigatórios), recebidos por e-mail no primeiro acesso (credenciais enviadas pelo admin). A **recuperação de senha** é idêntica ao fluxo do cliente: campo de e-mail obrigatório e envio de link por e-mail.
 ## 5.2 Tela Home
@@ -89,6 +95,7 @@ Foto de perfil ampliada com opção de **editar/remover**, além das informaçõ
 - **Listagem** dos agendamentos vinculados ao ID do usuário logado (regra transversal: sempre filtrar pelo usuário logado).
 - **Filtragem** dos agendamentos do usuário logado.
 # 6. Requisitos Funcionais — App Mobile (Barbeiro Admin) 
+> **Regra de segurança:** todas as telas do barbeiro admin devem **sempre usar o ID do usuário logado** para exibir e buscar informações de agendamentos, e as operações de gestão (serviços, barbeiros) ficam restritas ao papel de admin da barbearia.
 ## 6.1 Autenticação
 Idêntica ao barbeiro não admin: login com **e-mail e senha** obrigatórios e recuperação de senha por link enviado ao e-mail.
 ## 6.2 Tela Home
