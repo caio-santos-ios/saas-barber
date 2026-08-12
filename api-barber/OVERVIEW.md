@@ -24,6 +24,7 @@ O código segue a organização em pastas:
 | Pasta | Responsabilidade |
 |---|---|
 | `Middleware` | Guarda de acesso: só libera o request para o controller se o plano estiver ativo ou vencido há no máximo 5 dias; valida papel e token JWT |
+| `Interfaces` | Contratos `IService` e `IRepository`, viabilizando injeção de dependência e testabilidade |
 | `Controllers` | Endpoints da API; aplicam validações e delegam à service |
 | `Services` | Regra de negócio de cada entidade; únicas chamadoras dos repositórios; relacionamentos são resolvidos via service, nunca via repository |
 | `Repositories` | Acesso direto ao MongoDB (AppDbContext) |
