@@ -15,7 +15,7 @@ O **app-barber** é o aplicativo mobile único do SaaS APP Barbearia + Web (Vers
 |---|---|---|
 | Framework | **Flutter** | App único para iOS e Android |
 | Idioma | Dart | Tipagem estática |
-| Autenticação | Firebase Auth | Login Google e e-mail/senha; recuperação de senha por e-mail |
+| Autenticação | Firebase Auth | Login exclusivamente por e-mail/senha (login Google removido); recuperação de senha por e-mail |
 | Notificações | Firebase Cloud Messaging | Push de confirmação, status e avisos |
 | Comunicação | API REST (`api-barber`) | Todos os dados vêm do backend, nunca do armazenamento local |
 

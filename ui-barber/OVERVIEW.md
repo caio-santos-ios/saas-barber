@@ -34,7 +34,7 @@ A interface é exclusiva do papel **admin** (dono da barbearia). Demais papéis 
 
 ## Integrações
 
-O painel integra-se com a **API barbearia** (`api-barber`) para todas as operações de negócio e com o **Firebase Auth** para autenticação (Google, e-mail/senha e recuperação de senha). O fluxo de assinatura (criação do customer e cobrança recorrente) é orquestrado pela API em conjunto com a **Asaas**.
+O painel integra-se com a **API barbearia** (`api-barber`) para todas as operações de negócio e com o **Firebase Auth** para autenticação (e-mail/senha e recuperação de senha — o login Google não será implementado). O fluxo de assinatura (criação do customer e cobrança recorrente) é orquestrado pela API em conjunto com a **Asaas**.
 
 ## Regras Transversais
 

@@ -10,6 +10,7 @@
 > 	5. v1.4 (12/08/2026) — seção 9.1: adicionada a pasta **Interfaces** (IService e IRepository) conforme ajuste no cartão "Arquitetura na API".
 > 	6. v1.5 (12/08/2026) — cartão "Requisitos/Telas do App": modo escuro e claro como requisito geral do app; e-mail e WhatsApp como chaves únicas no cadastro do cliente; fluxo detalhado do novo agendamento (seletores de barbeiro e serviço, data/horário disponíveis por barbeiro e observação opcional); regra de edição com janela de 24 horas antes do horário agendado; regra de segurança do ID do usuário logado nos apps de barbeiro.
 > 	7. v1.6 (13/08/2026) — cartão "Arquitetura na API": seção 9.1 atualizada com as definições do cartão — Controllers como entrada das chamadas da API e regra explícita de que toda regra de negócio deve ficar nos services.
+	8. v1.7 (13/08/2026) — **login pelo Google removido**: autenticação passa a ser exclusivamente por e-mail e senha em todas as interfaces (App e Web). O Firebase Auth permanece apenas para validação de credenciais, recuperação de senha e push.
 
 # 1. Visão Geral do Produto 
 Este projeto consiste em um **SaaS de agendamentos para barbearias**, composto por dois fronts: um **aplicativo mobile (App)** e uma **plataforma web (Web)**. A solução digitaliza a rotina de uma barbearia, permitindo que clientes agendem serviços, que barbeiros gerenciem sua agenda e que o dono da barbearia administre toda a operação — serviços, equipe, escala e plano de assinatura — em um ambiente único e integrado.
@@ -49,11 +50,11 @@ O sistema é composto por três interfaces de uso, cada uma com público e respo
 | Banco de dados | **MongoDB** | Persistência de dados (usuários, agendamentos, serviços etc.) |
 | Frontend web | **Angular** | Painel administrativo do dono da barbearia |
 | Pagamentos / Assinatura | **Asaas** | Cobrança recorrente do plano, emissão de faturas, upgrade e cancelamento |
-| Notificações e autenticação | **Firebase** | Firebase Cloud Messaging (push) e Firebase Auth (login Google, e-mail/senha, recuperação de senha) |
+| Notificações e autenticação | **Firebase** | Firebase Cloud Messaging (push) e Firebase Auth (e-mail/senha, recuperação de senha) |
 
 # 4. Requisitos Funcionais — App Mobile (Cliente) 
 ## 4.1 Autenticação
-**Login:** o cliente pode autenticar-se de duas formas: via **Google** (OAuth) ou com **credenciais cadastradas** (e-mail e senha). No fluxo de credenciais, e-mail e senha são obrigatórios.
+**Login:** o cliente se autentica exclusivamente com **credenciais cadastradas** (e-mail e senha), ambos obrigatórios. O login social (Google OAuth) **não será implementado**.
 **Cadastro:** o formulário contém os campos **nome, e-mail, WhatsApp, senha e confirmação de senha**, além do aceite dos **termos e condições**. Campos obrigatórios: nome, e-mail e senha. Os campos **e-mail e WhatsApp são chaves únicas** do sistema: não pode existir mais de um cadastro com o mesmo e-mail ou o mesmo WhatsApp. Os campos **e-mail e WhatsApp são chaves únicas** do sistema: não pode existir mais de um cadastro com o mesmo e-mail ou o mesmo WhatsApp.
 **Recuperação de senha ("Esqueci minha senha"):** tela com campo de e-mail obrigatório; o sistema envia ao e-mail do usuário um **link para redefinição de senha**.
 ## 4.2 Tela Home
@@ -191,7 +192,7 @@ Coleção única para todos os papéis do sistema (admin, barber e customer).
 | `role` | role_user_enum | `admin`, `barber` ou `customer` |
 | `dateOfBirth` | date | Data de nascimento |
 | `password` | string | Senha **hasheada** (nunca em texto puro) |
-| `firebaseUid` | string | Vincula o usuário ao Firebase Auth (login Google vs. e-mail/senha) |
+| `firebaseUid` | string | Vincula o usuário ao Firebase Auth (e-mail/senha) |
 | `photo` | string | Foto de perfil |
 | `document` | string | CPF (barbeiros/admin) |
 | `barbershopId` | string | Barbearia do usuário (isolamento multi-tenant) |
@@ -345,9 +346,9 @@ Esta seção documenta a estrutura interna da API desenvolvida em **.NET**, conf
 `UI-barber → Middleware → Controllers → Service → Repository`
 O middleware de plano atua como guarda de acesso: caso o plano esteja vencido há mais de 5 dias ou cancelado, a requisição é interrompida antes de alcançar a controller, retornando ao cliente o status da assinatura.
 ## 9.4 Autenticação e Identificação Multi-tenant (JWT)
-A autenticação segue um fluxo híbrido **Firebase Auth + JWT próprio**, que é o padrão recomendado para combinar login social (Google) com autorização na API .NET:
-1. **Login social ou credenciais** — o app mobile realiza o login via **Firebase Auth** (Google OAuth ou e-mail/senha). O Firebase valida as credenciais e emite um ID Token.
-2. **Troca por JWT da API** — no primeiro acesso, o token do Firebase (`firebaseUid`) é enviado a um endpoint `POST /auth/login`, que consulta a coleção `users` pelo `firebaseUid` (criando o usuário se for o primeiro acesso do cliente via Google) e retorna um **JWT próprio assinado pela API**.
+A autenticação segue um fluxo híbrido **Firebase Auth + JWT próprio**, com login exclusivamente por **e-mail e senha** (o login social Google não será implementado):
+1. **Login por credenciais** — o cliente/funcionário realiza o login com **e-mail e senha** via **Firebase Auth**. O Firebase valida as credenciais e emite um ID Token.
+2. **Troca por JWT da API** — o token do Firebase (`firebaseUid`) é enviado a um endpoint `POST /auth/login`, que consulta a coleção `users` pelo `firebaseUid` (criando o usuário se for o primeiro acesso) e retorna um **JWT próprio assinado pela API**.
 3. **Conteúdo do JWT** — o token deve carregar, no mínimo: `userId`, `role` (`customer`, `barber`, `admin`), `barbershopId` (identificação do tenant) e `firebaseUid`. Assim, o middleware de plano e todos os services identificam o tenant e o papel sem consultar o banco a cada requisição.
 4. **Uso nas requisições** — o JWT é enviado no header `Authorization: Bearer ` em todos os endpoints protegidos. A senha em `users` permanece **hasheada (bcrypt/argon2)**, nunca em texto puro, e a recuperação de senha é gerenciada integralmente pelo Firebase Auth.
 5. **Validação de papel** — além do middleware de plano, cada controller deve validar se o papel do JWT possui permissão para a ação (ex.: apenas `admin` gerencia serviços e barbeiros), seguindo a matriz da seção 2.1.

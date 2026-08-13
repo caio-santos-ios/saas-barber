@@ -12,7 +12,7 @@ O projeto é multi-tenant: toda consulta e escrita de dados é filtrada pelo `ba
 |---|---|---|
 | Plataforma | **.NET** | Backend da API REST |
 | Banco de dados | **MongoDB** | Persistência das collections (ver modelagem) |
-| Autenticação | Firebase Auth + JWT próprio | Login Google/e-mail → troca por JWT da API |
+| Autenticação | Firebase Auth + JWT próprio | Login exclusivamente por e-mail/senha → troca por JWT da API (login Google removido) |
 | Pagamentos | Asaas (Handler) | Customer, cobrança recorrente, webhook |
 | Notificações | Firebase Cloud Messaging | Push para o app, via handler |
 | Idioma/estilo | C# | Arquitetura em camadas descrita abaixo |
