@@ -11,6 +11,7 @@
 > 	6. v1.5 (12/08/2026) — cartão "Requisitos/Telas do App": modo escuro e claro como requisito geral do app; e-mail e WhatsApp como chaves únicas no cadastro do cliente; fluxo detalhado do novo agendamento (seletores de barbeiro e serviço, data/horário disponíveis por barbeiro e observação opcional); regra de edição com janela de 24 horas antes do horário agendado; regra de segurança do ID do usuário logado nos apps de barbeiro.
 > 	7. v1.6 (13/08/2026) — cartão "Arquitetura na API": seção 9.1 atualizada com as definições do cartão — Controllers como entrada das chamadas da API e regra explícita de que toda regra de negócio deve ficar nos services.
 	8. v1.7 (13/08/2026) — **login pelo Google removido**: autenticação passa a ser exclusivamente por e-mail e senha em todas as interfaces (App e Web). O Firebase Auth permanece apenas para validação de credenciais, recuperação de senha e push.
+	9. v1.8 (13/08/2026) — cartão "Requisitos/Tela do Web" atualizado: nova seção 7.1 com regras gerais da plataforma (mobile first, validação de campos obrigatórios com toastify, máscaras de CPF/CNPJ/CEP/monetário e ícone de visualização de senha com FontAwesome); seções 7.x renumeradas.
 
 # 1. Visão Geral do Produto 
 Este projeto consiste em um **SaaS de agendamentos para barbearias**, composto por dois fronts: um **aplicativo mobile (App)** e uma **plataforma web (Web)**. A solução digitaliza a rotina de uma barbearia, permitindo que clientes agendem serviços, que barbeiros gerenciem sua agenda e que o dono da barbearia administre toda a operação — serviços, equipe, escala e plano de assinatura — em um ambiente único e integrado.
@@ -121,25 +122,31 @@ Idêntica ao barbeiro não admin: login com **e-mail e senha** obrigatórios e r
 ## 6.6 Tela Perfil
 Foto de perfil ampliada com opção de editar/remover e informações pessoais com opção de cadastrar e atualizar.
 # 7. Requisitos Funcionais — Plataforma Web (Admin / Dono da Barbearia) 
-## 7.1 Autenticação
+## 7.1 Requisitos gerais do Web
+As seguintes regras transversais foram definidas no cartão "Requisitos/Tela do Web" e aplicam-se a toda a plataforma:
+1. **Mobile first:** todo o sistema web deve ser construído com abordagem *mobile first*, garantindo acesso adequado por celular, tablet e desktop.
+2. **Validação de formulários:** todo cadastro, registro (register), login e formulários em geral devem ter **validação dos campos obrigatórios** e retornar mensagem em formato **toastify** (notificação em tela).
+3. **Máscaras de entrada:** todo campo deve ter máscara de formatação: CPF, CNPJ, CEP, monetário, entre outros.
+4. **Visualização de senha:** o campo de senha deve ter **ícone para alternar a visibilidade da senha** (usar **FontAwesome** para o ícone).
+## 7.2 Autenticação
 **Login:** campos de **e-mail e senha**, ambos obrigatórios.
 **Cadastro:** o formulário do dono da barbearia contém: **e-mail, nome da barbearia, tipo de pessoa (Física/Jurídica), documento (CPF/CNPJ), senha, confirmação de senha** e aceite dos **termos e condições**.
 **Recuperação de senha:** campo de e-mail obrigatório com envio de link de redefinição por e-mail.
-## 7.2 Dashboard
+## 7.3 Dashboard
 O dashboard deve apresentar **métricas que façam sentido para um dono de barbearia**. Sugestões de indicadores que complementam os cards já previstos no App: faturamento do período, agendamentos por dia/semana, serviços mais agendados, barbeiros mais ocupados, taxa de cancelamento e receita por serviço.
-## 7.3 Painel do Plano (Assinatura)
+## 7.4 Painel do Plano (Assinatura)
 - Exibição das **faturas pagas** do plano.
 - Opção de **upgrade de plano**, caso exista um plano superior ao contratado.
 - Opção de **cancelar o plano** contratado.
 > **Integração com Asaas:** a gestão do plano deve usar cobrança recorrente, geração de faturas, webhook de confirmação de pagamento (liberação do acesso) e suporte a upgrade/cancelamento de assinatura no plano contratado do Asaas.
 
-## 7.4 Escala dos Barbeiros
+## 7.5 Escala dos Barbeiros
 Cadastro de **dias da semana** com **horário inicial e horário final** de trabalho (por barbeiro ou escala geral da barbearia), servindo de base para a disponibilidade de horários no agendamento.
-## 7.5 Tela Serviços
+## 7.6 Tela Serviços
 - **Listagem** dos serviços.
 - **Adicionar, editar e excluir** serviços.
 - **Filtragem** dos serviços.
-## 7.6 Tela Barbeiros
+## 7.7 Tela Barbeiros
 - **Listagem** de todos os barbeiros.
 - **Adicionar, editar e excluir** barbeiros.
 - **Filtragem** dos barbeiros.
@@ -405,7 +412,7 @@ Catálogo mínimo de endpoints da API, organizado por módulo. Os prefixos `/app
 # 10. Integração com a Asaas — Assinatura, Pagamento Recorrente e Cancelamento 
 Esta seção detalha o ciclo de vida da assinatura da barbearia, cobrindo a contratação do plano, a cobrança recorrente mensal e o cancelamento, além dos webhooks que sincronizam a Asaas com o sistema.
 ## 10.1 Contrato do Plano (Assinatura Recorrente)
-O plano do SaaS é comercializado como **assinatura recorrente** na Asaas, criada no momento do cadastro do dono da barbearia no painel Web (seção 7.1):
+O plano do SaaS é comercializado como **assinatura recorrente** na Asaas, criada no momento do cadastro do dono da barbearia no painel Web (seção 7.2 — cadastro):
 1. **Criação do customer:** ao cadastrar a barbearia, o `CadastroWebRequest` aciona o `AsaasHandler.createCustomer()` — o retorno (`asaasCustomerId`) é persistido em `barbershops`.
 2. **Escolha do plano:** o sistema consulta a coleção `plans` (seção 8.5) para listar os planos disponíveis; o `planId` escolhido e o `subscriptionStatus` inicial (`ativa`) são gravados em `barbershops`.
 3. **Criação da assinatura:** o `AsaasHandler.createSubscription()` cria a assinatura recorrente na Asaas vinculada ao `asaasCustomerId`, informando o `chargeType` (cartão de crédito como padrão para cobrança automática mensal), valor, ciclo de cobrança (`MONTHLY`) e data de vencimento do primeiro pagamento.
@@ -432,7 +439,7 @@ O endpoint `POST /web/plans/cancel` (seção 9.5) realiza o cancelamento:
 2. Chama o `AsaasHandler.cancelSubscription()` — a assinatura é encerrada na Asaas.
 3. `barbershops.subscriptionStatus` passa a `cancelada` e `active` permanece `true` **até o fim do ciclo já pago** — o dono conserva acesso pelos dias que já pagou (princípio de valor pelo ciclo).
 4. Ao vencer o ciclo pago, um job noturno verifica as barbearias com `subscriptionStatus: cancelada` e ciclo expirado, alterando `active` para `false` — o middleware passa a bloquear o acesso da barbearia.
-5. As faturas do histórico permanecem visíveis no painel do plano (seção 7.3) para fins de registro fiscal do dono.
+5. As faturas do histórico permanecem visíveis no painel do plano (seção 7.4) para fins de registro fiscal do dono.
 > **Nota:** o cancelamento da assinatura não exclui os dados da barbearia — serviços, barbeiros, agendamentos e notificações permanecem com soft delete (ModelBase), permitindo reativação em uma futura funcionalidade de reinstalação.
 # 11. Sugestões de Melhoria e Pontos de Atenção 
 Estas sugestões complementam o escopo original e podem ser avaliadas para a Versão 1 ou para próximas iterações:
@@ -447,7 +454,7 @@ Estas sugestões complementam o escopo original e podem ser avaliadas para a Ver
 9. **Asaas — assinatura:** validar o suporte a assinatura recorrente (cobrança automática mensal) no plano do Asaas contratado.
 10. **Notificações push:** usar tópicos Firebase por barbearia/usuário para direcionar corretamente os avisos de agendamento, cancelamento e conclusão.
 # 12. Landing Page 
-Página pública de apresentação do SaaS, responsável por converter o dono da barbearia em assinante. A landing page funciona como a porta de entrada do funil de aquisição e deve conter **CTA (call to action) para o cadastro no painel Web** (seção 7.1) em pelo menos 3 pontos da página.
+Página pública de apresentação do SaaS, responsável por converter o dono da barbearia em assinante. A landing page funciona como a porta de entrada do funil de aquisição e deve conter **CTA (call to action) para o cadastro no painel Web** (seção 7.2) em pelo menos 3 pontos da página.
 ## 12.1 Seções da Página
 | # | Seção | Conteúdo e objetivo |
 |---|---|---|
