@@ -13,6 +13,7 @@
 	8. v1.7 (13/08/2026) — **login pelo Google removido**: autenticação passa a ser exclusivamente por e-mail e senha em todas as interfaces (App e Web). O Firebase Auth permanece apenas para validação de credenciais, recuperação de senha e push.
 	9. v1.8 (13/08/2026) — cartão "Requisitos/Tela do Web" atualizado: nova seção 7.1 com regras gerais da plataforma (mobile first, validação de campos obrigatórios com toastify, máscaras de CPF/CNPJ/CEP/monetário e ícone de visualização de senha com FontAwesome); seções 7.x renumeradas.
 	10. v1.9 (13/08/2026) — seção 6 (App Barbeiro Admin): especificados os campos de cada formulário das telas com formulário (Login, Serviços, Barbeiros e Perfil), alinhados às collections da modelagem (users, services_types, services).
+	11. v1.10 (13/08/2026) — seção 7 (Plataforma Web): especificados os campos de cada formulário das telas com formulário (Autenticação/register, Cancelamento do plano, Escala, Serviços e Barbeiros), alinhados às collections da modelagem (users, services_types, services, schedules).
 
 # 1. Visão Geral do Produto 
 Este projeto consiste em um **SaaS de agendamentos para barbearias**, composto por dois fronts: um **aplicativo mobile (App)** e uma **plataforma web (Web)**. A solução digitaliza a rotina de uma barbearia, permitindo que clientes agendem serviços, que barbeiros gerenciem sua agenda e que o dono da barbearia administre toda a operação — serviços, equipe, escala e plano de assinatura — em um ambiente único e integrado.
@@ -159,27 +160,60 @@ As seguintes regras transversais foram definidas no cartão "Requisitos/Tela do 
 3. **Máscaras de entrada:** todo campo deve ter máscara de formatação: CPF, CNPJ, CEP, monetário, entre outros.
 4. **Visualização de senha:** o campo de senha deve ter **ícone para alternar a visibilidade da senha** (usar **FontAwesome** para o ícone).
 ## 7.2 Autenticação
-**Login:** campos de **e-mail e senha**, ambos obrigatórios.
-**Cadastro:** o formulário do dono da barbearia contém: **e-mail, nome da barbearia, tipo de pessoa (Física/Jurídica), documento (CPF/CNPJ), senha, confirmação de senha** e aceite dos **termos e condições**.
-**Recuperação de senha:** campo de e-mail obrigatório com envio de link de redefinição por e-mail.
+Login exclusivamente por **e-mail e senha** (sem login social — Google OAuth não será implementado). Aplicam-se as regras gerais da seção 7.1: validação de campos obrigatórios com toastify, máscaras (CPF/CNPJ) e ícone de visualização de senha.
+
+**Campos dos formulários de autenticação:**
+
+| Formulário | Campos |
+| --- | --- |
+| **Login** | `email`, `password` |
+| **Cadastro (register)** | `name`, `email`, `personType` (Física/Jurídica), `document` (CPF/CNPJ com máscara), `password`, `passwordConfirm`, `acceptTerms` |
+| **Esqueci a senha** | `email` |
 ## 7.3 Dashboard
 O dashboard deve apresentar **métricas que façam sentido para um dono de barbearia**. Sugestões de indicadores que complementam os cards já previstos no App: faturamento do período, agendamentos por dia/semana, serviços mais agendados, barbeiros mais ocupados, taxa de cancelamento e receita por serviço.
 ## 7.4 Painel do Plano (Assinatura)
 - Exibição das **faturas pagas** do plano.
 - Opção de **upgrade de plano**, caso exista um plano superior ao contratado.
 - Opção de **cancelar o plano** contratado.
+
+**Campos do formulário de cancelamento do plano:**
+
+| Formulário | Campos |
+| --- | --- |
+| **Cancelar plano** | `reason` (motivo do cancelamento), `confirmCancel` (confirmação explícita — o acesso permanece até o fim do ciclo pago) |
 > **Integração com Asaas:** a gestão do plano deve usar cobrança recorrente, geração de faturas, webhook de confirmação de pagamento (liberação do acesso) e suporte a upgrade/cancelamento de assinatura no plano contratado do Asaas.
 
 ## 7.5 Escala dos Barbeiros
 Cadastro de **dias da semana** com **horário inicial e horário final** de trabalho (por barbeiro ou escala geral da barbearia), servindo de base para a disponibilidade de horários no agendamento.
+
+**Campos do formulário de escala** (mapeia a collection `schedules`):
+
+| Formulário | Campos |
+| --- | --- |
+| **Adicionar/Editar escala** | `barberId` (seletor), `day` (enum: seg, ter, qua, qui, sex, sab, dom), `startHour`, `endHour`, `intervalMinutes`, `notes` |
 ## 7.6 Tela Serviços
 - **Listagem** dos serviços.
 - **Adicionar, editar e excluir** serviços.
 - **Filtragem** dos serviços.
+
+**Campos dos formulários de serviço** (mapeiam as collections `services_types` e `services`):
+
+| Formulário | Campos |
+| --- | --- |
+| **Adicionar/Editar tipo de serviço** (`services_types`) | `name`, `description`, `duration` (minutos), `value`, `category` |
+| **Adicionar/Editar vínculo barbeiro ↔ serviço** (`services`) | `serviceTypeId` (seletor), `barberId` (seletor), `price` (opcional, sobrescreve o valor base), `commission` (opcional) |
 ## 7.7 Tela Barbeiros
 - **Listagem** de todos os barbeiros.
 - **Adicionar, editar e excluir** barbeiros.
 - **Filtragem** dos barbeiros.
+
+**Campos dos formulários de barbeiro** (mapeiam a collection `users`):
+
+| Formulário | Campos |
+| --- | --- |
+| **Adicionar/Editar barbeiro** | `name`, `email`, `cpf`, `whatsApp`, `password`, `passwordConfirm` |
+| **Login do barbeiro/admin** | `email`, `password` |
+| **Esqueci a senha** | `email` |
 # 8. Modelagem do Banco de Dados — MongoDB 
 ## 8.1 Convenção Base — ModelBase
 Todas as coleções herdam da **ModelBase**, que garante soft delete e trilha de auditoria em todo o sistema:
