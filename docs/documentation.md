@@ -12,6 +12,7 @@
 > 	7. v1.6 (13/08/2026) — cartão "Arquitetura na API": seção 9.1 atualizada com as definições do cartão — Controllers como entrada das chamadas da API e regra explícita de que toda regra de negócio deve ficar nos services.
 	8. v1.7 (13/08/2026) — **login pelo Google removido**: autenticação passa a ser exclusivamente por e-mail e senha em todas as interfaces (App e Web). O Firebase Auth permanece apenas para validação de credenciais, recuperação de senha e push.
 	9. v1.8 (13/08/2026) — cartão "Requisitos/Tela do Web" atualizado: nova seção 7.1 com regras gerais da plataforma (mobile first, validação de campos obrigatórios com toastify, máscaras de CPF/CNPJ/CEP/monetário e ícone de visualização de senha com FontAwesome); seções 7.x renumeradas.
+	10. v1.9 (13/08/2026) — seção 6 (App Barbeiro Admin): especificados os campos de cada formulário das telas com formulário (Login, Serviços, Barbeiros e Perfil), alinhados às collections da modelagem (users, services_types, services).
 
 # 1. Visão Geral do Produto 
 Este projeto consiste em um **SaaS de agendamentos para barbearias**, composto por dois fronts: um **aplicativo mobile (App)** e uma **plataforma web (Web)**. A solução digitaliza a rotina de uma barbearia, permitindo que clientes agendem serviços, que barbeiros gerenciem sua agenda e que o dono da barbearia administre toda a operação — serviços, equipe, escala e plano de assinatura — em um ambiente único e integrado.
@@ -100,7 +101,15 @@ Foto de perfil ampliada com opção de **editar/remover**, além das informaçõ
 # 6. Requisitos Funcionais — App Mobile (Barbeiro Admin) 
 > **Regra de segurança:** todas as telas do barbeiro admin devem **sempre usar o ID do usuário logado** para exibir e buscar informações de agendamentos, e as operações de gestão (serviços, barbeiros) ficam restritas ao papel de admin da barbearia.
 ## 6.1 Autenticação
-Idêntica ao barbeiro não admin: login com **e-mail e senha** obrigatórios e recuperação de senha por link enviado ao e-mail.
+Idêntica ao barbeiro não admin: login exclusivamente com **e-mail e senha**, ambos obrigatórios, e recuperação de senha por link enviado ao e-mail (sem login social — Google OAuth não será implementado).
+
+**Campos dos formulários:**
+
+| Formulário | Campos |
+| --- | --- |
+| **Login** | `email`, `password` |
+| **Esqueci a senha** | `email` |
+| **Cadastro (admin — via painel Web; o admin não se cadastra no App)** | `name`, `email`, `password`, `passwordConfirm`, `whatsApp`, `acceptTerms` |
 ## 6.2 Tela Home
 - **Header:** foto de perfil à esquerda e ícone de notificações à direita.
 - **Card de boas-vindas.**
@@ -114,13 +123,34 @@ Idêntica ao barbeiro não admin: login com **e-mail e senha** obrigatórios e r
 - **Listagem** dos serviços da barbearia.
 - **Adicionar, editar e excluir** serviços.
 - **Filtragem** dos serviços.
+
+**Campos dos formulários de serviço** (mapeiam as collections `services_types` e `services`):
+
+| Formulário | Campos |
+| --- | --- |
+| **Adicionar/Editar tipo de serviço** (`services_types`) | `name`, `description`, `duration` (minutos), `value`, `category` |
+| **Adicionar/Editar vínculo barbeiro ↔ serviço** (`services`) | `serviceTypeId` (seletor), `barberId` (seletor), `price` (opcional, sobrescreve o valor base), `commission` (opcional) |
 ## 6.5 Tela Barbeiros
 - **Listagem** de todos os barbeiros da barbearia.
 - **Adicionar, editar e excluir** barbeiros.
 - **Filtragem** dos barbeiros.
 - **Envio de e-mail com as credenciais** do novo barbeiro para o primeiro login.
+
+**Campos dos formulários de barbeiro** (mapeiam a collection `users`):
+
+| Formulário | Campos |
+| --- | --- |
+| **Adicionar/Editar barbeiro** | `name`, `email`, `cpf`, `whatsApp`, `password`, `passwordConfirm` |
+| **Login do barbeiro** | `email`, `password` |
+| **Esqueci a senha** | `email` |
 ## 6.6 Tela Perfil
 Foto de perfil ampliada com opção de editar/remover e informações pessoais com opção de cadastrar e atualizar.
+
+**Campos do formulário de perfil** (mapeiam a collection `users`):
+
+| Formulário | Campos |
+| --- | --- |
+| **Editar perfil** | `photo` (upload/remoção), `name`, `email` (somente leitura), `whatsApp` |
 # 7. Requisitos Funcionais — Plataforma Web (Admin / Dono da Barbearia) 
 ## 7.1 Requisitos gerais do Web
 As seguintes regras transversais foram definidas no cartão "Requisitos/Tela do Web" e aplicam-se a toda a plataforma:
