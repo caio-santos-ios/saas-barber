@@ -9,6 +9,7 @@
 > 	4. v1.3 (12/08/2026) — seção 12 (Landing Page) com 8 seções definidas, `durationMinutes` em `services`/`services_types` e referência atualizada.
 > 	5. v1.4 (12/08/2026) — seção 9.1: adicionada a pasta **Interfaces** (IService e IRepository) conforme ajuste no cartão "Arquitetura na API".
 > 	6. v1.5 (12/08/2026) — cartão "Requisitos/Telas do App": modo escuro e claro como requisito geral do app; e-mail e WhatsApp como chaves únicas no cadastro do cliente; fluxo detalhado do novo agendamento (seletores de barbeiro e serviço, data/horário disponíveis por barbeiro e observação opcional); regra de edição com janela de 24 horas antes do horário agendado; regra de segurança do ID do usuário logado nos apps de barbeiro.
+> 	7. v1.6 (13/08/2026) — cartão "Arquitetura na API": seção 9.1 atualizada com as definições do cartão — Controllers como entrada das chamadas da API e regra explícita de que toda regra de negócio deve ficar nos services.
 
 # 1. Visão Geral do Produto 
 Este projeto consiste em um **SaaS de agendamentos para barbearias**, composto por dois fronts: um **aplicativo mobile (App)** e uma **plataforma web (Web)**. A solução digitaliza a rotina de uma barbearia, permitindo que clientes agendem serviços, que barbeiros gerenciem sua agenda e que o dono da barbearia administre toda a operação — serviços, equipe, escala e plano de assinatura — em um ambiente único e integrado.
@@ -329,9 +330,9 @@ Esta seção documenta a estrutura interna da API desenvolvida em **.NET**, conf
 | Pasta | Responsabilidade |
 |---|---|
 | Middleware | Verificação do status do plano da barbearia. A requisição somente avança para a controller se o plano estiver ativo ou vencido há no máximo 5 dias. |
-| Controllers | Endpoints da API. Recebem a requisição validada e delegam a execução ao service correspondente. |
+| Controllers | Ficarão as controllers e a **entrada das chamadas** da API. Recebem a requisição validada e delegam a execução ao service correspondente. |
 | Interfaces | Contratos das services e repositories (`IService` e `IRepository`), viabilizando injeção de dependência e testabilidade. As services implementam `IService` e os repositories implementam `IRepository`. |
-| Services | Regras de negócio. São chamados pelas controllers ou por outros services. Em caso de relacionamento entre entidades, a consulta deve ser feita ao service da entidade relacionada, e não ao repository. |
+| Services | **Toda regra de negócio deve ficar nos services**. São chamados pelas controllers ou por outros services. Em caso de relacionamento entre entidades, a consulta deve ser feita ao service da entidade relacionada, e não ao repository. |
 | Repositories | Acesso direto ao banco de dados. Somente o service da própria entidade chama o seu repository. |
 | Models | Modelos das collections do MongoDB, seguindo a modelagem da seção 8. |
 | Requests | DTOs de entrada/saída (Request/Response) das collections. |
