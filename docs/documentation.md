@@ -14,6 +14,7 @@
 	9. v1.8 (13/08/2026) — cartão "Requisitos/Tela do Web" atualizado: nova seção 7.1 com regras gerais da plataforma (mobile first, validação de campos obrigatórios com toastify, máscaras de CPF/CNPJ/CEP/monetário e ícone de visualização de senha com FontAwesome); seções 7.x renumeradas.
 	10. v1.9 (13/08/2026) — seção 6 (App Barbeiro Admin): especificados os campos de cada formulário das telas com formulário (Login, Serviços, Barbeiros e Perfil), alinhados às collections da modelagem (users, services_types, services).
 	11. v1.10 (13/08/2026) — seção 7 (Plataforma Web): especificados os campos de cada formulário das telas com formulário (Autenticação/register, Cancelamento do plano, Escala, Serviços e Barbeiros), alinhados às collections da modelagem (users, services_types, services, schedules).
+	12. v1.11 (13/08/2026) — cartões "Escopo e tecnologias" e "Arquitetura na API": adicionadas as regras para todo o projeto (sem comentários no código; identificadores em inglês), detalhamento da stack do App (Flutter+Dart, Dio, Hive) e regra de que cada método dos controllers deve ter no máximo 4 linhas de código.
 
 # 1. Visão Geral do Produto 
 Este projeto consiste em um **SaaS de agendamentos para barbearias**, composto por dois fronts: um **aplicativo mobile (App)** e uma **plataforma web (Web)**. A solução digitaliza a rotina de uma barbearia, permitindo que clientes agendem serviços, que barbeiros gerenciem sua agenda e que o dono da barbearia administre toda a operação — serviços, equipe, escala e plano de assinatura — em um ambiente único e integrado.
@@ -48,12 +49,18 @@ O sistema é composto por três interfaces de uso, cada uma com público e respo
 # 3. Stack Tecnológica 
 | Camada | Tecnologia | Uso |
 |---|---|---|
-| Aplicativo mobile | **Flutter** | App único para iOS e Android (cliente e barbeiros) |
+| Aplicativo mobile | **Flutter + Dart** | App único para iOS e Android (cliente e barbeiros); **Dio** para requisições HTTP e **Hive** para armazenamento local |
 | Backend / API | **.NET** | Serviços de negócio, autenticação e integrações |
 | Banco de dados | **MongoDB** | Persistência de dados (usuários, agendamentos, serviços etc.) |
 | Frontend web | **Angular** | Painel administrativo do dono da barbearia |
 | Pagamentos / Assinatura | **Asaas** | Cobrança recorrente do plano, emissão de faturas, upgrade e cancelamento |
 | Notificações e autenticação | **Firebase** | Firebase Cloud Messaging (push) e Firebase Auth (e-mail/senha, recuperação de senha) |
+| Painel web | **Angular** | Framework do painel administrativo (a landing page pública permanece em Next.js por SEO) |
+
+## 3.1 Regras para todo o projeto
+Definidas no cartão "Escopo e tecnologias", aplicam-se a todas as camadas (App, Web e API):
+1. **Sem comentários no código:** os projetos não devem conter comentários.
+2. **Código em inglês:** pastas, variáveis, funções, classes e demais identificadores devem estar em inglês.
 
 # 4. Requisitos Funcionais — App Mobile (Cliente) 
 ## 4.1 Autenticação
@@ -402,7 +409,7 @@ Esta seção documenta a estrutura interna da API desenvolvida em **.NET**, conf
 | Pasta | Responsabilidade |
 |---|---|
 | Middleware | Verificação do status do plano da barbearia. A requisição somente avança para a controller se o plano estiver ativo ou vencido há no máximo 5 dias. |
-| Controllers | Ficarão as controllers e a **entrada das chamadas** da API. Recebem a requisição validada e delegam a execução ao service correspondente. |
+| Controllers | Ficarão as controllers e a **entrada das chamadas** da API. Ao chegar a requisição, o controller deve chamar o service e lá fazer toda a regra de negócio; **cada método dos controllers não deve ter mais de 4 linhas de código** |
 | Interfaces | Contratos das services e repositories (`IService` e `IRepository`), viabilizando injeção de dependência e testabilidade. As services implementam `IService` e os repositories implementam `IRepository`. |
 | Services | **Toda regra de negócio deve ficar nos services**. São chamados pelas controllers ou por outros services. Em caso de relacionamento entre entidades, a consulta deve ser feita ao service da entidade relacionada, e não ao repository. |
 | Repositories | Acesso direto ao banco de dados. Somente o service da própria entidade chama o seu repository. |
