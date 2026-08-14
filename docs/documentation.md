@@ -145,7 +145,6 @@ Idêntica ao barbeiro não admin: login exclusivamente com **e-mail e senha**, a
 - **Filtragem** dos barbeiros.
 - **Envio de e-mail com as credenciais** do novo barbeiro para o primeiro login.
 
-**Criação do barbeiro:** o barbeiro é criado diretamente na collection `users` com `role: "Barber"`, pelo endpoint `/users` (mesma lógica do App — o painel Web não cadastra senha; as credenciais de primeiro acesso são geradas pela API e enviadas por e-mail ao barbeiro, conforme a seção 6.5).
 
 **Campos dos formulários de barbeiro** (mapeiam a collection `users`):
 
@@ -217,6 +216,8 @@ Cadastro de **dias da semana** com **horário inicial e horário final** de trab
 - **Adicionar, editar e excluir** barbeiros.
 - **Filtragem** dos barbeiros.
 
+
+**Criação do barbeiro:** o barbeiro é criado diretamente na collection `users` com `role: "Barber"`, pelo endpoint `/users` (mesma lógica do App — o painel Web não cadastra senha; as credenciais de primeiro acesso são geradas pela API e enviadas por e-mail ao barbeiro, conforme a seção 6.5).
 **Campos dos formulários de barbeiro** (mapeiam a collection `users`):
 
 | Formulário | Campos |
