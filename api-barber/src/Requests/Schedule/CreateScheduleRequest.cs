@@ -1,6 +1,5 @@
 ﻿using api_barber.Models.Enums;
 using System;
-
 namespace api_barber.Requests.Schedule
 {
     public class CreateScheduleRequest
@@ -13,3 +12,4 @@ namespace api_barber.Requests.Schedule
         public string BarberId { get; set; } = string.Empty;
     }
 }
+

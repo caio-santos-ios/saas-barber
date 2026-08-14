@@ -1,0 +1,81 @@
+@import '../login/login.css';
+
+.register-card {
+  max-width: 560px;
+  padding: 24px 20px;
+}
+
+.auth-header {
+  margin-bottom: 20px;
+}
+
+.auth-logo {
+  max-width: 120px;
+  margin-bottom: 8px;
+}
+
+.auth-header p {
+  font-size: 13px;
+}
+
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-group label {
+  margin-bottom: 4px;
+  font-size: 13px;
+}
+
+.form-control {
+  padding: 9px 12px;
+  font-size: 13px;
+}
+
+.form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.half {
+  flex: 1;
+}
+
+@media (min-width: 560px) {
+  .register-card {
+    padding: 32px 36px;
+  }
+
+  .form-row {
+    flex-direction: row;
+    gap: 16px;
+  }
+
+  .auth-logo {
+    max-width: 150px;
+  }
+}
+
+.checkbox-group {
+  margin-top: 12px;
+  margin-bottom: 16px;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 400;
+  font-size: 13px;
+}
+
+.auth-footer {
+  margin-top: 16px;
+}
+
+.auth-btn {
+  padding: 10px;
+  font-size: 15px;
+}

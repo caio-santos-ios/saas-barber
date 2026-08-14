@@ -1,0 +1,86 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Serviços</h1>
+      <p class="page-subtitle">Gerencie os serviços oferecidos na barbearia</p>
+    </div>
+    <button class="btn-primary" (click)="openModal()">+ Novo Serviço</button>
+  </div>
+
+  <div class="card">
+    <div class="table-responsive" *ngIf="!loading">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Nome do Serviço</th>
+            <th>Duração</th>
+            <th>Preço</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of services">
+            <td>
+              <div style="font-weight: 600; color: var(--text-main);">{{ s.name }}</div>
+            </td>
+            <td style="vertical-align: middle; color: var(--text-muted);">{{ s.durationMinutes || s.duration }} min</td>
+            <td style="vertical-align: middle; font-weight: 500;">{{ s.value | currency:'BRL' }}</td>
+            <td style="vertical-align: middle;">
+              <button class="btn-icon" (click)="openModal(s)" style="color: var(--text-muted); font-size: 18px;" title="Editar">✏️</button>
+              <button class="btn-icon" (click)="openDeleteModal(s)" style="color: #c62828; font-size: 18px;" title="Excluir">🗑️</button>
+            </td>
+          </tr>
+          <tr *ngIf="services.length === 0">
+            <td colspan="4" class="text-center py-4 text-muted">Nenhum serviço cadastrado.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div *ngIf="loading" class="text-center py-4 text-muted">Carregando...</div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" *ngIf="isModalOpen" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ isEditing ? 'Editar Serviço' : 'Novo Serviço' }}</h2>
+      <button class="btn-close" (click)="closeModal()">&times;</button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Nome do Serviço *</label>
+        <input type="text" [(ngModel)]="formData.name" class="form-input" placeholder="Ex: Corte Degradê" />
+      </div>
+      <div class="form-group">
+        <label>Duração (Minutos) *</label>
+        <input type="number" [(ngModel)]="formData.durationMinutes" class="form-input" placeholder="30" />
+      </div>
+      <div class="form-group">
+        <label>Preço (R$) *</label>
+        <input type="text" [(ngModel)]="formData.value" mask="separator.2" thousandSeparator="." decimalMarker="," prefix="R$ " [dropSpecialCharacters]="false" class="form-input" placeholder="R$ 35,00" />
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="closeModal()">Cancelar</button>
+        <button type="button" class="btn-primary" (click)="saveService()">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="isDeleteModalOpen" (click)="closeDeleteModal()">
+  <div class="modal-content" style="max-width: 400px; text-align: center;" (click)="$event.stopPropagation()">
+    <div class="modal-body" style="padding-top: 32px;">
+      <div style="font-size: 48px; margin-bottom: 16px;">🗑️</div>
+      <h2 style="margin-bottom: 8px;">Excluir Serviço?</h2>
+      <p style="color: var(--text-muted); margin-bottom: 24px;">Tem certeza que deseja excluir o serviço <strong>{{ serviceToDelete?.name }}</strong>? Esta ação não pode ser desfeita.</p>
+      
+      <div class="modal-footer" style="justify-content: center;">
+        <button type="button" class="btn-secondary" (click)="closeDeleteModal()">Cancelar</button>
+        <button type="button" class="btn-primary" style="background-color: #c62828;" (click)="confirmDelete()">Excluir</button>
+      </div>
+    </div>
+  </div>
+</div>

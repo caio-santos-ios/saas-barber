@@ -1,4 +1,4 @@
-namespace api_barber.Models.Enums
+﻿namespace api_barber.Models.Enums
 {
     public enum AppointmentStatusEnum
     {
@@ -7,3 +7,4 @@ namespace api_barber.Models.Enums
         Finalizado
     }
 }
+

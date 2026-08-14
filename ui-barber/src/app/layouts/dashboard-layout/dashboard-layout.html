@@ -1,0 +1,28 @@
+<div class="layout-container" [class.sidebar-open]="isSidebarOpen && auth.hasActiveSubscription()" [class.sidebar-closed]="!isSidebarOpen || !auth.hasActiveSubscription()">
+  
+  <header class="app-header">
+    <div class="header-left">
+      <button class="hamburger-btn" (click)="toggleSidebar()" *ngIf="auth.hasActiveSubscription()">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
+      <div class="app-logo">
+        <img src="/logo.png" alt="SaaS Barber Logo" style="max-height: 30px;" />
+      </div>
+    </div>
+    
+    <div class="header-right" *ngIf="!auth.hasActiveSubscription()">
+      <button class="btn-secondary" style="padding: 0.5rem 1rem; border-color: transparent; color: #ef4444;" (click)="auth.clearToken(); router.navigate(['/login'])">Sair</button>
+    </div>
+  </header>
+
+  
+  <div class="sidebar-overlay" *ngIf="isSidebarOpen && auth.hasActiveSubscription()" (click)="toggleSidebar()"></div>
+
+  <app-sidebar *ngIf="auth.hasActiveSubscription()" [class.open]="isSidebarOpen" (click)="closeOnMobile()"></app-sidebar>
+  
+  <main class="main-content" [style.margin-left]="auth.hasActiveSubscription() ? '' : '0'">
+    <router-outlet></router-outlet>
+  </main>
+</div>

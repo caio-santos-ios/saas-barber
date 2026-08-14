@@ -1,0 +1,114 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-subtitle">Visão geral do seu negócio</p>
+    </div>
+    
+    <div class="header-actions">
+      <div style="display: flex; gap: 1rem;">
+        <div class="filter-group" style="display: flex; flex-direction: column; align-items: flex-start;">
+          <label style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted); margin-bottom: 0.25rem;">Início</label>
+          <input type="date" [(ngModel)]="startDate" (change)="onFilterChange()" class="form-input" style="padding: 0.5rem; border-radius: 8px;">
+        </div>
+        <div class="filter-group" style="display: flex; flex-direction: column; align-items: flex-start;">
+          <label style="font-size: 0.8rem; font-weight: 500; color: var(--text-muted); margin-bottom: 0.25rem;">Fim</label>
+          <input type="date" [(ngModel)]="endDate" (change)="onFilterChange()" class="form-input" style="padding: 0.5rem; border-radius: 8px;">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="empty-state text-center py-4 text-muted">
+    Carregando métricas...
+  </div>
+
+  <div *ngIf="error" class="empty-state text-center py-4" style="color: #ef4444;">
+    {{ error }}
+  </div>
+
+  <div *ngIf="!loading && !error && metrics?.isEmpty" class="card" style="padding: 1rem; background: #e0f2fe; border: 1px solid #bae6fd; color: #0284c7; border-radius: 8px; margin-bottom: 1.5rem; font-weight: 500; display: flex; align-items: center; gap: 0.5rem;">
+    <span style="font-size: 1.25rem;">ℹ️</span> Não há dados consolidados para o período selecionado. Os valores exibidos estão zerados.
+  </div>
+
+  <div class="metrics-grid" *ngIf="metrics && !loading" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+    <div class="card primary" style="background: #1e293b; color: white; border: none;">
+      <div style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem;">Faturamento</div>
+      <div style="font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem;">{{ metrics.totalRevenue | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</div>
+      <div style="font-size: 0.8rem; opacity: 0.8;">no período</div>
+    </div>
+    
+    <div class="card">
+      <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem;">Agendamentos</div>
+      <div style="font-size: 2rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.25rem;">{{ metrics.totalAppointments }}</div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">totais no período</div>
+    </div>
+    
+    <div class="card">
+      <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem;">Finalizados</div>
+      <div style="font-size: 2rem; font-weight: 700; color: #10b981; margin-bottom: 0.25rem;">{{ metrics.completedAppointments }}</div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">serviços concluídos</div>
+    </div>
+    
+    <div class="card">
+      <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem;">Cancelados</div>
+      <div style="font-size: 2rem; font-weight: 700; color: #ef4444; margin-bottom: 0.25rem;">{{ metrics.canceledAppointments }}</div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">desistências</div>
+    </div>
+  </div>
+
+  <div class="dashboard-content" *ngIf="metrics && !loading" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+    <div class="card">
+      <h3 style="margin: 0 0 1rem 0; font-size: 1.1rem; color: var(--text-main);">Top Serviços</h3>
+      <ul style="list-style: none; padding: 0; margin: 0;">
+        <li *ngFor="let srv of metrics.topServices; let i = index" style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border-color);">
+          <span><strong>{{ i + 1 }}.</strong> {{ srv.name }}</span>
+          <span style="font-weight: 600;">{{ srv.count }}x</span>
+        </li>
+        <li *ngIf="metrics.topServices.length === 0" class="text-center py-4 text-muted">Nenhum serviço.</li>
+      </ul>
+    </div>
+    
+    <div class="card">
+      <h3 style="margin: 0 0 1rem 0; font-size: 1.1rem; color: var(--text-main);">Top Profissionais</h3>
+      <ul style="list-style: none; padding: 0; margin: 0;">
+        <li *ngFor="let barb of metrics.topBarbers; let i = index" style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border-color);">
+          <span><strong>{{ i + 1 }}.</strong> {{ barb.name }}</span>
+          <span style="font-weight: 600;">{{ barb.count }} apts</span>
+        </li>
+        <li *ngIf="metrics.topBarbers.length === 0" class="text-center py-4 text-muted">Nenhum profissional.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card" *ngIf="metrics && !loading">
+    <div style="padding: 1.5rem 1.5rem 0 1.5rem; margin-bottom: 1rem;">
+      <h2 style="margin: 0; font-size: 1.25rem; color: var(--text-main);">Agenda do Período</h2>
+    </div>
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Data/Hora</th>
+            <th>Cliente</th>
+            <th>Profissional</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let apt of appointments">
+            <td style="vertical-align: middle; font-weight: 500;">{{ apt.date | date:'dd/MM/yyyy' }} às {{ apt.hour }}</td>
+            <td style="vertical-align: middle;">{{ apt.customerName }}</td>
+            <td style="vertical-align: middle;">{{ apt.barberName }}</td>
+            <td style="vertical-align: middle;">
+              <span class="status-badge" [ngClass]="{'active': apt.status === 2, 'danger': apt.status === 4}">{{ apt.status }}</span>
+            </td>
+          </tr>
+          <tr *ngIf="appointments.length === 0">
+            <td colspan="4" class="text-center py-4 text-muted">Nenhum agendamento encontrado no período.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,5 +1,4 @@
 ﻿using api_barber.Models.Enums;
-
 namespace api_barber.Requests.Notification
 {
     public class CreateNotificationRequest
@@ -12,3 +11,4 @@ namespace api_barber.Requests.Notification
         public string RelatedAppointmentId { get; set; } = string.Empty;
     }
 }
+

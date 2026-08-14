@@ -1,6 +1,5 @@
 ﻿using api_barber.Models.Enums;
 using System;
-
 namespace api_barber.Requests.User
 {
     public class CreateUserRequest
@@ -14,3 +13,4 @@ namespace api_barber.Requests.User
         public string Photo { get; set; } = string.Empty;
     }
 }
+

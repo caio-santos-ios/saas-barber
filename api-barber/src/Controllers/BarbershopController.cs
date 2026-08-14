@@ -1,63 +1,44 @@
 ﻿using api_barber.Interfaces;
 using api_barber.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using api_barber.src.Requests;
 using System.Threading.Tasks;
-using api_barber.Requests.Barbershop;
-
 namespace api_barber.Controllers
 {
     [ApiController]
     [Route("barbershops")]
-    public class BarbershopController : ControllerBase
+    public class BarbershopController(IBarbershopService service) : ControllerBase
     {
-        private readonly IBaseRepository<Barbershop> _repo;
-
-        public BarbershopController(IBaseRepository<Barbershop> repo)
-        {
-            _repo = repo;
-        }
-
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] string barbershopId)
         {
-            var result = await _repo.GetAllAsync(barbershopId);
-            return Ok(result);
+            ResponseApi<System.Collections.Generic.IEnumerable<Barbershop>> response = await service.GetAllAsync(barbershopId);
+            return StatusCode(response.Status, new { response.Data, response.Message });
         }
-
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id, [FromQuery] string barbershopId)
         {
-            var result = await _repo.GetByIdAsync(id, barbershopId);
-            if (result == null) return NotFound();
-            return Ok(result);
+            ResponseApi<Barbershop> response = await service.GetByIdAsync(id, barbershopId);
+            return StatusCode(response.Status, new { response.Data, response.Message });
         }
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] UpdateBarbershopRequest request, [FromQuery] string barbershopId)
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] object request, [FromQuery] string barbershopId)
         {
-            var entity = await _repo.GetByIdAsync(id, barbershopId);
-            if (entity == null) return NotFound();
-
-            entity.Name = request.Name;
-            entity.Phone = request.Phone;
-            entity.WhatsApp = request.WhatsApp;
-            entity.Logo = request.Logo;
-            entity.PlanId = request.PlanId;
-            entity.Active = request.Active;
-
-            await _repo.UpdateAsync(id, entity);
-            return NoContent();
+            ResponseApi<Barbershop> response = await service.CreateAsync(request);
+            return StatusCode(response.Status, new { response.Data, response.Message });
         }
-
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(string id, [FromBody] object request, [FromQuery] string barbershopId)
+        {
+            ResponseApi<Barbershop> response = await service.UpdateAsync(id, request, barbershopId);
+            return StatusCode(response.Status, new { response.Data, response.Message });
+        }
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id, [FromQuery] string barbershopId)
         {
-            var entity = await _repo.GetByIdAsync(id, barbershopId);
-            if (entity == null) return NotFound();
-            
-            await _repo.SoftDeleteAsync(id, barbershopId, "admin"); // TODO user context
-            return NoContent();
+            ResponseApi<Barbershop> response = await service.SoftDeleteAsync(id, barbershopId, "admin");
+            return StatusCode(response.Status, new { response.Data, response.Message });
         }
     }
 }
+

@@ -1,0 +1,103 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Profissionais</h1>
+      <p class="page-subtitle">Gerencie os barbeiros da sua equipe</p>
+    </div>
+    <button class="btn-primary" (click)="openModal()">+ Novo Profissional</button>
+  </div>
+
+  <div class="card">
+    <div class="table-responsive" *ngIf="!loading">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Profissional</th>
+            <th>WhatsApp</th>
+            <th>CPF</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let b of barbers">
+            <td>
+              <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 40px; height: 40px; background-color: var(--accent-primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">
+                  {{ b.name ? b.name.charAt(0).toUpperCase() : 'P' }}
+                </div>
+                <div>
+                  <div style="font-weight: 600; color: var(--text-main);">{{ b.name || 'Sem Nome' }}</div>
+                  <div style="font-size: 12px; color: var(--text-muted);">{{ b.email || 'Sem E-mail' }}</div>
+                </div>
+              </div>
+            </td>
+            <td style="vertical-align: middle;">{{ b.whatsApp || '-' }}</td>
+            <td style="vertical-align: middle;">{{ b.document || '-' }}</td>
+            <td style="vertical-align: middle;">
+              <span class="status-badge" [ngClass]="b.active !== false ? 'active' : 'inactive'">
+                {{ b.active !== false ? 'Ativo' : 'Inativo' }}
+              </span>
+            </td>
+            <td style="vertical-align: middle;">
+              <button class="btn-icon" (click)="openModal(b)" style="color: var(--text-muted); font-size: 18px;" title="Editar">✏️</button>
+              <button class="btn-icon" (click)="openDeleteModal(b)" style="color: #c62828; font-size: 18px;" title="Excluir">🗑️</button>
+            </td>
+          </tr>
+          <tr *ngIf="barbers.length === 0">
+            <td colspan="5" class="text-center py-4 text-muted">Nenhum barbeiro cadastrado.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div *ngIf="loading" class="text-center py-4 text-muted">Carregando...</div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="isModalOpen" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ isEditing ? 'Editar Profissional' : 'Novo Profissional' }}</h2>
+      <button class="btn-close" (click)="closeModal()">&times;</button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Nome Completo *</label>
+        <input type="text" [(ngModel)]="formData.name" class="form-input" placeholder="Ex: João Silva" />
+      </div>
+      <div class="form-group">
+        <label>E-mail *</label>
+        <input type="email" [(ngModel)]="formData.email" class="form-input" placeholder="exemplo@email.com" />
+      </div>
+      <div class="form-group">
+        <label>WhatsApp *</label>
+        <input type="text" [(ngModel)]="formData.whatsApp" mask="(00) 00000-0000" [dropSpecialCharacters]="false" class="form-input" placeholder="(00) 00000-0000" />
+      </div>
+      <div class="form-group">
+        <label>CPF</label>
+        <input type="text" [(ngModel)]="formData.document" mask="000.000.000-00" [dropSpecialCharacters]="false" class="form-input" placeholder="000.000.000-00" />
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="closeModal()">Cancelar</button>
+        <button type="button" class="btn-primary" (click)="saveBarber()">Salvar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="isDeleteModalOpen" (click)="closeDeleteModal()">
+  <div class="modal-content" style="max-width: 400px; text-align: center;" (click)="$event.stopPropagation()">
+    <div class="modal-body" style="padding-top: 32px;">
+      <div style="font-size: 48px; margin-bottom: 16px;">🗑️</div>
+      <h2 style="margin-bottom: 8px;">Excluir Profissional?</h2>
+      <p style="color: var(--text-muted); margin-bottom: 24px;">Tem certeza que deseja excluir o profissional <strong>{{ barberToDelete?.name }}</strong>? Esta ação não pode ser desfeita.</p>
+      
+      <div class="modal-footer" style="justify-content: center;">
+        <button type="button" class="btn-secondary" (click)="closeDeleteModal()">Cancelar</button>
+        <button type="button" class="btn-primary" style="background-color: #c62828;" (click)="confirmDelete()">Excluir</button>
+      </div>
+    </div>
+  </div>
+</div>

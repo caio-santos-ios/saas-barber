@@ -1,0 +1,116 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Escalas</h1>
+      <p class="page-subtitle">Gerencie os horários de trabalho dos profissionais</p>
+    </div>
+    <button class="btn-primary" (click)="openModal()">+ Nova Escala</button>
+  </div>
+
+  <div class="card">
+    <div class="table-responsive" *ngIf="!loading">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Profissional</th>
+            <th>Dia da Semana</th>
+            <th>Horário</th>
+            <th>Intervalo</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of schedules">
+            <td>
+              <div style="font-weight: 600; color: var(--text-main);">{{ getBarberName(s.barberId) }}</div>
+            </td>
+            <td style="vertical-align: middle;">
+              <span class="status-badge active">{{ getDayName(s.day) }}</span>
+            </td>
+            <td style="vertical-align: middle; color: var(--text-muted);">
+              {{ formatTimeSpanToTime(s.startHour) }} - {{ formatTimeSpanToTime(s.endHour) }}
+            </td>
+            <td style="vertical-align: middle;">
+              {{ s.intervalMinutes }} min
+            </td>
+            <td style="vertical-align: middle;">
+              <button class="btn-icon" (click)="openModal(s)" style="color: var(--text-muted); font-size: 18px;" title="Editar">✏️</button>
+              <button class="btn-icon" (click)="openDeleteModal(s)" style="color: #c62828; font-size: 18px;" title="Excluir">🗑️</button>
+            </td>
+          </tr>
+          <tr *ngIf="schedules.length === 0">
+            <td colspan="5" class="text-center py-4 text-muted">Nenhuma escala cadastrada.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div *ngIf="loading" class="text-center py-4 text-muted">Carregando...</div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="isModalOpen" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ isEditing ? 'Editar Escala' : 'Nova Escala' }}</h2>
+      <button class="btn-close" (click)="closeModal()">&times;</button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Profissional *</label>
+        <select [(ngModel)]="formData.barberId" class="form-control">
+          <option value="" disabled>Selecione um profissional</option>
+          <option *ngFor="let b of barbers" [value]="b.id">{{ b.name }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Dia da Semana *</label>
+        <select [(ngModel)]="formData.day" class="form-control">
+          <option *ngFor="let day of daysOfWeek" [value]="day.value">{{ day.label }}</option>
+        </select>
+      </div>
+
+      <div class="form-group" style="display: flex; gap: 16px;">
+        <div style="flex: 1;">
+          <label>Início *</label>
+          <input type="time" [(ngModel)]="formData.startHour" class="form-input" />
+        </div>
+        <div style="flex: 1;">
+          <label>Fim *</label>
+          <input type="time" [(ngModel)]="formData.endHour" class="form-input" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Intervalo de Atendimento (minutos) *</label>
+        <input type="number" [(ngModel)]="formData.intervalMinutes" class="form-input" placeholder="30" />
+      </div>
+
+      <div class="form-group">
+        <label>Observações</label>
+        <input type="text" [(ngModel)]="formData.notes" class="form-input" placeholder="Opcional" />
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="closeModal()">Cancelar</button>
+        <button type="button" class="btn-primary" (click)="saveSchedule()">Salvar Escala</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="isDeleteModalOpen" (click)="closeDeleteModal()">
+  <div class="modal-content" style="max-width: 400px; text-align: center;" (click)="$event.stopPropagation()">
+    <div class="modal-body" style="padding-top: 32px;">
+      <div style="font-size: 48px; margin-bottom: 16px;">🗑️</div>
+      <h2 style="margin-bottom: 8px;">Excluir Escala?</h2>
+      <p style="color: var(--text-muted); margin-bottom: 24px;">Tem certeza que deseja remover esta escala? O profissional perderá essa janela de atendimento.</p>
+      
+      <div class="modal-footer" style="justify-content: center;">
+        <button type="button" class="btn-secondary" (click)="closeDeleteModal()">Cancelar</button>
+        <button type="button" class="btn-primary" style="background-color: #c62828;" (click)="confirmDelete()">Excluir</button>
+      </div>
+    </div>
+  </div>
+</div>

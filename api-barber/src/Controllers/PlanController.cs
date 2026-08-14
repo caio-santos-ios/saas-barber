@@ -1,76 +1,44 @@
 ﻿using api_barber.Interfaces;
 using api_barber.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using api_barber.src.Requests;
 using System.Threading.Tasks;
-using api_barber.Requests.Plan;
-
 namespace api_barber.Controllers
 {
     [ApiController]
     [Route("plans")]
-    public class PlanController : ControllerBase
+    public class PlanController(IPlanService service) : ControllerBase
     {
-        private readonly IBaseRepository<Plan> _repo;
-
-        public PlanController(IBaseRepository<Plan> repo)
-        {
-            _repo = repo;
-        }
-
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] string barbershopId)
         {
-            var result = await _repo.GetAllAsync(string.Empty);
-            return Ok(result);
+            ResponseApi<System.Collections.Generic.IEnumerable<Plan>> response = await service.GetAllAsync(barbershopId);
+            return StatusCode(response.Status, new { response.Data, response.Message });
         }
-
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(string id)
+        public async Task<IActionResult> GetById(string id, [FromQuery] string barbershopId)
         {
-            var result = await _repo.GetByIdAsync(id, string.Empty);
-            if (result == null) return NotFound();
-            return Ok(result);
+            ResponseApi<Plan> response = await service.GetByIdAsync(id, barbershopId);
+            return StatusCode(response.Status, new { response.Data, response.Message });
         }
-
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreatePlanRequest request)
+        public async Task<IActionResult> Create([FromBody] object request, [FromQuery] string barbershopId)
         {
-            var plan = new Plan
-            {
-                Name = request.Name,
-                Description = request.Description,
-                Price = request.Price,
-                Level = request.Level
-            };
-            await _repo.CreateAsync(plan);
-            return Ok(plan);
+            ResponseApi<Plan> response = await service.CreateAsync(request);
+            return StatusCode(response.Status, new { response.Data, response.Message });
         }
-
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] UpdatePlanRequest request)
+        public async Task<IActionResult> Update(string id, [FromBody] object request, [FromQuery] string barbershopId)
         {
-            var entity = await _repo.GetByIdAsync(id, string.Empty);
-            if (entity == null) return NotFound();
-
-            entity.Name = request.Name;
-            entity.Description = request.Description;
-            entity.Price = request.Price;
-            entity.Level = request.Level;
-            entity.Active = request.Active;
-
-            await _repo.UpdateAsync(id, entity);
-            return NoContent();
+            ResponseApi<Plan> response = await service.UpdateAsync(id, request, barbershopId);
+            return StatusCode(response.Status, new { response.Data, response.Message });
         }
-
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(string id)
+        public async Task<IActionResult> Delete(string id, [FromQuery] string barbershopId)
         {
-            var entity = await _repo.GetByIdAsync(id, string.Empty);
-            if (entity == null) return NotFound();
-            
-            await _repo.SoftDeleteAsync(id, string.Empty, "admin");
-            return NoContent();
+            ResponseApi<Plan> response = await service.SoftDeleteAsync(id, barbershopId, "admin");
+            return StatusCode(response.Status, new { response.Data, response.Message });
         }
     }
 }
+

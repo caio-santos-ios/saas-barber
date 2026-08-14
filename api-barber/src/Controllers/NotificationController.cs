@@ -1,56 +1,44 @@
 ﻿using api_barber.Interfaces;
 using api_barber.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using api_barber.src.Requests;
 using System.Threading.Tasks;
-using api_barber.Requests.Notification;
-
 namespace api_barber.Controllers
 {
     [ApiController]
     [Route("notifications")]
-    public class NotificationController : ControllerBase
+    public class NotificationController(INotificationService service) : ControllerBase
     {
-        private readonly IBaseRepository<Notification> _repo;
-
-        public NotificationController(IBaseRepository<Notification> repo)
-        {
-            _repo = repo;
-        }
-
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] string barbershopId)
         {
-            var result = await _repo.GetAllAsync(barbershopId);
-            return Ok(result);
+            ResponseApi<System.Collections.Generic.IEnumerable<Notification>> response = await service.GetAllAsync(barbershopId);
+            return StatusCode(response.Status, new { response.Data, response.Message });
         }
-
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(string id, [FromQuery] string barbershopId)
+        {
+            ResponseApi<Notification> response = await service.GetByIdAsync(id, barbershopId);
+            return StatusCode(response.Status, new { response.Data, response.Message });
+        }
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateNotificationRequest request, [FromQuery] string barbershopId)
+        public async Task<IActionResult> Create([FromBody] object request, [FromQuery] string barbershopId)
         {
-            var entity = new Notification
-            {
-                Type = request.Type,
-                Title = request.Title,
-                Message = request.Message,
-                UserId = request.UserId,
-                TargetRole = request.TargetRole,
-                RelatedAppointmentId = request.RelatedAppointmentId,
-                BarbershopId = barbershopId
-            };
-            await _repo.CreateAsync(entity);
-            return Ok(entity);
+            ResponseApi<Notification> response = await service.CreateAsync(request);
+            return StatusCode(response.Status, new { response.Data, response.Message });
         }
-
-        [HttpPut("{id}/read")]
-        public async Task<IActionResult> MarkAsRead(string id, [FromQuery] string barbershopId)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(string id, [FromBody] object request, [FromQuery] string barbershopId)
         {
-            var entity = await _repo.GetByIdAsync(id, barbershopId);
-            if (entity == null) return NotFound();
-
-            entity.Read = true;
-            await _repo.UpdateAsync(id, entity);
-            return NoContent();
+            ResponseApi<Notification> response = await service.UpdateAsync(id, request, barbershopId);
+            return StatusCode(response.Status, new { response.Data, response.Message });
+        }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id, [FromQuery] string barbershopId)
+        {
+            ResponseApi<Notification> response = await service.SoftDeleteAsync(id, barbershopId, "admin");
+            return StatusCode(response.Status, new { response.Data, response.Message });
         }
     }
 }
+

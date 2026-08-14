@@ -1,5 +1,4 @@
 ﻿using System;
-
 namespace api_barber.Requests.Appointment
 {
     public class CreateAppointmentRequest
@@ -16,3 +15,4 @@ namespace api_barber.Requests.Appointment
         public decimal Value { get; set; }
     }
 }
+

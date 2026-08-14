@@ -1,19 +1,16 @@
-using MongoDB.Driver;
+﻿using MongoDB.Driver;
 using Microsoft.Extensions.Configuration;
-using api_barber.Models; // Ajuste o namespace se necessário
-
+using api_barber.Models;
 namespace api_barber.Infrastructures
 {
     public class AppDbContext
     {
         private readonly IMongoDatabase _database;
-
         public AppDbContext(IConfiguration configuration)
         {
-            var client = new MongoClient(configuration.GetConnectionString("MongoDb"));
-            _database = client.GetDatabase(configuration["DatabaseName"] ?? "SaaSBarbearia");
+            var client = new MongoClient(configuration.GetConnectionString("MongoDbConnection"));
+            _database = client.GetDatabase(configuration["DatabaseSettings:DatabaseName"] ?? "SaaSBarbearia");
         }
-
         public IMongoCollection<Barbershop> Barbershops => _database.GetCollection<Barbershop>("barbershops");
         public IMongoCollection<User> Users => _database.GetCollection<User>("users");
         public IMongoCollection<Plan> Plans => _database.GetCollection<Plan>("plans");
@@ -25,3 +22,4 @@ namespace api_barber.Infrastructures
         public IMongoCollection<Notification> Notifications => _database.GetCollection<Notification>("notifications");
     }
 }
+

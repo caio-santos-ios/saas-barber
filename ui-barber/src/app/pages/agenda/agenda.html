@@ -1,0 +1,111 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Agenda</h1>
+      <p class="page-subtitle">Gerencie os horários do dia</p>
+    </div>
+    <div class="header-actions">
+      <div class="date-navigator">
+        <button (click)="changeDate(-1)" class="nav-btn">&lt;</button>
+        <span class="current-date">{{ selectedDate | date:'dd/MM/yyyy' }}</span>
+        <button (click)="changeDate(1)" class="nav-btn">&gt;</button>
+      </div>
+      <button (click)="openModal()" class="btn-primary" style="padding: 12px 24px;">+ Novo Agendamento</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Horário</th>
+            <th>Cliente</th>
+            <th>Serviço</th>
+            <th>Preço</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let apt of appointments">
+            <td style="vertical-align: middle; font-weight: 500;">{{ apt.hour }}</td>
+            <td style="vertical-align: middle;">
+              <div style="font-weight: 600; color: var(--text-main);">{{ apt.customerName }}</div>
+            </td>
+            <td style="vertical-align: middle; color: var(--text-muted);">{{ apt.serviceTypeName }}</td>
+            <td style="vertical-align: middle; font-weight: 500;">{{ apt.value | currency:'BRL' }}</td>
+            <td style="vertical-align: middle;">
+              <span class="status-badge" [class.active]="apt.status === 'Marcado'" [class.cancelled]="apt.status === 'Cancelado'">{{ apt.status }}</span>
+            </td>
+          </tr>
+          <tr *ngIf="appointments.length === 0">
+            <td colspan="5" class="text-center py-4 text-muted">Nenhum agendamento para este dia.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal-overlay" *ngIf="isModalOpen" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Novo Agendamento</h2>
+      <button class="close-btn" (click)="closeModal()">&times;</button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Cliente *</label>
+        <select class="form-input" [(ngModel)]="formData.customerId">
+          <option value="" disabled selected>Selecione um cliente</option>
+          <option *ngFor="let c of customers" [value]="c.id">{{ c.name }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Profissional *</label>
+        <select class="form-input" [(ngModel)]="formData.barberId" (change)="onBarberOrDateChange()">
+          <option value="" disabled selected>Selecione um profissional</option>
+          <option *ngFor="let b of barbers" [value]="b.id">{{ b.name }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Serviço *</label>
+        <select class="form-input" [(ngModel)]="formData.serviceId">
+          <option value="" disabled selected>Selecione um serviço</option>
+          <option *ngFor="let s of services" [value]="s.id">{{ s.name }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Data *</label>
+        <input type="date" class="form-input" [(ngModel)]="formData.date" (change)="onBarberOrDateChange()">
+      </div>
+
+      <div class="form-group" *ngIf="availableSlots.length > 0">
+        <label>Horário Disponível *</label>
+        <div class="slots-grid">
+          <button 
+            *ngFor="let slot of availableSlots" 
+            class="slot-btn" 
+            [class.selected]="formData.hour === slot"
+            (click)="formData.hour = slot">
+            {{ slot }}
+          </button>
+        </div>
+      </div>
+
+      <div class="empty-slots" *ngIf="availableSlots.length === 0 && formData.barberId">
+        <p>Nenhum horário disponível neste dia para este profissional.</p>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" (click)="closeModal()">Cancelar</button>
+      <button type="button" class="btn-primary" (click)="saveAppointment()">Salvar</button>
+    </div>
+  </div>
+</div>

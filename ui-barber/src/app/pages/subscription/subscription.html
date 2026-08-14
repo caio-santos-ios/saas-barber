@@ -1,0 +1,133 @@
+<div class="page-container" *ngIf="auth.hasActiveSubscription()">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Assinatura e Planos</h1>
+      <p class="page-subtitle">Gerencie sua assinatura e seu histórico de faturas</p>
+    </div>
+    <button class="btn-danger" (click)="openCancelModal()" style="padding: 10px 16px; background-color: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+      Cancelar Assinatura
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Vencimento</th>
+            <th>Valor</th>
+            <th>Status</th>
+            <th>Forma de Pagto</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let invoice of invoices">
+            <td style="font-weight: 500;">{{ invoice.dueDate | date:'dd/MM/yyyy' }}</td>
+            <td>R$ {{ invoice.value | number:'1.2-2' }}</td>
+            <td>
+              <span class="status-badge" [ngClass]="{'active': invoice.status === 'RECEIVED' || invoice.status === 'CONFIRMED', 'inactive': invoice.status === 'OVERDUE' || invoice.status === 'REFUNDED'}">{{ invoice.status }}</span>
+            </td>
+            <td>{{ invoice.billingType }}</td>
+          </tr>
+          <tr *ngIf="invoices.length === 0">
+            <td colspan="4" class="text-center py-4 text-muted">Nenhuma fatura encontrada.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="standalone-content" *ngIf="!auth.hasActiveSubscription()">
+  <div class="page-header text-center">
+    <h1 class="page-title">Assinatura e Planos</h1>
+    <p class="page-subtitle">Escolha o plano ideal para alavancar sua barbearia</p>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-4 text-muted">Carregando planos...</div>
+    
+  <div class="plans-grid" *ngIf="!loading && !selectedPlan">
+    <div class="plan-card" *ngFor="let p of plans" [class.current]="p.id === currentPlanId">
+      <div class="plan-header">
+        <h3>{{ p.name }}</h3>
+        <span class="badge badge-active" *ngIf="p.id === currentPlanId">Plano Atual</span>
+      </div>
+      <div class="plan-price">
+        <span class="currency">R$</span>
+        <span class="value">{{ p.price | number:'1.2-2' }}</span>
+        <span class="period">/mês</span>
+      </div>
+      <p class="plan-desc">{{ p.description }}</p>
+      
+      <button class="btn-primary w-100" *ngIf="p.id !== currentPlanId" (click)="selectPlan(p)">
+        Assinar {{ p.name }}
+      </button>
+      <button class="btn-secondary w-100" *ngIf="p.id === currentPlanId" disabled>
+        Ativo
+      </button>
+    </div>
+  </div>
+
+  <div class="card checkout-container" *ngIf="selectedPlan" style="max-width: 800px; margin: 0 auto; padding: 32px; margin-top: 32px;">
+    <div style="margin-bottom: 24px;">
+      <h2 style="color: var(--text-main); margin-bottom: 8px;">Checkout Seguro</h2>
+      <p style="color: var(--text-muted);">Você está assinando o plano: <strong>{{ selectedPlan.name }} (R$ {{ selectedPlan.price | number:'1.2-2' }})</strong></p>
+    </div>
+
+    <form (ngSubmit)="processPayment()">
+      <h3 style="margin-bottom: 16px; color: var(--text-main); font-size: 16px;">Dados do Cartão de Crédito</h3>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nome no Cartão</label>
+          <input type="text" name="holderName" [(ngModel)]="paymentData.holderName" required class="form-input" placeholder="Como impresso no cartão" style="text-transform: uppercase;" />
+        </div>
+
+        <div class="form-group">
+          <label>Número do Cartão</label>
+          <input type="text" name="number" [(ngModel)]="paymentData.number" mask="0000 0000 0000 0000" [dropSpecialCharacters]="false" required class="form-input" placeholder="0000 0000 0000 0000" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Mês (MM)</label>
+          <input type="text" name="expiryMonth" [(ngModel)]="paymentData.expiryMonth" mask="00" required class="form-input" placeholder="MM" />
+        </div>
+        <div class="form-group">
+          <label>Ano (AAAA)</label>
+          <input type="text" name="expiryYear" [(ngModel)]="paymentData.expiryYear" mask="0000" required class="form-input" placeholder="AAAA" />
+        </div>
+        <div class="form-group">
+          <label>CVC</label>
+          <input type="text" name="ccv" [(ngModel)]="paymentData.ccv" mask="000||0000" required class="form-input" placeholder="123" />
+        </div>
+      </div>
+
+      <div class="modal-footer" style="margin-top: 32px; border-top: none; padding-top: 0;">
+        <button type="button" class="btn-secondary" (click)="cancelCheckout()" [disabled]="processing">Cancelar</button>
+        <button type="submit" class="btn-primary" [disabled]="processing">
+          {{ processing ? 'Processando Pagamento...' : 'Pagar e Assinar' }}
+        </button>
+      </div>
+      
+      <div style="text-align: center; margin-top: 16px;">
+        <small style="color: var(--text-muted);">🔒 Pagamento processado de forma segura pelo Asaas</small>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="isCancelModalOpen" (click)="closeCancelModal()">
+  <div class="modal-content" style="max-width: 400px; text-align: center;" (click)="$event.stopPropagation()">
+    <div class="modal-body" style="padding-top: 32px;">
+      <div style="font-size: 48px; margin-bottom: 16px;">⚠️</div>
+      <h2 style="margin-bottom: 8px;">Cancelar Assinatura?</h2>
+      <p style="color: var(--text-muted); margin-bottom: 24px;">Tem certeza que deseja cancelar sua assinatura? <strong>O acesso ao sistema será bloqueado imediatamente.</strong></p>
+      <div class="modal-footer" style="justify-content: center;">
+        <button type="button" class="btn-secondary" (click)="closeCancelModal()">Cancelar</button>
+        <button type="button" class="btn-primary" style="background-color: #ef4444;" (click)="confirmCancelSubscription()">Confirmar Cancelamento</button>
+      </div>
+    </div>
+  </div>
+</div>

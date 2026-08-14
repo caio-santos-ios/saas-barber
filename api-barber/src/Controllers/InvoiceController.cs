@@ -1,46 +1,44 @@
 ﻿using api_barber.Interfaces;
 using api_barber.Models;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using api_barber.src.Requests;
 using System.Threading.Tasks;
-using api_barber.Requests.Finance;
-using api_barber.Models.Enums;
-
 namespace api_barber.Controllers
 {
     [ApiController]
     [Route("invoices")]
-    public class InvoiceController : ControllerBase
+    public class InvoiceController(IInvoiceService service) : ControllerBase
     {
-        private readonly IBaseRepository<Invoice> _repo;
-
-        public InvoiceController(IBaseRepository<Invoice> repo)
-        {
-            _repo = repo;
-        }
-
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] string barbershopId)
         {
-            var result = await _repo.GetAllAsync(barbershopId);
-            return Ok(result);
+            ResponseApi<System.Collections.Generic.IEnumerable<Invoice>> response = await service.GetAllAsync(barbershopId);
+            return StatusCode(response.Status, new { response.Data, response.Message });
         }
-
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateInvoiceRequest request, [FromQuery] string barbershopId)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(string id, [FromQuery] string barbershopId)
         {
-            var entity = new Invoice
-            {
-                Date = System.DateTime.UtcNow,
-                DueDate = request.DueDate,
-                Value = request.Value,
-                PaymentMethod = request.PaymentMethod,
-                Description = request.Description,
-                Status = InvoiceStatusEnum.EmAberto,
-                BarbershopId = barbershopId
-            };
-            await _repo.CreateAsync(entity);
-            return Ok(entity);
+            ResponseApi<Invoice> response = await service.GetByIdAsync(id, barbershopId);
+            return StatusCode(response.Status, new { response.Data, response.Message });
+        }
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] object request, [FromQuery] string barbershopId)
+        {
+            ResponseApi<Invoice> response = await service.CreateAsync(request);
+            return StatusCode(response.Status, new { response.Data, response.Message });
+        }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(string id, [FromBody] object request, [FromQuery] string barbershopId)
+        {
+            ResponseApi<Invoice> response = await service.UpdateAsync(id, request, barbershopId);
+            return StatusCode(response.Status, new { response.Data, response.Message });
+        }
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id, [FromQuery] string barbershopId)
+        {
+            ResponseApi<Invoice> response = await service.SoftDeleteAsync(id, barbershopId, "admin");
+            return StatusCode(response.Status, new { response.Data, response.Message });
         }
     }
 }
+

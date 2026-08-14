@@ -1,0 +1,57 @@
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-header">
+      <img src="/logo.png" alt="SaaS Barbearia" class="auth-logo" />
+      <p>Faça login no painel administrativo</p>
+    </div>
+    
+    <form (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label>E-mail</label>
+        <input type="email" name="email" [(ngModel)]="email" required class="form-control" placeholder="Seu e-mail" />
+      </div>
+
+      <div class="form-group">
+        <label>Senha</label>
+        <div class="password-container">
+          <input [type]="showPassword ? 'text' : 'password'" name="password" [(ngModel)]="password" required class="form-control" placeholder="Sua senha" />
+          <i class="fa-solid" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'" (click)="togglePassword()"></i>
+        </div>
+      </div>
+
+      <div style="text-align: right; margin-bottom: 16px; margin-top: -8px;">
+        <a href="javascript:void(0)" (click)="openResetModal()" style="font-size: 13px; color: var(--accent-primary); font-weight: 500;">Esqueci minha senha</a>
+      </div>
+
+      <button type="submit" class="btn-primary auth-btn" [disabled]="loading">
+        {{ loading ? 'Entrando...' : 'Entrar' }}
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Não tem uma conta? <a routerLink="/register">Cadastre sua barbearia</a></p>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" *ngIf="isResetModalOpen" (click)="closeResetModal()">
+  <div class="modal-content" style="max-width: 400px;" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Redefinir Senha</h2>
+      <button class="btn-close" (click)="closeResetModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 14px;">Informe seu e-mail cadastrado. Uma nova senha temporária será gerada.</p>
+      <div class="form-group">
+        <label>E-mail</label>
+        <input type="email" [(ngModel)]="resetEmail" class="form-control" placeholder="seu@email.com" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn-secondary" (click)="closeResetModal()">Cancelar</button>
+      <button type="button" class="btn-primary" (click)="submitReset()" [disabled]="resetLoading">
+        {{ resetLoading ? 'Enviando...' : 'Gerar Nova Senha' }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,79 @@
+<div class="auth-container">
+  <div class="auth-card register-card">
+    <div class="auth-header">
+      <img src="/logo.png" alt="SaaS Barbearia" class="auth-logo" />
+      <p>Crie sua conta para gerenciar seu negócio</p>
+    </div>
+    
+    <form (ngSubmit)="onSubmit()">
+      <div class="form-row">
+        <div class="form-group half">
+          <label>Seu Nome Completo *</label>
+          <input type="text" name="name" [(ngModel)]="formData.name" required class="form-control" />
+        </div>
+        <div class="form-group half">
+          <label>Nome da Barbearia *</label>
+          <input type="text" name="barbershopName" [(ngModel)]="formData.barbershopName" required class="form-control" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group half">
+          <label>Tipo (PF/PJ) *</label>
+          <select name="typePerson" [(ngModel)]="formData.typePerson" class="form-control" (change)="formData.document = ''">
+            <option value="PF">Pessoa Física</option>
+            <option value="PJ">Pessoa Jurídica</option>
+          </select>
+        </div>
+        <div class="form-group half">
+          <label>{{ formData.typePerson === 'PF' ? 'CPF' : 'CNPJ' }} *</label>
+          <input type="text" name="document" [(ngModel)]="formData.document" [mask]="documentMask" required class="form-control" [placeholder]="formData.typePerson === 'PF' ? '000.000.000-00' : '00.000.000/0000-00'" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group half">
+          <label>WhatsApp *</label>
+          <input type="text" name="whatsApp" [(ngModel)]="formData.whatsApp" mask="(00) 00000-0000" required class="form-control" />
+        </div>
+        <div class="form-group half">
+          <label>E-mail *</label>
+          <input type="email" name="email" [(ngModel)]="formData.email" required class="form-control" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group half">
+          <label>Senha *</label>
+          <div class="password-container">
+            <input [type]="showPassword ? 'text' : 'password'" name="password" [(ngModel)]="formData.password" required class="form-control" />
+            <i class="fa-solid" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'" (click)="togglePassword()"></i>
+          </div>
+        </div>
+        
+        <div class="form-group half">
+          <label>Confirmar Senha *</label>
+          <div class="password-container">
+            <input [type]="showPasswordConfirm ? 'text' : 'password'" name="passwordConfirm" [(ngModel)]="formData.passwordConfirm" required class="form-control" />
+            <i class="fa-solid" [ngClass]="showPasswordConfirm ? 'fa-eye-slash' : 'fa-eye'" (click)="togglePasswordConfirm()"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group checkbox-group">
+        <label>
+          <input type="checkbox" name="acceptTerms" [(ngModel)]="formData.acceptTerms" required />
+          Aceito os termos e condições
+        </label>
+      </div>
+
+      <button type="submit" class="btn-primary auth-btn" [disabled]="loading">
+        {{ loading ? 'Cadastrando...' : 'Criar Conta' }}
+      </button>
+    </form>
+
+    <div class="auth-footer">
+      <p>Já possui conta? <a routerLink="/login">Faça login</a></p>
+    </div>
+  </div>
+</div>

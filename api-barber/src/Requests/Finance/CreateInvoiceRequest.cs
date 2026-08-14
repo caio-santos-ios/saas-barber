@@ -1,6 +1,5 @@
 ﻿using api_barber.Models.Enums;
 using System;
-
 namespace api_barber.Requests.Finance
 {
     public class CreateInvoiceRequest
@@ -11,3 +10,4 @@ namespace api_barber.Requests.Finance
         public string Description { get; set; } = string.Empty;
     }
 }
+

@@ -1,6 +1,5 @@
 ﻿using api_barber.Models.Enums;
 using System;
-
 namespace api_barber.Requests.Schedule
 {
     public class UpdateScheduleRequest
@@ -12,3 +11,4 @@ namespace api_barber.Requests.Schedule
         public bool Active { get; set; }
     }
 }
+

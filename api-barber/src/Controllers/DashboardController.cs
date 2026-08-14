@@ -1,0 +1,20 @@
+using api_barber.Interfaces;
+using api_barber.Requests.Dashboard;
+using api_barber.src.Requests;
+using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
+
+namespace api_barber.Controllers
+{
+    [ApiController]
+    [Route("web/dashboard")]
+    public class DashboardController(IDashboardService service) : ControllerBase
+    {
+        [HttpGet]
+        public async Task<IActionResult> GetMetrics([FromQuery] DashboardQueryRequest query, [FromQuery] string barbershopId)
+        {
+            ResponseApi<DashboardMetricsResponse> response = await service.GetMetricsAsync(barbershopId, query);
+            return StatusCode(response.Status, new { response.Data, response.Message });
+        }
+    }
+}

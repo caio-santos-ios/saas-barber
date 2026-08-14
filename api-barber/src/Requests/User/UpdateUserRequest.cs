@@ -1,6 +1,5 @@
 ﻿using api_barber.Models.Enums;
 using System;
-
 namespace api_barber.Requests.User
 {
     public class UpdateUserRequest
@@ -12,3 +11,4 @@ namespace api_barber.Requests.User
         public bool Active { get; set; }
     }
 }
+
