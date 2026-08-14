@@ -16,6 +16,7 @@
 	11. v1.10 (13/08/2026) — seção 7 (Plataforma Web): especificados os campos de cada formulário das telas com formulário (Autenticação/register, Cancelamento do plano, Escala, Serviços e Barbeiros), alinhados às collections da modelagem (users, services_types, services, schedules).
 	12. v1.11 (13/08/2026) — cartões "Escopo e tecnologias" e "Arquitetura na API": adicionadas as regras para todo o projeto (sem comentários no código; identificadores em inglês), detalhamento da stack do App (Flutter+Dart, Dio, Hive) e regra de que cada método dos controllers deve ter no máximo 4 linhas de código.
 	13. v1.12 (14/08/2026) — seção 7.7 (Web): o barbeiro é criado na collection `users` com `role: "Barber"` via endpoint `/users`; o painel não cadastra senha — as credenciais de primeiro acesso são geradas pela API e enviadas por e-mail.
+14. v1.13 (14/08/2026) — seção 8.2 (Papéis de Usuário): registrado na modelagem que o barbeiro (`barber`) é criado pelo Barbeiro Admin no Painel Web (tela `barbers`) na collection `users` com `role: barber`; não existe tela pública de cadastro para barbeiros — apenas clientes se cadastram pelo App.
 
 # 1. Visão Geral do Produto 
 Este projeto consiste em um **SaaS de agendamentos para barbearias**, composto por dois fronts: um **aplicativo mobile (App)** e uma **plataforma web (Web)**. A solução digitaliza a rotina de uma barbearia, permitindo que clientes agendem serviços, que barbeiros gerenciem sua agenda e que o dono da barbearia administre toda a operação — serviços, equipe, escala e plano de assinatura — em um ambiente único e integrado.
@@ -244,6 +245,8 @@ O sistema possui **3 tipos de usuários**, representados pelo enum `role_user_en
 | `admin` | Barbeiro admin (gerencia serviços e barbeiros) | App (telas de serviços e barbeiros) |
 | `barber` | Barbeiro comum (gerencia apenas a própria agenda) | App (agendamentos próprios) |
 | `customer` | Cliente da barbearia | App (agendamentos) |
+
+**Criação de barbeiros:** o barbeiro (papel `barber`) é criado pelo **Barbeiro Admin no Painel Web** (tela `barbers`) e é registrado na coleção `users` com `role: barber`, `barbershopId` da barbearia e credenciais enviadas por e-mail. Não existe tela pública de cadastro para barbeiros — apenas os clientes se cadastram pelo App.
 
 > **Importante:** a senha em `users` é sempre armazenada **hasheada** (bcrypt/argon2), nunca em texto puro. A recuperação de senha é gerenciada pelo Firebase Auth. Quem gerencia a barbearia (dono/admin do Web) também é um usuário do sistema; sua identificação pode ser representada por um flag `isOwner: bool` em `users` ou por papel dedicado, conforme decisão da equipe.
 
