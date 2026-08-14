@@ -25,9 +25,9 @@
             <td style="font-weight: 500;">{{ invoice.dueDate | date:'dd/MM/yyyy' }}</td>
             <td>R$ {{ invoice.value | number:'1.2-2' }}</td>
             <td>
-              <span class="status-badge" [ngClass]="{'active': invoice.status === 'RECEIVED' || invoice.status === 'CONFIRMED', 'inactive': invoice.status === 'OVERDUE' || invoice.status === 'REFUNDED'}">{{ invoice.status }}</span>
+              <span class="status-badge" [ngClass]="{'active': invoice.status === 'RECEIVED' || invoice.status === 'CONFIRMED', 'inactive': invoice.status === 'OVERDUE' || invoice.status === 'REFUNDED'}">{{ translateStatus(invoice.status) }}</span>
             </td>
-            <td>{{ invoice.billingType }}</td>
+            <td>{{ translateBillingType(invoice.billingType) }}</td>
           </tr>
           <tr *ngIf="invoices.length === 0">
             <td colspan="4" class="text-center py-4 text-muted">Nenhuma fatura encontrada.</td>

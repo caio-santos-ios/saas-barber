@@ -8,12 +8,13 @@ using api_barber.Handlers;
 using api_barber.Middlewares;
 var builder = WebApplication.CreateBuilder(args);
 DotNetEnv.Env.Load();
+builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddControllers();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
     {
-        policy.WithOrigins("http://localhost:4200", "http://localhost:50437")
+        policy.WithOrigins("http://localhost:4200", "http://localhost:65303")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();

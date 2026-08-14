@@ -31,19 +31,27 @@ namespace api_barber.Services
             }
 
             var creditCardHolderInfo = new {
-                name = barbershop.Name,
-                email = barbershop.Email,
+                name = string.IsNullOrEmpty(barbershop.Name) ? "Titular Padrão" : barbershop.Name,
+                email = string.IsNullOrEmpty(barbershop.Email) ? "titular@asaas.com" : barbershop.Email,
                 cpfCnpj = string.IsNullOrEmpty(barbershop.Document) ? "00000000000" : barbershop.Document,
                 postalCode = "01311000",
                 addressNumber = "123",
                 phone = string.IsNullOrEmpty(barbershop.Phone) ? "11999999999" : barbershop.Phone
             };
 
-            var subscriptionId = await asaasService.CreateSubscriptionAsync(asaasCustomerId, plan.Id, plan.Price, request.CreditCard, creditCardHolderInfo);
-            
+            string subscriptionId = string.Empty;
+            try
+            {
+                subscriptionId = await asaasService.CreateSubscriptionAsync(asaasCustomerId, plan.Id, plan.Price, request.CreditCard, creditCardHolderInfo);
+            }
+            catch (Exception ex)
+            {
+                return new(null, 400, $"Erro do Asaas: {ex.Message}");
+            }
+
             if (string.IsNullOrEmpty(subscriptionId))
             {
-                return new(null, 400, "Failed to process payment in Asaas. Check credit card details.");
+                return new(null, 400, "Failed to process payment in Asaas.");
             }
 
             barbershop.SubscriptionStatus = SubscriptionStatusEnum.Ativa;

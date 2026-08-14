@@ -153,4 +153,25 @@ export class Subscription implements OnInit {
       this.cdr.detectChanges();
     }
   }
+  translateStatus(status: string): string {
+    const map: Record<string, string> = {
+      'PENDING': 'Pendente',
+      'RECEIVED': 'Recebido',
+      'CONFIRMED': 'Confirmado',
+      'OVERDUE': 'Atrasado',
+      'REFUNDED': 'Estornado',
+      'RECEIVED_IN_CASH': 'Recebido em Dinheiro',
+      'CHARGEBACK_REQUESTED': 'Chargeback'
+    };
+    return map[status] || status;
+  }
+
+  translateBillingType(type: string): string {
+    const map: Record<string, string> = {
+      'BOLETO': 'Boleto',
+      'CREDIT_CARD': 'Cartão de Crédito',
+      'PIX': 'Pix'
+    };
+    return map[type] || type;
+  }
 }

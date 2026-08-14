@@ -72,8 +72,8 @@ namespace api_barber.Services
             {
                 var errorBody = await response.Content.ReadAsStringAsync();
                 Console.WriteLine("ASAAS ERROR: " + errorBody);
+                throw new Exception(errorBody);
             }
-            return string.Empty;
         }
 
         public async Task<object?> GetInvoicesAsync(string customerId)
