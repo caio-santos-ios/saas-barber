@@ -17,6 +17,7 @@
 	12. v1.11 (13/08/2026) — cartões "Escopo e tecnologias" e "Arquitetura na API": adicionadas as regras para todo o projeto (sem comentários no código; identificadores em inglês), detalhamento da stack do App (Flutter+Dart, Dio, Hive) e regra de que cada método dos controllers deve ter no máximo 4 linhas de código.
 	13. v1.12 (14/08/2026) — seção 7.7 (Web): o barbeiro é criado na collection `users` com `role: "Barber"` via endpoint `/users`; o painel não cadastra senha — as credenciais de primeiro acesso são geradas pela API e enviadas por e-mail.
 14. v1.13 (14/08/2026) — seção 8.2 (Papéis de Usuário): registrado na modelagem que o barbeiro (`barber`) é criado pelo Barbeiro Admin no Painel Web (tela `barbers`) na collection `users` com `role: barber`; não existe tela pública de cadastro para barbeiros — apenas clientes se cadastram pelo App.
+15. v1.14 (15/08/2026) — seções 4, 5 e 6 (App): detalhamento das telas por papel (cliente, barbeiro não admin e admin) conforme especificação dos cartões do Trello: mensagens de validação em vermelho, persistência com Hive, login biométrico, flag `passwordResetRequired` (senha temporária enviada por e-mail), janela de edição de 24h, marcar fazendo/feito, CPF não editável pelo barbeiro, telas de Notificações (4.5, 5.5, 6.7) e Configurações (modo escuro/claro).
 
 # 1. Visão Geral do Produto 
 Este projeto consiste em um **SaaS de agendamentos para barbearias**, composto por dois fronts: um **aplicativo mobile (App)** e uma **plataforma web (Web)**. A solução digitaliza a rotina de uma barbearia, permitindo que clientes agendem serviços, que barbeiros gerenciem sua agenda e que o dono da barbearia administre toda a operação — serviços, equipe, escala e plano de assinatura — em um ambiente único e integrado.
@@ -66,25 +67,26 @@ Definidas no cartão "Escopo e tecnologias", aplicam-se a todas as camadas (App,
 
 # 4. Requisitos Funcionais — App Mobile (Cliente) 
 ## 4.1 Autenticação
-**Login:** o cliente se autentica exclusivamente com **credenciais cadastradas** (e-mail e senha), ambos obrigatórios. O login social (Google OAuth) **não será implementado**.
-**Cadastro:** o formulário contém os campos **nome, e-mail, WhatsApp, senha e confirmação de senha**, além do aceite dos **termos e condições**. Campos obrigatórios: nome, e-mail e senha. Os campos **e-mail e WhatsApp são chaves únicas** do sistema: não pode existir mais de um cadastro com o mesmo e-mail ou o mesmo WhatsApp. Os campos **e-mail e WhatsApp são chaves únicas** do sistema: não pode existir mais de um cadastro com o mesmo e-mail ou o mesmo WhatsApp.
-**Recuperação de senha ("Esqueci minha senha"):** tela com campo de e-mail obrigatório; o sistema envia ao e-mail do usuário um **link para redefinição de senha**.
+**Login:** o cliente se autentica exclusivamente com **credenciais cadastradas** (e-mail e senha), ambos obrigatórios; ao tentar entrar sem preencher os dois campos, o app retorna **mensagem em vermelho** indicando que são obrigatórios. O login social (Google OAuth) **não será implementado**. Caso as credenciais estejam erradas, o app exibe **mensagem em vermelho** avisando. Se o login retornar sucesso, o app pergunta se o usuário deseja entrar nas próximas vezes com **biometria/face ID** (login biométrico direto, se optou). Antes de ir para a home, o app grava o **token, refreshToken e foto do usuário** no localStorage (usando Hive). Na tela de login há **link/botão para resetar a senha** (→ tela Esqueci minha senha) e **link/botão para a tela de cadastro**.
+**Cadastro:** o formulário contém os 6 campos: **nome, e-mail, WhatsApp, senha, confirmação de senha e aceite dos termos e condições**. Campos obrigatórios: nome, e-mail, senha, confirmação de senha e aceite dos termos. Ao clicar em criar conta sem preencher os obrigatórios, o app retorna **mensagem em vermelho** indicando os campos obrigatórios. Ao preencher e criar, a API verifica se já existe cliente com o mesmo **e-mail e WhatsApp**; caso não exista, cria a conta e retorna mensagem de sucesso; caso já exista, retorna **mensagem em vermelho** informando que o e-mail (e o WhatsApp, quando preenchido) já estão em uso. Os campos **e-mail e WhatsApp são chaves únicas** do sistema.
+**Recuperação de senha ("Esqueci minha senha"):** tela com campo de e-mail obrigatório; ao clicar em resetar sem preencher, **mensagem em vermelho** que o campo é obrigatório. Ao enviar com o e-mail preenchido, o sistema envia ao e-mail do usuário um **link para redefinição de senha** e exibe mensagem informando que o link foi enviado.
 ## 4.2 Tela Home
-- **Header:** foto de perfil à esquerda e ícone de **notificações** à direita.
-- **Card de boas-vindas** personalizado com o nome do cliente.
-- **Card do próximo agendamento**, com destaque para data, horário, serviço e barbeiro.
-- **4 cards de indicadores:** total de agendamentos, agendamentos cancelados, agendamentos em andamento ("fazendo") e agendamentos concluídos ("feitos").
+- **Header:** foto de perfil à esquerda (ao clicar → tela **Perfil**) e ícone de **notificações** à direita (ao clicar → tela **Notificações**).
+- **Card de boas-vindas** personalizado com o nome do cliente e o **nome/logo da barbearia**.
+- **Card do próximo agendamento**, com data, horário, serviço, barbeiro e nome/logo da barbearia; caso não haja agendamento, exibe mensagem informando que não há agendamentos e um **botão para criar um novo**.
+- **4 cards de indicadores** (total de agendamentos, cancelados, em andamento "fazendo" e concluídos "feitos"): os cards são **clicáveis** e, ao clicar, filtram a listagem da tela Meus Agendamentos pelo status correspondente.
 - **Footer de navegação:** Home, Meus Agendamentos e Perfil.
 ## 4.3 Tela Perfil
 Foto de perfil ampliada, com ação de toque para **editar ou remover**, além das **informações pessoais** com opções de cadastrar e atualizar.
+**Campos de edição do perfil:** nome, e-mail, WhatsApp, data de nascimento e foto. Nome, e-mail e WhatsApp são **obrigatórios**; ao salvar sem preencher, mensagem em vermelho indicando o campo obrigatório. E-mail e WhatsApp seguem a **mesma validação de chaves únicas do cadastro**: se já pertencerem a outro usuário, mensagem em vermelho informando que estão em uso. A foto pode ser **tirada na câmera ou selecionada da galeria**, com opção de remover a foto atual. Ao salvar com sucesso, exibe mensagem de sucesso e a foto do header da home é atualizada.
 ## 4.4 Tela Meus Agendamentos
-- **Listagem** de todos os agendamentos do cliente.
+- **Listagem** de todos os agendamentos do cliente; cada item exibe **data, horário, serviço, barbeiro, valor e status** (agendado, fazendo, feito, cancelado).
 - **Adicionar** um novo agendamento.
-- **Editar** um agendamento existente.
+- **Editar** um agendamento existente (ver regra de 24 horas).
 - **Excluir** um agendamento.
-- **Filtrar** agendamentos (por data, status, serviço etc.).
-- **Cancelar** agendamentos não finalizados.
-**Fluxo de novo agendamento (cadastro):** ao entrar na tela de cadastro do agendamento, o cliente preenche um seletor com os **barbeiros** e os **serviços** disponíveis, seguido do **campo de data disponível daquele barbeiro** e do **campo de horário disponível daquele barbeiro** (a disponibilidade é calculada a partir da escala do barbeiro e da duração dos serviços). Há ainda um **campo de observação**, que é o único campo opcional do formulário.
+- **Filtrar** agendamentos (por data e status).
+- **Cancelar** agendamentos não finalizados, com **confirmação** antes de executar.
+**Fluxo de novo agendamento (cadastro):** ao entrar na tela de cadastro do agendamento, o cliente preenche um seletor com os **barbeiros** e os **serviços** disponíveis, seguido do **campo de data disponível daquele barbeiro** e do **campo de horário disponível daquele barbeiro** (a disponibilidade é filtrada pela **escala/schedules daquele barbeiro**) e um **campo de observação**, que é o único campo opcional. Ao selecionar o barbeiro, a listagem de serviços considera somente os **serviços vinculados ao barbeiro selecionado** (collection `services`). Ao salvar com sucesso, exibe mensagem de sucesso e volta para a listagem atualizada. No detalhe do agendamento existem as opções de **editar e cancelar** (obedecendo a regra das 24h para editar); ao cancelar, pede confirmação antes de executar.
 **Regra de edição com janela de 24 horas:** o cliente pode editar um agendamento somente **até 24 horas antes do horário agendado**. Caso não cumpra a regra, o botão de editar **não deve aparecer** na interface.
 **Notificações automáticas do cliente:**
 | Evento | Notificados |
@@ -93,25 +95,42 @@ Foto de perfil ampliada, com ação de toque para **editar ou remover**, além d
 | Cliente cancela agendamento | Barbeiro e Admin |
 | Agendamento finalizado | Cliente e Admin |
 
+## 4.5 Tela Notificações
+- **Listagem** das notificações recebidas pelo cliente.
+- **Marcar como lida** ao clicar na notificação.
+- **Excluir** uma notificação.
+- As notificações de agendamento (marcado, cancelado pelo barbeiro/admin e finalizado) chegam **automaticamente** conforme a tabela de notificações da seção 4.4.
+
+## 4.6 Configurações do App
+- O app deve ter **modo escuro e claro**.
+
 # 5. Requisitos Funcionais — App Mobile (Barbeiro não Admin) 
 > **Regra de segurança:** todas as telas do barbeiro não admin devem **sempre usar o ID do usuário logado** para exibir e buscar informações de agendamentos. A interface nunca deve aceitar agendamentos de outros usuários como parâmetro de busca.
 ## 5.1 Autenticação
-O login é realizado com **e-mail e senha** (ambos obrigatórios), recebidos por e-mail no primeiro acesso (credenciais enviadas pelo admin). A **recuperação de senha** é idêntica ao fluxo do cliente: campo de e-mail obrigatório e envio de link por e-mail.
+O login é realizado com **e-mail e senha** (ambos obrigatórios; sem preencher, mensagem em vermelho), recebidos por e-mail no primeiro acesso (credenciais enviadas pelo admin). Caso as credenciais estejam erradas, mensagem em vermelho. Se o usuário estiver com o **flag `passwordResetRequired` ativo** (1º acesso ou senha redefinida), após o login é redirecionado para a **tela de criar nova senha** antes de acessar a home. Antes de ir para a home, grava **token, refreshToken e foto** no localStorage (Hive); se optou por **biometria/face ID**, permite login biométrico direto. Há **link para a tela de esqueci senha** e a **foto/nome da barbearia no topo**. A **recuperação de senha** é idêntica ao fluxo do cliente: campo de e-mail obrigatório (mensagem em vermelho se vazio) e envio de link por e-mail, com mensagem informando que o link foi enviado.
+**Tela criar nova senha** (após reset pelo e-mail ou primeiro acesso): campos **nova senha e confirmação de senha**, ambos obrigatórios; a senha deve ter **no mínimo 6 caracteres** e as senhas devem ser **iguais** (mensagens em vermelho em caso de falha). Ao salvar com sucesso, o flag `passwordResetRequired` é desativado e o app direciona para a home com mensagem de sucesso.
 ## 5.2 Tela Home
-- **Header:** foto de perfil à esquerda e ícone de notificações à direita.
-- **Card de boas-vindas.**
-- **4 cards de indicadores:** total de agendamentos, cancelados, em andamento ("fazendo") e concluídos ("feitos").
-- **Todos os agendamentos do dia** do barbeiro.
+- **Header:** foto de perfil à esquerda (→ tela Perfil) e ícone de notificações à direita (→ tela Notificações).
+- **Card de boas-vindas** com o nome do barbeiro e o **nome/logo da barbearia**.
+- **4 cards de indicadores** (total de agendamentos, cancelados, em andamento "fazendo" e concluídos "feitos"): **clicáveis**, filtram a listagem da tela Agendamentos pelo status correspondente.
+- **Todos os agendamentos do dia** do barbeiro, com horário, cliente (nome), serviço e status, em ordem de horário.
 - **Footer de navegação:** Home, Agendamentos e Perfil.
 ## 5.3 Tela Perfil
-Foto de perfil ampliada com opção de **editar/remover**, além das informações pessoais com opção de cadastrar e atualizar.
+Foto de perfil ampliada com opção de **editar/remover**, além das informações pessoais com opção de cadastrar e atualizar. Campos de edição: **nome, e-mail, WhatsApp, data de nascimento, foto e CPF**. Nome, e-mail e WhatsApp são obrigatórios (mensagem em vermelho se vazios); e-mail é **chave única** (mensagem em vermelho se já pertencer a outro usuário). A foto pode ser **tirada na câmera ou selecionada da galeria**, com opção de remover. O **CPF não deve ser editável pelo próprio usuário** (preenchido apenas pelo admin).
 ## 5.4 Tela Agendamentos
-- **Listagem** dos agendamentos vinculados ao ID do usuário logado (regra transversal: sempre filtrar pelo usuário logado).
-- **Filtragem** dos agendamentos do usuário logado.
+- **Listagem** dos agendamentos vinculados ao ID do usuário logado (regra transversal: sempre filtrar pelo usuário logado); cada item exibe **data, horário, cliente, serviço e status** (agendado, fazendo, feito, cancelado).
+- **Filtragem** dos agendamentos por **status e por data/período**.
+- No detalhe do agendamento, o barbeiro pode **marcar como fazendo** (quando agendado) e **marcar como feito** (quando estiver fazendo); opcionalmente pode cancelar. Ao marcar como fazendo, **notifica o admin**; ao marcar como feito, **notifica o cliente e o admin**. Agendamentos cancelados pelo cliente aparecem na listagem com status cancelado.
+
+## 5.5 Tela Notificações
+- **Listagem** das notificações recebidas pelo barbeiro.
+- **Marcar como lida** ao clicar na notificação.
+- **Excluir** uma notificação.
+- Recebe notificações automaticamente de **novos agendamentos, cancelamentos e conclusões da própria agenda**.
 # 6. Requisitos Funcionais — App Mobile (Barbeiro Admin) 
 > **Regra de segurança:** todas as telas do barbeiro admin devem **sempre usar o ID do usuário logado** para exibir e buscar informações de agendamentos, e as operações de gestão (serviços, barbeiros) ficam restritas ao papel de admin da barbearia.
 ## 6.1 Autenticação
-Idêntica ao barbeiro não admin: login exclusivamente com **e-mail e senha**, ambos obrigatórios, e recuperação de senha por link enviado ao e-mail (sem login social — Google OAuth não será implementado).
+Idêntica ao barbeiro não admin: login exclusivamente com **e-mail e senha**, ambos obrigatórios (mensagem em vermelho se vazios; credenciais erradas: mensagem em vermelho), e recuperação de senha por link enviado ao e-mail (sem login social — Google OAuth não será implementado). Se o flag **`passwordResetRequired`** estiver ativo (1º acesso ou senha redefinida), após o login o admin é redirecionado para a **tela de criar nova senha** (nova senha + confirmação, mínimo 6 caracteres, senhas iguais; ao salvar, desativa o flag e direciona para a home). Antes da home, grava **token, refreshToken e foto** no localStorage (Hive); se optou, permite **biometria/face ID**. Há link para esqueci senha e a **foto/nome da barbearia no topo**.
 
 **Campos dos formulários:**
 
@@ -121,14 +140,15 @@ Idêntica ao barbeiro não admin: login exclusivamente com **e-mail e senha**, a
 | **Esqueci a senha** | `email` |
 | **Cadastro (admin — via painel Web; o admin não se cadastra no App)** | `name`, `email`, `password`, `passwordConfirm`, `whatsApp`, `acceptTerms` |
 ## 6.2 Tela Home
-- **Header:** foto de perfil à esquerda e ícone de notificações à direita.
-- **Card de boas-vindas.**
-- **4 cards de indicadores:** total, cancelados, fazendo e feitos.
-- **Todos os agendamentos do dia.**
+- **Header:** foto de perfil à esquerda (→ tela Perfil) e ícone de notificações à direita (→ tela Notificações).
+- **Card de boas-vindas** com o nome do admin e o **nome/logo da barbearia**.
+- **4 cards de indicadores** (total, cancelados, fazendo e feitos): **clicáveis**, filtram a listagem da tela Agendamentos pelo status correspondente.
+- **Todos os agendamentos do dia**, com horário, cliente, serviço, **barbeiro responsável** e status, em ordem de horário.
 - **Footer de navegação:** Home, Agendamentos, **Serviços**, **Barbeiros** e Perfil.
 ## 6.3 Tela Agendamentos
-- **Listagem** dos agendamentos.
-- **Filtragem** dos agendamentos.
+- **Listagem** dos agendamentos; cada item exibe **data, horário, cliente, serviço, barbeiro responsável e status**.
+- **Filtragem** por **status, barbeiro e data/período**.
+- No detalhe do agendamento o admin pode **editar (data/horário/barbeiro/serviço), cancelar e alterar o status (fazendo/feito)**, conforme a regra de permissão de cada papel.
 ## 6.4 Tela Serviços
 - **Listagem** dos serviços da barbearia.
 - **Adicionar, editar e excluir** serviços.
@@ -138,22 +158,25 @@ Idêntica ao barbeiro não admin: login exclusivamente com **e-mail e senha**, a
 
 | Formulário | Campos |
 | --- | --- |
-| **Adicionar/Editar tipo de serviço** (`services_types`) | `name`, `description`, `duration` (minutos), `value`, `category` |
+| **Adicionar/Editar tipo de serviço** (`services_types`) | `name` (obrigatório), `description`, `duration` (minutos), `value` (obrigatório), `category`, barbeiros que oferecem o serviço (vínculo `services`) |
 | **Adicionar/Editar vínculo barbeiro ↔ serviço** (`services`) | `serviceTypeId` (seletor), `barberId` (seletor), `price` (opcional, sobrescreve o valor base), `commission` (opcional) |
+
+**Regra de edição:** alterar um serviço deve refletir nos **agendamentos futuros** que usam esse serviço, **sem alterar** os agendamentos já finalizados.
 ## 6.5 Tela Barbeiros
 - **Listagem** de todos os barbeiros da barbearia.
 - **Adicionar, editar e excluir** barbeiros.
 - **Filtragem** dos barbeiros.
 - **Envio de e-mail com as credenciais** do novo barbeiro para o primeiro login.
 
-
 **Campos dos formulários de barbeiro** (mapeiam a collection `users`):
 
 | Formulário | Campos |
 | --- | --- |
-| **Adicionar/Editar barbeiro** | `name`, `email`, `cpf`, `whatsApp` |
+| **Adicionar/Editar barbeiro** | `name` (obrigatório), `email` (obrigatório, chave única), `cpf`, `whatsApp` (obrigatório), `photo` (câmera/galeria), `role` (admin ou barbeiro comum em `users`), `active` |
 | **Login do barbeiro** | `email`, `password` |
 | **Esqueci a senha** | `email` |
+
+**Regras:** na criação, a API gera a **senha temporária** e envia por **e-mail junto com o link de acesso**, ativando o flag `passwordResetRequired` (obrigatório criar nova senha no primeiro login). Ao **desativar** um barbeiro (`active = false`), ele não perde o histórico de agendamentos e não consegue mais acessar o App.
 ## 6.6 Tela Perfil
 Foto de perfil ampliada com opção de editar/remover e informações pessoais com opção de cadastrar e atualizar.
 
@@ -161,7 +184,16 @@ Foto de perfil ampliada com opção de editar/remover e informações pessoais c
 
 | Formulário | Campos |
 | --- | --- |
-| **Editar perfil** | `photo` (upload/remoção), `name`, `email` (somente leitura), `whatsApp` |
+| **Editar perfil** | `photo` (upload/remoção), `name`, `email` (chave única), `whatsApp`, `birthDate` |
+
+## 6.7 Tela Notificações
+- **Listagem** das notificações recebidas pelo admin.
+- **Marcar como lida** ao clicar na notificação.
+- **Excluir** uma notificação.
+- Recebe notificações automaticamente de **todos os agendamentos da barbearia** (marcados, cancelados e finalizados), além de **eventos de assinatura e bloqueio da barbearia**.
+
+## 6.8 Configurações do App
+- O app deve ter **modo escuro e claro**.
 # 7. Requisitos Funcionais — Plataforma Web (Admin / Dono da Barbearia) 
 ## 7.1 Requisitos gerais do Web
 As seguintes regras transversais foram definidas no cartão "Requisitos/Tela do Web" e aplicam-se a toda a plataforma:
