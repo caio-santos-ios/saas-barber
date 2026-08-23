@@ -82,7 +82,6 @@ export class Schedules implements OnInit {
 
   formatTimeSpanToTime(timeSpan: string): string {
     if (!timeSpan) return '00:00';
-    // TimeSpan from backend comes as "09:00:00"
     return timeSpan.substring(0, 5);
   }
 
@@ -129,7 +128,6 @@ export class Schedules implements OnInit {
 
     try {
       const barbershopId = localStorage.getItem('barbershopId');
-      
       const payload: any = {
         barberId: this.formData.barberId,
         day: Number(this.formData.day),
@@ -143,7 +141,7 @@ export class Schedules implements OnInit {
       if (this.isEditing) {
         await api.put(`/schedules/${this.formData.id}?barbershopId=${barbershopId}`, payload);
       } else {
-        await api.post(`/schedules?barbershopId=${barbershopId}`, payload);
+        await api.post(`/schedules`, payload);
       }
       
       this.toastr.success('Escala salva com sucesso!', 'Sucesso');

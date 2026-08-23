@@ -19,15 +19,19 @@ export class Barbers implements OnInit {
   
   isModalOpen = false;
   isDeleteModalOpen = false;
+  isPasswordModalOpen = false;
   isEditing = false;
   barberToDelete: any = null;
+  barberToChangePassword: any = null;
+  newPassword = '';
   
   formData = {
     id: '',
     name: '',
     email: '',
     whatsApp: '',
-    document: ''
+    document: '',
+    password: ''
   };
 
   constructor(
@@ -43,8 +47,7 @@ export class Barbers implements OnInit {
     this.loading = true;
     this.cdr.detectChanges();
     try {
-      const barbershopId = localStorage.getItem('barbershopId');
-      const response = await api.get(`/users?role=Barber&barbershopId=${barbershopId}`);
+      const response = await api.get(`/users/barbers`);
       this.barbers = response.data.data || [];
     } catch (err) {
       console.error('Erro ao carregar profissionais', err);
@@ -62,11 +65,12 @@ export class Barbers implements OnInit {
         name: barber.name,
         email: barber.email,
         whatsApp: barber.whatsApp || '',
-        document: barber.document || ''
+        document: barber.document || '',
+        password: ''
       };
     } else {
       this.isEditing = false;
-      this.formData = { id: '', name: '', email: '', whatsApp: '', document: '' };
+      this.formData = { id: '', name: '', email: '', whatsApp: '', document: '', password: '' };
     }
     this.isModalOpen = true;
   }
@@ -85,7 +89,8 @@ export class Barbers implements OnInit {
     const phoneValid = phone.replace(/\D/g, '').length >= 10;
     const nameValid = name.trim().length >= 2;
     const docValid = doc.replace(/\D/g, '').length === 11 || doc === '';
-    return emailValid && phoneValid && nameValid && docValid;
+    const passwordValid = this.isEditing || this.formData.password.length >= 6;
+    return emailValid && phoneValid && nameValid && docValid && passwordValid;
   }
 
   async saveBarber() {
@@ -97,7 +102,7 @@ export class Barbers implements OnInit {
       const barbershopId = localStorage.getItem('barbershopId');
       const payload: any = {
         ...this.formData,
-        role: 1, 
+        role: 'Barber',
         barbershopId: barbershopId
       };
 
@@ -106,8 +111,12 @@ export class Barbers implements OnInit {
       }
 
       if (this.isEditing) {
+        delete payload.password;
         await api.put(`/users/${this.formData.id}?barbershopId=${barbershopId}`, payload);
       } else {
+        if (payload.password) {
+          payload.password = payload.password;
+        }
         await api.post(`/users?barbershopId=${barbershopId}`, payload);
       }
       
@@ -145,6 +154,36 @@ export class Barbers implements OnInit {
     } catch (err) {
       console.error('Erro ao excluir profissional', err);
       this.toastr.error('Erro ao excluir profissional. Tente novamente.', 'Erro');
+    } finally {
+      this.cdr.detectChanges();
+    }
+  }
+
+  openPasswordModal(barber: any) {
+    this.barberToChangePassword = barber;
+    this.newPassword = '';
+    this.isPasswordModalOpen = true;
+  }
+
+  closePasswordModal() {
+    this.isPasswordModalOpen = false;
+    this.barberToChangePassword = null;
+    this.newPassword = '';
+  }
+
+  async savePassword() {
+    if (this.newPassword.length < 6) {
+      this.toastr.warning('A senha deve ter pelo menos 6 caracteres.', 'Atenção');
+      return;
+    }
+    try {
+      const barbershopId = localStorage.getItem('barbershopId');
+      await api.patch(`/users/${this.barberToChangePassword.id}/password?barbershopId=${barbershopId}`, { password: this.newPassword });
+      this.toastr.success('Senha alterada com sucesso!', 'Sucesso');
+      this.closePasswordModal();
+    } catch (err) {
+      console.error('Erro ao alterar senha', err);
+      this.toastr.error('Erro ao alterar senha. Tente novamente.', 'Erro');
     } finally {
       this.cdr.detectChanges();
     }

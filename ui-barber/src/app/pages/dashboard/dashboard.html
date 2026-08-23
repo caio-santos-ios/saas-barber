@@ -98,10 +98,22 @@
         <tbody>
           <tr *ngFor="let apt of appointments">
             <td style="vertical-align: middle; font-weight: 500;">{{ apt.date | date:'dd/MM/yyyy' }} às {{ apt.hour }}</td>
-            <td style="vertical-align: middle;">{{ apt.customerName }}</td>
-            <td style="vertical-align: middle;">{{ apt.barberName }}</td>
             <td style="vertical-align: middle;">
-              <span class="status-badge" [ngClass]="{'active': apt.status === 2, 'danger': apt.status === 4}">{{ apt.status }}</span>
+              <div style="font-weight: 600; color: var(--text-main);">{{ apt.customerName }}</div>
+            </td>
+            <td style="vertical-align: middle;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div style="width: 28px; height: 28px; background: var(--accent-primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: bold; flex-shrink: 0;">
+                  {{ apt.barberName?.charAt(0)?.toUpperCase() }}
+                </div>
+                <span style="color: var(--text-main); font-weight: 500;">{{ apt.barberName }}</span>
+              </div>
+            </td>
+            <td style="vertical-align: middle;">
+              <span class="status-badge"
+                [class.active]="apt.statusRaw === 0 || apt.statusRaw === 1"
+                [class.inactive]="apt.statusRaw === 3"
+                [class.cancelled]="apt.statusRaw === 2">{{ apt.statusLabel }}</span>
             </td>
           </tr>
           <tr *ngIf="appointments.length === 0">

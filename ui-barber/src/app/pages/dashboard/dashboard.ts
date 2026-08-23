@@ -42,14 +42,35 @@ export class Dashboard implements OnInit {
     const barbershopId = localStorage.getItem('barbershopId') || '';
     Promise.all([
       api.get(`/appointments?barbershopId=${barbershopId}`),
-      api.get(`/web/dashboard?barbershopId=${barbershopId}&startDate=${this.startDate}T00:00:00Z&endDate=${this.endDate}T23:59:59Z`)
-    ]).then(([appointmentsRes, metricsRes]) => {
+      api.get(`/web/dashboard?barbershopId=${barbershopId}&startDate=${this.startDate}&endDate=${this.endDate}`),
+      api.get(`/users?barbershopId=${barbershopId}`)
+    ]).then(([appointmentsRes, metricsRes, usersRes]) => {
       this.ngZone.run(() => {
-        const statusMap: any = { 0: 'Marcado', 1: 'Concluído', 2: 'Cancelado' };
-        this.appointments = (appointmentsRes.data?.data || []).map((apt: any) => ({
-          ...apt,
-          status: statusMap[apt.status] || apt.status
-        }));
+        const users: any[] = usersRes.data?.data || [];
+        const userMap: Record<string, string> = Object.fromEntries(
+          users.map((u: any) => [u.id, u.name])
+        );
+
+        const statusMap: any = { 0: 'Agendado', 1: 'Agendado', 2: 'Cancelado', 3: 'Concluído' };
+        const rawApts: any[] = appointmentsRes.data?.data || [];
+
+        const start = new Date(this.startDate + 'T00:00:00');
+        const end = new Date(this.endDate + 'T23:59:59');
+
+        this.appointments = rawApts
+          .filter((apt: any) => {
+            const d = new Date(apt.date);
+            return d >= start && d <= end;
+          })
+          .map((apt: any) => ({
+            ...apt,
+            barberName: userMap[apt.barberId] || apt.barberName || '-',
+            customerName: userMap[apt.customerId] || apt.customerName || '-',
+            statusLabel: statusMap[apt.status] ?? apt.status,
+            statusRaw: apt.status
+          }))
+          .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
         this.metrics = metricsRes.data?.data || null;
         this.loading = false;
 

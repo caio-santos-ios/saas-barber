@@ -40,16 +40,30 @@ export class Agenda implements OnInit {
     try {
       const barbershopId = localStorage.getItem('barbershopId');
 
-      const res = await api.get(`/appointments?barbershopId=${barbershopId}`);
+      const [aptsRes, usersRes] = await Promise.all([
+        api.get(`/appointments?barbershopId=${barbershopId}`),
+        api.get(`/users?barbershopId=${barbershopId}`)
+      ]);
+
+      const users: any[] = usersRes.data.data || [];
+      const userMap: Record<string, string> = Object.fromEntries(
+        users.map((u: any) => [u.id, u.name])
+      );
 
       const dateString = this.selectedDate.toISOString().split('T')[0];
-      
-      const statusMap: any = { 0: 'Marcado', 1: 'Concluído', 2: 'Cancelado' };
-      this.appointments = (res.data.data || [])
+      const statusMap: any = { 0: 'Agendado', 1: 'Agendado', 2: 'Cancelado', 3: 'Concluído' };
+
+      this.appointments = (aptsRes.data.data || [])
         .filter((apt: any) => apt.date.startsWith(dateString))
-        .map((apt: any) => ({ ...apt, status: statusMap[apt.status] || apt.status }))
+        .map((apt: any) => ({
+          ...apt,
+          barberName: userMap[apt.barberId] || apt.barberName || '-',
+          customerName: userMap[apt.customerId] || apt.customerName || '-',
+          statusLabel: statusMap[apt.status] ?? apt.status,
+          statusRaw: apt.status
+        }))
         .sort((a: any, b: any) => a.hour.localeCompare(b.hour));
-        
+
       this.cdr.detectChanges();
     } catch (err) {
       console.error('Erro ao carregar agendamentos', err);

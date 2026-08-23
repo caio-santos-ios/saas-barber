@@ -1,0 +1,311 @@
+import 'dart:convert';
+import 'package:app_barber/pages/services/barber_service.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive/hive.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:app_barber/pages/auth/login_page.dart';
+import 'package:app_barber/api/api_client.dart';
+import 'package:app_barber/models/user.dart';
+import 'package:app_barber/providers/theme_provider.dart';
+import 'package:brasil_fields/brasil_fields.dart';
+import 'package:flutter/services.dart';
+
+class CustomerProfilePage extends ConsumerStatefulWidget {
+  const CustomerProfilePage({super.key});
+
+  @override
+  ConsumerState<CustomerProfilePage> createState() => _CustomerProfilePageState();
+}
+
+class _CustomerProfilePageState extends ConsumerState<CustomerProfilePage> {
+  final BarberService barberService = BarberService();
+  
+  final ApiClient _apiClient = ApiClient();
+  bool _isLoading = true;
+  bool _isSaving = false;
+  
+  String _userId = '';
+  String _barbershopId = '';
+  
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _whatsappController = TextEditingController();
+  
+  String _photo = '';
+  bool _useBiometrics = false;
+
+  @override
+  void initState() {
+    super.initState();
+    print(barberService.getUserId());
+    _loadProfile();
+  }
+
+  void _loadProfile() async {
+    final authBox = Hive.box('auth');
+    _photo = authBox.get('photo', defaultValue: '');
+    
+    _useBiometrics = Hive.box('settings').get('biometrics', defaultValue: false);
+
+    try {        
+      final response = await _apiClient.dio.get('/users/${barberService.getUserId()}');
+
+      if (response.statusCode == 200 && response.data['data'] != null) {
+        final user = User.fromJson(response.data['data']);
+        _nameController.text = user.name;
+        _emailController.text = user.email;
+        _whatsappController.text = user.whatsapp;
+      }
+    } catch (e) {}
+
+    if (mounted) setState(() => _isLoading = false);
+  }
+
+  Future<void> _saveProfile() async {
+    if (_userId.isEmpty || _barbershopId.isEmpty) return;
+    
+    setState(() => _isSaving = true);
+    try {
+      final response = await _apiClient.dio.put('/users/$_userId?barbershopId=$_barbershopId', data: {
+        'id': _userId,
+        'name': _nameController.text,
+        'email': _emailController.text,
+        'whatsapp': _whatsappController.text,
+        'photo': _photo,
+        'role': 'Customer',
+        'barbershopId': _barbershopId
+      });
+      
+      if (response.statusCode == 200) {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Perfil atualizado com sucesso!'), backgroundColor: Colors.green));
+      } else {
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro ao atualizar perfil: ${response.statusCode} - ${response.data}'), backgroundColor: Colors.red));
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro de conexão ao atualizar: $e'), backgroundColor: Colors.red));
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
+  }
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    try {
+      final pickedFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 70,
+      );
+
+      if (pickedFile != null) {
+        final bytes = await pickedFile.readAsBytes();
+        final base64String = base64Encode(bytes);
+        setState(() {
+          _photo = 'data:image/jpeg;base64,$base64String';
+        });
+        
+        await _saveProfile();
+        Hive.box('auth').put('photo', _photo);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro ao selecionar imagem: $e'), backgroundColor: Colors.red));
+      }
+    }
+  }
+
+  ImageProvider? _getProfileImage() {
+    if (_photo.isEmpty) return null;
+    if (_photo.startsWith('http')) return NetworkImage(_photo);
+    if (_photo.startsWith('data:image')) {
+      try {
+        final base64Str = _photo.split(',').last;
+        return MemoryImage(base64Decode(base64Str));
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  Future<void> _logout() async {
+    final authBox = Hive.box('auth');
+    await authBox.delete('token');
+    await authBox.delete('refreshToken');
+    await authBox.delete('role');
+    await authBox.delete('barbershopId');
+    await authBox.delete('photo');
+    
+    if (mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const LoginPage()), 
+        (route) => false
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Perfil', style: TextStyle(color: Theme.of(context).textTheme.titleLarge?.color)),
+        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        iconTheme: IconThemeData(color: Theme.of(context).iconTheme.color),
+      ),
+      body: _isLoading ? const Center(child: CircularProgressIndicator()) : SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          children: [
+            Center(
+              child: GestureDetector(
+                onTap: _pickImage,
+                child: Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 50,
+                      backgroundColor: Theme.of(context).dividerColor,
+                      backgroundImage: _getProfileImage(),
+                      child: _photo.isEmpty ? Icon(Icons.person, size: 50, color: Theme.of(context).iconTheme.color) : null,
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.black,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
+            _buildTextField('Nome', _nameController),
+            const SizedBox(height: 16),
+            _buildTextField('E-mail', _emailController, keyboardType: TextInputType.emailAddress),
+            const SizedBox(height: 16),
+            _buildTextField(
+              'WhatsApp', 
+              _whatsappController,
+              keyboardType: TextInputType.phone,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                TelefoneInputFormatter(),
+              ],
+            ),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: _isSaving ? null : _saveProfile,
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: _isSaving 
+                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)) 
+                  : const Text('Salvar Alterações'),
+            ),
+            const SizedBox(height: 32),
+            Material(
+              color: Theme.of(context).cardColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: Theme.of(context).dividerColor),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Consumer(
+                builder: (context, ref, child) {
+                  final themeMode = ref.watch(themeModeProvider("theme_mode"));
+                  return SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Tema Escuro', style: TextStyle(fontWeight: FontWeight.w500)),
+                    subtitle: const Text('Alternar entre claro e escuro', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                    value: themeMode == "dark",
+                    onChanged: (val) {
+                      final newTheme = val ? "dark" : "light";
+                      ref.read(themeModeProvider("theme_mode").notifier).state = newTheme;
+                      Hive.box('settings').put('theme_mode', newTheme);
+                    },
+                    activeColor: Theme.of(context).colorScheme.primary,
+                  );
+                }
+              ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Material(
+              color: Theme.of(context).cardColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: Theme.of(context).dividerColor),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Autenticação Biométrica', style: TextStyle(fontWeight: FontWeight.w500)),
+                subtitle: const Text('Face ID / Touch ID', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                value: _useBiometrics,
+                onChanged: (val) {
+                  setState(() => _useBiometrics = val);
+                  Hive.box('settings').put('biometrics', val);
+                },
+                activeColor: Theme.of(context).colorScheme.primary,
+              ),
+              ),
+            ),
+            const SizedBox(height: 48),
+            ElevatedButton(
+              onPressed: _logout,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red[50],
+                foregroundColor: Colors.red,
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 0,
+              ),
+              child: const Text('Sair do Aplicativo', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+            const SizedBox(height: 100),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(String label, TextEditingController controller, {TextInputType? keyboardType, List<TextInputFormatter>? inputFormatters}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Theme.of(context).cardColor,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Theme.of(context).dividerColor),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: Theme.of(context).dividerColor),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          ),
+        ),
+      ],
+    );
+  }
+}
