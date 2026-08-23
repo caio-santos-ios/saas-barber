@@ -11,10 +11,13 @@ namespace api_barber.Controllers
     public class DashboardController(IDashboardService service) : ControllerBase
     {
         [HttpGet]
-        public async Task<IActionResult> GetMetrics([FromQuery] DashboardQueryRequest query, [FromQuery] string barbershopId)
+        public async Task<IActionResult> GetMetrics([FromQuery] DashboardQueryRequest query)
         {
+            string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
             ResponseApi<DashboardMetricsResponse> response = await service.GetMetricsAsync(barbershopId, query);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
     }
 }
+
+

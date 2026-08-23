@@ -12,23 +12,28 @@ namespace api_barber.Controllers
     public class SubscriptionController(ISubscriptionService subscriptionService) : ControllerBase
     {
         [HttpPost("checkout")]
-        public async Task<IActionResult> Checkout([FromBody] CheckoutRequest request, [FromQuery] string barbershopId)
+        public async Task<IActionResult> Checkout([FromBody] CheckoutRequest request)
         {
+            string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
             var response = await subscriptionService.CheckoutAsync(request, barbershopId);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
         [HttpGet("invoices")]
-        public async Task<IActionResult> GetInvoices([FromQuery] string barbershopId)
+        public async Task<IActionResult> GetInvoices()
         {
+            string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
             var response = await subscriptionService.GetHistoryAsync(barbershopId);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
 
         [HttpDelete("cancel")]
-        public async Task<IActionResult> Cancel([FromQuery] string barbershopId)
+        public async Task<IActionResult> Cancel()
         {
+            string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
             var response = await subscriptionService.CancelAsync(barbershopId);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
     }
 }
+
+

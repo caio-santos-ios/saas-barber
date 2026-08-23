@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using api_barber.Models.Enums;
@@ -19,6 +19,7 @@ namespace api_barber.Models
         public DateTime? DateOfBirth { get; set; }
         [BsonElement("password")]
         public string Password { get; set; } = string.Empty;
+        public string? TokenFCM { get; set; }
         [BsonElement("firebase_uid")]
         public string FirebaseUid { get; set; } = string.Empty;
         [BsonElement("photo")]
@@ -33,4 +34,5 @@ namespace api_barber.Models
         public bool Active { get; set; } = true;
     }
 }
+
 
