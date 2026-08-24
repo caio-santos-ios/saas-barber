@@ -1,8 +1,6 @@
 using api_barber.Models;
 using api_barber.Requests.ServiceType;
 using api_barber.src.Requests;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 namespace api_barber.Interfaces
 {
     public interface IServiceTypeService

@@ -1,6 +1,5 @@
 using api_barber.Infrastructures;
 using api_barber.Interfaces;
-using api_barber.Repositories;
 using api_barber.Services;
 using api_barber.src.Interfaces;
 using api_barber.src.Repositories;
@@ -10,8 +9,10 @@ var builder = WebApplication.CreateBuilder(args);
 DotNetEnv.Env.Load();
 builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddControllers();
-if (System.IO.File.Exists("firebase-service-account.json")) {
-    FirebaseAdmin.FirebaseApp.Create(new FirebaseAdmin.AppOptions {
+if (System.IO.File.Exists("firebase-service-account.json"))
+{
+    FirebaseAdmin.FirebaseApp.Create(new FirebaseAdmin.AppOptions
+    {
         Credential = Google.Apis.Auth.OAuth2.GoogleCredential.FromFile("firebase-service-account.json")
     });
 }
@@ -27,9 +28,9 @@ builder.Services.AddCors(options =>
     });
 });
 builder.Services.AddOpenApi();
-builder.Services.AddSingleton<MongoDB.Driver.IMongoClient>(s => 
+builder.Services.AddSingleton<MongoDB.Driver.IMongoClient>(s =>
     new MongoDB.Driver.MongoClient(builder.Configuration.GetConnectionString("MongoDbConnection")));
-builder.Services.AddScoped<MongoDB.Driver.IMongoDatabase>(s => 
+builder.Services.AddScoped<MongoDB.Driver.IMongoDatabase>(s =>
     s.GetRequiredService<MongoDB.Driver.IMongoClient>().GetDatabase(builder.Configuration["DatabaseSettings:DatabaseName"] ?? "SaaSBarbearia"));
 builder.Services.AddSingleton<AppDbContext>();
 builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();

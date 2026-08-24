@@ -50,7 +50,8 @@ namespace api_barber.Services
                 nextDueDate = System.DateTime.Now.AddDays(30).ToString("yyyy-MM-dd"),
                 cycle = "MONTHLY",
                 description = "Assinatura Plano " + planId,
-                creditCard = creditCard != null ? new {
+                creditCard = creditCard != null ? new
+                {
                     holderName = creditCard.HolderName,
                     number = creditCard.Number,
                     expiryMonth = creditCard.ExpiryMonth,

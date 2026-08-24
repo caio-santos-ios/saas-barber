@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using System.Threading.Tasks;
-namespace api_barber.Middlewares
+﻿namespace api_barber.Middlewares
 {
     public class TenantAndPlanMiddleware
     {

@@ -1,5 +1,3 @@
-using System;
-
 namespace api_barber.Requests.Dashboard
 {
     public class DashboardQueryRequest

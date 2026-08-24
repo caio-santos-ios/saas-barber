@@ -4,9 +4,6 @@ using api_barber.Models;
 using api_barber.src.Interfaces;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 namespace api_barber.src.Repositories
 {
     public class PlanRepository(AppDbContext appDbContext) : IPlanRepository
@@ -21,7 +18,7 @@ namespace api_barber.src.Repositories
         {
             return await appDbContext.Plans.Find(x => !x.Deleted && x.Id.Equals(id)).FirstOrDefaultAsync();
         }
-        public async Task<List<Plan>> GetAllEntitiesAsync(string barbershopId) { return await appDbContext.Plans.Find(x => !x.Deleted ).ToListAsync(); }
+        public async Task<List<Plan>> GetAllEntitiesAsync(string barbershopId) { return await appDbContext.Plans.Find(x => !x.Deleted).ToListAsync(); }
         public async Task<Plan> CreateAsync(Plan entity)
         {
             await appDbContext.Plans.InsertOneAsync(entity);

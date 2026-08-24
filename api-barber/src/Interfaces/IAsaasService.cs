@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 namespace api_barber.Interfaces
 {
     public interface IAsaasService

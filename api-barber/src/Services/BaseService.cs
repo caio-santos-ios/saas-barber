@@ -1,6 +1,4 @@
 ﻿using api_barber.Interfaces;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using api_barber.Models;
 namespace api_barber.Services
 {

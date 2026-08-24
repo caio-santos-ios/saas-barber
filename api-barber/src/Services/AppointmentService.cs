@@ -8,15 +8,68 @@ using api_barber.src.Interfaces;
 using api_barber.src.Requests;
 using api_barber.src.Utils;
 using api_barber.Models.Enums;
+using MongoDB.Bson;
+using System.Linq;
 
 namespace api_barber.Services
 {
     public class AppointmentService(
         IAppointmentRepository repository,
-        IScheduleRepository scheduleRepository,
-        IUserRepository userRepository) : IAppointmentService
+        IScheduleRepository scheduleRepository) : IAppointmentService
     {
-#region READ
+        #region READ
+        public async Task<ResponseApi<List<dynamic>>> GetAllAsync(string barbershopId)
+        {
+            try
+            {
+                List<BsonDocument> pipeline =
+                [
+                    new("$match", new BsonDocument
+                    {
+                        {"deleted", false},
+                        {"barbershopId", barbershopId}
+                    }),
+                    new("$project", new BsonDocument
+                    {
+                        {"_id", 0},
+                        {"id", new BsonDocument("$toString", "$_id")},
+                        {"date", 1},
+                        {"hour", 1},
+                        {"customerName", 1},
+                        {"customerPhone", 1},
+                        {"barberName", 1},
+                        {"serviceName", 1},
+                        {"price", 1},
+                        {"status", 1}
+                    }),
+                    new("$sort", new BsonDocument { { "createdAt", -1 } } )
+                ];
+
+                List<dynamic> list = await repository.GetAllAsync(pipeline);
+
+                return new(list, 200, "Agendamentos listados com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
+            }
+        }
+
+        public async Task<ResponseApi<Appointment>> GetByIdAsync(string id)
+        {
+            try
+            {
+                Appointment entity = await repository.GetByIdAsync(id);
+                if(entity is null) return new(null, 404, "Agendamento não encontrado");
+                
+                return new(entity, 200, "Agendamento buscado com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
+            }
+        }
+
         public async Task<ResponseApi<List<string>>> GetAvailableSlotsAsync(string barberId, DateTime date, string barbershopId)
         {
             try
@@ -27,8 +80,8 @@ namespace api_barber.Services
                 
                 if (schedule == null) return new(new List<string>(), 200, "Nenhuma escala para este dia.");
 
-                var appointmentsResponse = await repository.GetByBarberAndDateAsync(barberId, date, barbershopId);
-                var existingAppointments = appointmentsResponse.Data?.Where(a => a.Status != AppointmentStatusEnum.Cancelado).ToList() ?? new List<Appointment>();
+                var existingAppointments = await repository.GetByBarberAndDateAsync(barberId, date, barbershopId);
+                var validAppointments = existingAppointments.Where(a => a.Status != AppointmentStatusEnum.Cancelado).ToList();
 
                 var availableSlots = new List<string>();
                 var currentTime = schedule.StartHour;
@@ -36,7 +89,7 @@ namespace api_barber.Services
                 while (currentTime < schedule.EndHour)
                 {
                     string timeString = currentTime.ToString(@"hh\:mm");
-                    if (!existingAppointments.Any(a => a.Hour == timeString))
+                    if (!validAppointments.Any(a => a.Hour == timeString))
                     {
                         availableSlots.Add(timeString);
                     }
@@ -45,126 +98,78 @@ namespace api_barber.Services
 
                 return new(availableSlots, 200, "Slots obtidos com sucesso");
             }
-            catch
+            catch (Exception ex)
             {
-                return new (null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
+                return new (null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
             }
         }
-
-        public async Task<ResponseApi<Appointment>> CreateEntityAsync(Appointment entity) { await repository.CreateAsync(entity); return new(entity, 201, "Criado"); }
+        #endregion
 
         #region CREATE
-        public async Task<ResponseApi<Appointment>> CreateAsync(CreateAppointmentRequest request, string barbershopId)
+        public async Task<ResponseApi<Appointment>> CreateAsync(CreateAppointmentRequest request)
         {
             try
             {
-                var availabilityResponse = await GetAvailableSlotsAsync(request.BarberId, request.Date, barbershopId);
-                if (availabilityResponse.Data == null || !availabilityResponse.Data.Contains(request.Hour))
-                {
-                    return new(null, 400, "Horário indisponível.");
-                }
+                Appointment entity = ObjectMapper.Map<CreateAppointmentRequest, Appointment>(request);
 
-                Appointment appointment = ObjectMapper.Map<CreateAppointmentRequest, Appointment>(request);
-                
-                appointment.Id = MongoDB.Bson.ObjectId.GenerateNewId().ToString();
-                appointment.CreatedAt = DateTime.UtcNow;
-                appointment.Status = AppointmentStatusEnum.Marcado;
-                appointment.Deleted = false;
-                appointment.BarbershopId = barbershopId;
+                Appointment created = await repository.CreateAsync(entity);
+                if(created is null) return new(null, 400, "Falha ao criar agendamento");
 
-                ResponseApi<Appointment> response = await repository.CreateAsync(appointment);
-                return new(appointment, 201, "Agendamento feito com sucesso");
+                return new(created, 201, "Agendamento criado com sucesso");
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
-                return new (null, 500, ex.Message + " " + ex.StackTrace);
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
             }
         }
-
-        public async Task<ResponseApi<List<Appointment>>> GetAllAsync(string barbershopId)
-        {
-            // var response = await repository.GetAllAsync(barbershopId);
-            // if (response.Data == null) return response;
-
-            // var usersResponse = await userRepository.GetAllEntitiesAsync(barbershopId);
-            // var users = usersResponse.Data?.ToList() ?? [];
-
-            // var enriched = response.Data.Select(apt =>
-            // {
-            //     if (string.IsNullOrEmpty(apt.BarberName))
-            //         apt.BarberName = users.FirstOrDefault(u => u.Id == apt.BarberId)?.Name ?? "";
-            //     if (string.IsNullOrEmpty(apt.CustomerName))
-            //         apt.CustomerName = users.FirstOrDefault(u => u.Id == apt.CustomerId)?.Name ?? "";
-            //     return apt;
-            // });
-
-            return new([], 200, "Listagem obtida com sucesso");
-        }
-
-        public async Task<ResponseApi<Appointment>> GetByIdAsync(string id, string barbershopId)
-        {
-            return await repository.GetByIdAsync(id, barbershopId);
-        }
-
-        public async Task<ResponseApi<Appointment>> SoftDeleteAsync(string id, string barbershopId, string deletedBy)
-        {
-            try
-            {
-                var existingResponse = await repository.GetByIdAsync(id, barbershopId);
-                if (existingResponse.Data == null) return new(null, 404, "Agendamento não encontrado");
-
-                Appointment entity = existingResponse.Data;
-                
-                entity.Deleted = true;
-                entity.UpdatedAt = DateTime.UtcNow;
-                entity.UpdatedBy = deletedBy;
-                entity.Status = AppointmentStatusEnum.Cancelado;
-
-                var updateResponse = await repository.UpdateAsync(entity);
-                if (updateResponse.Status == 200)
-                {
-                     return new(null, 200, "Agendamento excluído com sucesso");
-                }
-                return updateResponse;
-            }
-            catch
-            {
-                return new (null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
-            }
-        }
-
         #endregion
 
         #region UPDATE
-        public async Task<ResponseApi<Appointment>> UpdateAsync(UpdateAppointmentStatusRequest request)
+        public async Task<ResponseApi<Appointment>> UpdateAsync(UpdateAppointmentRequest request)
         {
             try
             {
-                var existingResponse = await repository.GetByIdAsync(request.Id, string.Empty);
-                if (existingResponse.Data == null) return new(null, 404, "Registro não encontrado");
+                Appointment existed = await repository.GetByIdAsync(request.Id);
+                if(existed is null) return new(null, 404, "Agendamento não encontrado");
 
-                Appointment entity = existingResponse.Data;
-                
-                entity.Status = request.Status;
-                entity.UpdatedAt = DateTime.UtcNow;
-                
-                if (request.Status == AppointmentStatusEnum.Cancelado)
-                {
-                    entity.CancelNotes = request.CancelNotes;
-                }
+                Appointment entity = ObjectMapper.Map<UpdateAppointmentRequest, Appointment>(request);
+                entity.CreatedAt = existed.CreatedAt;
+                entity.CreatedBy = existed.CreatedBy;
 
-                return await repository.UpdateAsync(entity);
+                Appointment updated = await repository.UpdateAsync(entity);
+                if(updated is null) return new(null, 400, "Falha ao atualizar agendamento");
+
+                return new(updated, 200, "Agendamento atualizado com sucesso");
             }
-            catch
+            catch (Exception ex)
             {
-                return new (null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
             }
         }
-    
         #endregion
-    
+
+        #region DELETE
+        public async Task<ResponseApi<Appointment>> DeleteAsync(DeleteRequest request)
+        {
+            try
+            {
+                Appointment existed = await repository.GetByIdAsync(request.Id);
+                if(existed is null) return new(null, 404, "Agendamento não encontrado");
+
+                existed.Deleted = true;
+                existed.DeletedAt = DateTime.Now;
+                existed.DeletedBy = request.DeletedBy;
+
+                Appointment deleted = await repository.DeleteAsync(existed);
+                if(deleted is null) return new(null, 400, "Falha ao excluir agendamento");
+
+                return new(deleted, 200, "Agendamento excluído com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
+            }
+        }
         #endregion
     }
 }
-

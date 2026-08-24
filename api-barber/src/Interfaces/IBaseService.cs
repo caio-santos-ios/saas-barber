@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using api_barber.Models;
+﻿using api_barber.Models;
 namespace api_barber.Interfaces
 {
     public interface IBaseService<T> where T : ModelBase

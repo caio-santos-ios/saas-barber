@@ -1,5 +1,4 @@
 ﻿using MongoDB.Driver;
-using Microsoft.Extensions.Configuration;
 using api_barber.Models;
 namespace api_barber.Infrastructures
 {

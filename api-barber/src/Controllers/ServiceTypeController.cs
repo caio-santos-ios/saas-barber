@@ -1,9 +1,7 @@
 using api_barber.Interfaces;
-using api_barber.Models;
 using Microsoft.AspNetCore.Mvc;
 using api_barber.src.Requests;
 using api_barber.Requests.ServiceType;
-using System.Threading.Tasks;
 namespace api_barber.Controllers
 {
     [ApiController]

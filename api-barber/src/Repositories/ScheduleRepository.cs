@@ -4,9 +4,6 @@ using api_barber.Models;
 using api_barber.src.Interfaces;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 namespace api_barber.src.Repositories
 {
     public class ScheduleRepository(AppDbContext appDbContext) : IScheduleRepository

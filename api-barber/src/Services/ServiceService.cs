@@ -49,7 +49,7 @@ namespace api_barber.Services
             try
             {
                 var entity = await repository.GetByIdAsync(id);
-                if(entity is null) return new(null, 404, "Não encontrado");
+                if (entity is null) return new(null, 404, "Não encontrado");
                 return new(entity, 200, "Buscado com sucesso");
             }
             catch (Exception ex)
@@ -82,7 +82,7 @@ namespace api_barber.Services
             try
             {
                 var existed = await repository.GetByIdAsync(request.Id);
-                if(existed is null) return new(null, 404, "Não encontrado");
+                if (existed is null) return new(null, 404, "Não encontrado");
                 Service entity = ObjectMapper.Map<UpdateServiceRequest, Service>(request);
                 entity.CreatedAt = existed.CreatedAt;
                 entity.CreatedBy = existed.CreatedBy;
@@ -102,7 +102,7 @@ namespace api_barber.Services
             try
             {
                 var existed = await repository.GetByIdAsync(request.Id);
-                if(existed is null) return new(null, 404, "Não encontrado");
+                if (existed is null) return new(null, 404, "Não encontrado");
                 existed.Deleted = true;
                 existed.DeletedAt = DateTime.Now;
                 existed.DeletedBy = request.DeletedBy;
@@ -114,7 +114,7 @@ namespace api_barber.Services
                 return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
             }
         }
-    
+
         #endregion
     }
 }

@@ -4,14 +4,10 @@ using api_barber.Models;
 using api_barber.Models.Enums;
 using api_barber.Requests.Auth;
 using api_barber.src.Requests;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 namespace api_barber.Services
 {
     public class AuthService : IAuthService
@@ -63,7 +59,7 @@ namespace api_barber.Services
                 var user = userResponse.Data;
                 if (user == null || string.IsNullOrEmpty(user.Password) || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
                 {
-                    return new (null, 401, "E-mail ou senha inválidos.");
+                    return new(null, 401, "E-mail ou senha inválidos.");
                 }
 
                 var barbershopResponse = await _barbershopService.GetByIdAsync(user.BarbershopId);
@@ -78,12 +74,12 @@ namespace api_barber.Services
                     BarbershopId = user.BarbershopId,
                     SubscriptionStatus = subscriptionStatus
                 };
-                return new (authResponse, 200, "Login realizado com sucesso");
+                return new(authResponse, 200, "Login realizado com sucesso");
             }
             catch (Exception ex)
             {
                 Console.WriteLine("LOGIN ERROR: " + ex.ToString());
-                return new (null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
+                return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
             }
         }
         public async Task<ResponseApi<AuthResponse>> RegisterCustomerAsync(CreateCustomerRequest request)
@@ -93,7 +89,7 @@ namespace api_barber.Services
                 var existingUser = await _userService.GetByEmailAsync(request.Email);
                 if (existingUser.Data != null)
                 {
-                    return new (null, 400, "Este e-mail já está cadastrado.");
+                    return new(null, 400, "Este e-mail já está cadastrado.");
                 }
 
                 var user = new User
@@ -101,7 +97,7 @@ namespace api_barber.Services
                     Name = request.Name,
                     Email = request.Email,
                     WhatsApp = request.WhatsApp,
-                    Password = BCrypt.Net.BCrypt.HashPassword(request.Password), 
+                    Password = BCrypt.Net.BCrypt.HashPassword(request.Password),
                     Role = RoleUserEnum.Customer,
                     BarbershopId = request.BarbershopId,
                     Active = true,
@@ -121,11 +117,11 @@ namespace api_barber.Services
                     BarbershopId = user.BarbershopId,
                     SubscriptionStatus = subscriptionStatus
                 };
-                return new (authResponse, 201, "Cadastro realizado com sucesso");
+                return new(authResponse, 201, "Cadastro realizado com sucesso");
             }
             catch
             {
-                return new (null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
+                return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
             }
         }
         public async Task<ResponseApi<AuthResponse>> RegisterAdminAsync(CreateAdminRequest request)
@@ -135,7 +131,7 @@ namespace api_barber.Services
                 var existingUser = await _userService.GetByEmailAsync(request.Email);
                 if (existingUser.Data != null)
                 {
-                    return new (null, 400, "Este e-mail já está cadastrado.");
+                    return new(null, 400, "Este e-mail já está cadastrado.");
                 }
 
                 Enum.TryParse<TypePersonEnum>(request.TypePerson, out var typePerson);
@@ -174,11 +170,11 @@ namespace api_barber.Services
                     BarbershopId = user.BarbershopId,
                     SubscriptionStatus = createdBarbershop.SubscriptionStatus.ToString()
                 };
-                return new (authResponse, 201, "Cadastro de barbearia realizado com sucesso");
+                return new(authResponse, 201, "Cadastro de barbearia realizado com sucesso");
             }
             catch
             {
-                return new (null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
+                return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
             }
         }
         public async Task<ResponseApi<ResetPasswordResponse>> ResetPasswordAsync(string email)

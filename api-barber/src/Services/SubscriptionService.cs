@@ -10,7 +10,7 @@ namespace api_barber.Services
         public async Task<ResponseApi<object>> CheckoutAsync(CheckoutRequest request, string barbershopId)
         {
             if (string.IsNullOrEmpty(barbershopId)) return new(null, 400, "BarbershopId is required");
-            
+
             var barbershops = await barbershopService.GetAllAsync(string.Empty);
             var barbershop = barbershops.Data?.FirstOrDefault(b => b.Id == barbershopId);
             if (barbershop == null) return new(null, 404, "Barbershop not found");
@@ -27,7 +27,8 @@ namespace api_barber.Services
                 await barbershopService.UpdateEntityAsync(barbershop);
             }
 
-            var creditCardHolderInfo = new {
+            var creditCardHolderInfo = new
+            {
                 name = string.IsNullOrEmpty(barbershop.Name) ? "Titular Padrão" : barbershop.Name,
                 email = string.IsNullOrEmpty(barbershop.Email) ? "titular@asaas.com" : barbershop.Email,
                 cpfCnpj = string.IsNullOrEmpty(barbershop.Document) ? "00000000000" : barbershop.Document,
@@ -63,7 +64,7 @@ namespace api_barber.Services
             if (string.IsNullOrEmpty(barbershopId)) return new(null, 400, "BarbershopId is required");
             var barbershops = await barbershopService.GetAllAsync(string.Empty);
             var barbershop = barbershops.Data?.FirstOrDefault(b => b.Id == barbershopId);
-            if (barbershop == null || string.IsNullOrEmpty(barbershop.AsaasCustomerId)) 
+            if (barbershop == null || string.IsNullOrEmpty(barbershop.AsaasCustomerId))
                 return new(null, 404, "Barbershop or Asaas Customer not found");
 
             var invoices = await asaasService.GetInvoicesAsync(barbershop.AsaasCustomerId);
@@ -75,7 +76,7 @@ namespace api_barber.Services
             if (string.IsNullOrEmpty(barbershopId)) return new(null, 400, "BarbershopId is required");
             var barbershops = await barbershopService.GetAllAsync(string.Empty);
             var barbershop = barbershops.Data?.FirstOrDefault(b => b.Id == barbershopId);
-            if (barbershop == null) 
+            if (barbershop == null)
                 return new(null, 404, "Barbershop not found");
 
             if (!string.IsNullOrEmpty(barbershop.AsaasCustomerId))

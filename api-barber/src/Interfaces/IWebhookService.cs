@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using System.Threading.Tasks;
 using api_barber.src.Requests;
 namespace api_barber.Interfaces
 {

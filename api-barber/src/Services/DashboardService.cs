@@ -1,20 +1,16 @@
 using MongoDB.Driver;
 using api_barber.Models;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using api_barber.Interfaces;
 using api_barber.Requests.Dashboard;
-using api_barber.src.Interfaces;
 using api_barber.src.Requests;
 using api_barber.Models.Enums;
 
 namespace api_barber.Services
 {
     public class DashboardService(
-        
-        
-        
+
+
+
         api_barber.Infrastructures.AppDbContext appDbContext) : IDashboardService
     {
         public async Task<ResponseApi<DashboardMetricsResponse>> GetMetricsAsync(string barbershopId, DashboardQueryRequest query)
@@ -38,7 +34,7 @@ namespace api_barber.Services
                     TotalAppointments = periodAppointments.Count,
                     CompletedAppointments = periodAppointments.Count(a => a.Status == AppointmentStatusEnum.Finalizado),
                     CanceledAppointments = periodAppointments.Count(a => a.Status == AppointmentStatusEnum.Cancelado),
-                    InProgressAppointments = 0, 
+                    InProgressAppointments = 0,
                     ConfirmedAppointments = periodAppointments.Count(a => a.Status == AppointmentStatusEnum.Marcado)
                 };
 
@@ -47,7 +43,8 @@ namespace api_barber.Services
 
                 metrics.TopServices = periodAppointments
                     .GroupBy(a => a.ServiceId)
-                    .Select(g => {
+                    .Select(g =>
+                    {
                         var serviceType = allServiceTypes.FirstOrDefault(st => st.Id == g.Key);
                         var fallbackName = g.FirstOrDefault()?.ServiceTypeName;
                         return new RankingItem
@@ -75,7 +72,7 @@ namespace api_barber.Services
             }
             catch
             {
-                return new (null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
+                return new(null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
             }
         }
     }

@@ -1,5 +1,3 @@
-using System;
-
 namespace api_barber.Requests.Subscription
 {
     public class CheckoutRequest

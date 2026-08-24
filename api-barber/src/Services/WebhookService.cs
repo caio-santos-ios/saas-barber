@@ -1,9 +1,7 @@
 using api_barber.Interfaces;
 using api_barber.Models.Enums;
 using api_barber.src.Requests;
-using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
 namespace api_barber.Services
 {
     public class WebhookService(IBarbershopService barbershopService) : IWebhookService

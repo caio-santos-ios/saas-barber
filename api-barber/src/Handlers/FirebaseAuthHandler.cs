@@ -1,5 +1,4 @@
 ﻿using FirebaseAdmin.Auth;
-using System.Threading.Tasks;
 namespace api_barber.Handlers
 {
     public class FirebaseAuthHandler

@@ -1,5 +1,4 @@
-﻿using System;
-using MongoDB.Bson;
+﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 namespace api_barber.Models
 {
@@ -22,7 +21,7 @@ namespace api_barber.Models
 
         [BsonElement("updated_by")]
         public string UpdatedBy { get; set; } = string.Empty;
-       
+
         [BsonElement("deleted_at")]
         public DateTime? DeletedAt { get; set; }
 

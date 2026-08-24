@@ -44,8 +44,8 @@ namespace api_barber.Services
             try
             {
                 User user = await repository.GetByIdAsync(id);
-                if(user is null) return new(null, 404, "Usuário não encontrado");
-                
+                if (user is null) return new(null, 404, "Usuário não encontrado");
+
                 return new(user, 200, "Usuários buscado com sucesso");
             }
             catch (Exception ex)
@@ -58,8 +58,8 @@ namespace api_barber.Services
             try
             {
                 User user = await repository.GetByEmailAsync(email);
-                if(user is null) return new(null, 404, "Usuário não encontrado");
-                
+                if (user is null) return new(null, 404, "Usuário não encontrado");
+
                 return new(user, 200, "Usuários buscado com sucesso");
             }
             catch (Exception ex)
@@ -107,7 +107,7 @@ namespace api_barber.Services
                 User entity = ObjectMapper.Map<CreateUserRequest, User>(request);
 
                 User user = await repository.CreateAsync(entity);
-                if(user is null) return new(null, 400, "Falha ao criar usuário");
+                if (user is null) return new(null, 400, "Falha ao criar usuário");
 
                 return new(user, 201, "Usuário criado com sucesso");
             }
@@ -117,19 +117,19 @@ namespace api_barber.Services
             }
         }
         #endregion
-       
+
         #region UPDATE
         public async Task<ResponseApi<User>> UpdateAsync(UpdateUserRequest request)
         {
             try
             {
                 User existedUser = await repository.GetByIdAsync(request.Id);
-                if(existedUser is null) return new(null, 404, "Usuário não encontrado");
+                if (existedUser is null) return new(null, 404, "Usuário não encontrado");
 
                 User entity = ObjectMapper.Map<UpdateUserRequest, User>(request);
 
                 User user = await repository.UpdateAsync(entity);
-                if(user is null) return new(null, 400, "Falha ao criar usuário");
+                if (user is null) return new(null, 400, "Falha ao criar usuário");
 
                 return new(user, 200, "Usuário atualizado com sucesso");
             }
@@ -139,21 +139,21 @@ namespace api_barber.Services
             }
         }
         #endregion
-       
+
         #region DELETE
         public async Task<ResponseApi<User>> DeleteAsync(DeleteRequest request)
         {
             try
             {
                 User existedUser = await repository.GetByIdAsync(request.Id);
-                if(existedUser is null) return new(null, 404, "Usuário não encontrado");
+                if (existedUser is null) return new(null, 404, "Usuário não encontrado");
 
                 existedUser.Deleted = true;
                 existedUser.DeletedAt = DateTime.Now;
                 existedUser.DeletedBy = request.DeletedBy;
 
                 User user = await repository.DeleteAsync(existedUser);
-                if(user is null) return new(null, 400, "Falha ao criar usuário");
+                if (user is null) return new(null, 400, "Falha ao criar usuário");
 
                 return new(user, 200, "Usuário atualizado com sucesso");
             }

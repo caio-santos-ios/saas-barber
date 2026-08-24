@@ -1,4 +1,3 @@
-using System;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using api_barber.Models.Enums;
@@ -18,7 +17,7 @@ namespace api_barber.Models
         public AppointmentStatusEnum Status { get; set; }
         [BsonElement("barber_id")]
         public string BarberId { get; set; } = string.Empty;
-        
+
         [BsonElement("barber_name")]
         [BsonIgnoreIfNull]
         public string BarberName { get; set; } = string.Empty;

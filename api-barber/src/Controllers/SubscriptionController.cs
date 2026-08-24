@@ -1,9 +1,6 @@
 using api_barber.Interfaces;
-using api_barber.Models.Enums;
 using api_barber.Requests.Subscription;
 using Microsoft.AspNetCore.Mvc;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace api_barber.Controllers
 {

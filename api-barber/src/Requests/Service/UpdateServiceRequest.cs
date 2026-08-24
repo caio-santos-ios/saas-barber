@@ -1,6 +1,4 @@
 using api_barber.src.Requests;
-using api_barber.Models.Enums;
-using System;
 namespace api_barber.Requests.Service
 {
     public class UpdateServiceRequest : RequestBase

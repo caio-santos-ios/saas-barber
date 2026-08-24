@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using api_barber.Requests.Dashboard;
 using api_barber.src.Requests;
 

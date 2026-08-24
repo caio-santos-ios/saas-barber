@@ -1,9 +1,6 @@
 ﻿using api_barber.Interfaces;
 using api_barber.Models;
 using MongoDB.Driver;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 namespace api_barber.Repositories
 {
     public class BaseRepository<T> : IBaseRepository<T> where T : ModelBase
