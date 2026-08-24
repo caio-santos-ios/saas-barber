@@ -1,123 +1,55 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using MongoDB.Driver;
 using api_barber.Infrastructures;
 using api_barber.Models;
 using api_barber.src.Interfaces;
-using api_barber.src.Requests;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 namespace api_barber.src.Repositories
 {
     public class UserRepository(AppDbContext appDbContext) : IUserRepository
     {
-        public async Task<ResponseApi<User>> CreateAsync(User entity)
+        #region READ
+        public async Task<List<dynamic>> GetAllAsync(List<BsonDocument> pipeline)
         {
-            try
-            {
-                entity.CreatedAt = DateTime.UtcNow;
-                await appDbContext.Users.InsertOneAsync(entity);
-                return new(entity, 201, "Registro criado com sucesso");
-            }
-            catch
-            {
-                return new (null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
-            }
+            List<BsonDocument> results = await appDbContext.Users.Aggregate<BsonDocument>(pipeline).ToListAsync();
+            List<dynamic> list = results.Select(doc => BsonSerializer.Deserialize<dynamic>(doc)).ToList();
+            return list;
         }
-        public async Task<ResponseApi<IEnumerable<User>>> GetAllAsync(string barbershopId, string role = null)
+        public async Task<User> GetByIdAsync(string id)
         {
-            try
-            {
-                var filter = Builders<User>.Filter.Eq(e => e.Deleted, false);
-                var prop = typeof(User).GetProperty("BarbershopId");
-                if (prop != null && !string.IsNullOrEmpty(barbershopId))
-                {
-                    filter &= Builders<User>.Filter.Eq("BarbershopId", barbershopId);
-                }
-                if (!string.IsNullOrEmpty(role) && Enum.TryParse(typeof(api_barber.Models.Enums.RoleUserEnum), role, true, out var roleEnum))
-                {
-                    filter &= Builders<User>.Filter.Eq(e => e.Role, (api_barber.Models.Enums.RoleUserEnum)roleEnum);
-                }
-                var result = await appDbContext.Users.Find(filter).ToListAsync();
-                return new(result, 200, "Listagem obtida com sucesso");
-            }
-            catch
-            {
-                return new (null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
-            }
+            return await appDbContext.Users.Find(x => !x.Deleted && x.Id.Equals(id)).FirstOrDefaultAsync();
         }
-        public async Task<ResponseApi<User>> GetByIdAsync(string id, string barbershopId)
+        public async Task<User> GetByEmailAsync(string email)
         {
-            try
-            {
-                var filter = Builders<User>.Filter.Eq(e => e.Id, id) & Builders<User>.Filter.Eq(e => e.Deleted, false);
-                var prop = typeof(User).GetProperty("BarbershopId");
-                if (prop != null && !string.IsNullOrEmpty(barbershopId))
-                {
-                    filter &= Builders<User>.Filter.Eq("BarbershopId", barbershopId);
-                }
-                var entity = await appDbContext.Users.Find(filter).FirstOrDefaultAsync();
-                if (entity == null) return new (null, 404, "Registro nÃ£o encontrado");
-                return new(entity, 200, "Registro obtido com sucesso");
-            }
-            catch
-            {
-                return new (null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
-            }
+            return await appDbContext.Users.Find(x => !x.Deleted && x.Email.Equals(email)).FirstOrDefaultAsync();
         }
-        public async Task<ResponseApi<User>> GetByEmailAsync(string email)
+        public async Task<List<dynamic>> GetBarbersAsync(List<BsonDocument> pipeline)
         {
-            try
-            {
-                var entity = await appDbContext.Users
-                    .Find(e => e.Email == email && e.Deleted == false)
-                    .FirstOrDefaultAsync();
-                if (entity == null) return new (null, 404, "Registro não encontrado");
-                
-                return new(entity, 200, "Registro obtido com sucesso");
-            }
-            catch
-            {
-                return new (null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
-            }
+            List<BsonDocument> results = await appDbContext.Users.Aggregate<BsonDocument>(pipeline).ToListAsync();
+            List<dynamic> list = results.Select(doc => BsonSerializer.Deserialize<dynamic>(doc)).ToList();
+            return list;
         }
-
-        public async Task<ResponseApi<User>> SoftDeleteAsync(string id, string barbershopId, string deletedBy)
+        #endregion
+        #region CREATE
+        public async Task<User> CreateAsync(User entity)
         {
-            try
-            {
-                var filter = Builders<User>.Filter.Eq(e => e.Id, id);
-                var prop = typeof(User).GetProperty("BarbershopId");
-                if (prop != null && !string.IsNullOrEmpty(barbershopId))
-                {
-                    filter &= Builders<User>.Filter.Eq("BarbershopId", barbershopId);
-                }
-                var update = Builders<User>.Update
-                    .Set(e => e.Deleted, true)
-                    .Set(e => e.UpdatedAt, DateTime.UtcNow)
-                    .Set(e => e.UpdatedBy, deletedBy);
-                var result = await appDbContext.Users.UpdateOneAsync(filter, update);
-                if (result.ModifiedCount == 0) return new(null, 404, "Registro nÃ£o encontrado");
-                return new(null, 200, "Registro excluÃ­do com sucesso");
-            }
-            catch
-            {
-                return new (null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
-            }
+            await appDbContext.Users.InsertOneAsync(entity);
+            return entity;
         }
-        public async Task<ResponseApi<User>> UpdateAsync(User entity)
+        #endregion
+        #region UPDATE
+        public async Task<User> UpdateAsync(User entity)
         {
-            try
-            {
-                entity.UpdatedAt = DateTime.UtcNow;
-                var result = await appDbContext.Users.ReplaceOneAsync(e => e.Id == entity.Id, entity);
-                if (result.MatchedCount == 0) return new(null, 404, "Registro nÃ£o encontrado");
-                return new(entity, 200, "Registro atualizado com sucesso");
-            }
-            catch
-            {
-                return new (null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
-            }
+            await appDbContext.Users.ReplaceOneAsync(x => x.Id.Equals(entity.Id), entity);
+            return entity;
         }
+        #endregion
+        #region DELETE
+        public async Task<User> DeleteAsync(User entity)
+        {
+            await appDbContext.Users.ReplaceOneAsync(x => x.Id.Equals(entity.Id), entity);
+            return entity;
+        }
+        #endregion
     }
 }
-

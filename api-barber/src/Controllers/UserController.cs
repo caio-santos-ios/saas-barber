@@ -2,7 +2,7 @@ using api_barber.Interfaces;
 using api_barber.Models;
 using Microsoft.AspNetCore.Mvc;
 using api_barber.src.Requests;
-using System.Threading.Tasks;
+using api_barber.Requests.User;
 namespace api_barber.Controllers
 {
     [ApiController]
@@ -10,43 +10,53 @@ namespace api_barber.Controllers
     public class UserController(IUserService service) : ControllerBase
     {
         [HttpGet]
-        public async Task<IActionResult> GetAll( [FromQuery] string role = null)
+        public async Task<IActionResult> GetAll()
         {
             string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
-            ResponseApi<System.Collections.Generic.IEnumerable<User>> response = await service.GetAllAsync(barbershopId, role);
+            ResponseApi<List<dynamic>> response = await service.GetAllAsync(barbershopId);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
+            ResponseApi<User> response = await service.GetByIdAsync(id);
+            return StatusCode(response.Status, new { response.Data, response.Message });
+        }
+        [HttpGet("barbers")]
+        public async Task<IActionResult> GetBarbers()
+        {
             string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
-            ResponseApi<User> response = await service.GetByIdAsync(id, barbershopId);
+            string role = User.FindFirst("role")?.Value ?? "";
+            ResponseApi<List<dynamic>> response = await service.GetBarbersAsync(barbershopId);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] User request)
+        public async Task<IActionResult> Create([FromBody] CreateUserRequest request)
         {
-            string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
-            if (string.IsNullOrEmpty(request.BarbershopId)) request.BarbershopId = barbershopId;
+            request.BarbershopId = User.FindFirst("barbershopId")?.Value ?? "";
+            request.CreatedBy = User.FindFirst("userId")?.Value ?? "";
             ResponseApi<User> response = await service.CreateAsync(request);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] User request)
+        [HttpPut]
+        public async Task<IActionResult> Update([FromBody] UpdateUserRequest request)
         {
-            string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
-            ResponseApi<User> response = await service.UpdateAsync(id, request, barbershopId);
+            request.BarbershopId = User.FindFirst("barbershopId")?.Value ?? "";
+            request.UpdatedBy = User.FindFirst("userId")?.Value ?? "";
+            ResponseApi<User> response = await service.UpdateAsync(request);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
-            ResponseApi<User> response = await service.SoftDeleteAsync(id, barbershopId, "admin");
+            string userId = User.FindFirst("userId")?.Value ?? "";
+            DeleteRequest request = new()
+            {
+                Id = id,
+                DeletedBy = userId
+            };
+            ResponseApi<User> response = await service.DeleteAsync(request);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
     }
 }
-
-
-

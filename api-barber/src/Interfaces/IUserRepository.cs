@@ -1,17 +1,15 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using api_barber.Models;
-using api_barber.src.Requests;
+using MongoDB.Bson;
 namespace api_barber.src.Interfaces
 {
     public interface IUserRepository
     {
-        Task<ResponseApi<IEnumerable<User>>> GetAllAsync(string barbershopId, string role = null);
-        Task<ResponseApi<User>> GetByIdAsync(string id, string barbershopId);
-        Task<ResponseApi<User>> GetByEmailAsync(string email);
-        Task<ResponseApi<User>> CreateAsync(User entity);
-        Task<ResponseApi<User>> UpdateAsync(User entity);
-        Task<ResponseApi<User>> SoftDeleteAsync(string id, string barbershopId, string deletedBy);
+        Task<List<dynamic>> GetAllAsync(List<BsonDocument> pipeline);
+        Task<List<dynamic>> GetBarbersAsync(List<BsonDocument> pipeline);
+        Task<User> GetByIdAsync(string id);
+        Task<User> GetByEmailAsync(string email);
+        Task<User> CreateAsync(User entity);
+        Task<User> UpdateAsync(User entity);
+        Task<User> DeleteAsync(User entity);
     }
 }
-
