@@ -1,60 +1,167 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using api_barber.Interfaces;
 using api_barber.Models;
+using api_barber.Requests.User;
 using api_barber.src.Interfaces;
 using api_barber.src.Requests;
 using api_barber.src.Utils;
+using MongoDB.Bson;
 namespace api_barber.Services
 {
     public class UserService(IUserRepository repository) : IUserService
     {
-        public async Task<ResponseApi<User>> CreateAsync(User entity)
+        #region READ
+        public async Task<ResponseApi<List<dynamic>>> GetAllAsync(string barbershopId)
         {
             try
             {
-                return await repository.CreateAsync(entity);
-            }
-            catch (System.Exception ex)
-            {
-                return new (null, 500, "Erro: " + ex.Message);
-            }
-        }
-        public async Task<ResponseApi<IEnumerable<User>>> GetAllAsync(string barbershopId, string role = null)
-        {
-            return await repository.GetAllAsync(barbershopId, role);
-        }
-        public async Task<ResponseApi<User>> GetByIdAsync(string id, string barbershopId)
-        {
-            return await repository.GetByIdAsync(id, barbershopId);
-        }
+                List<BsonDocument> pipeline =
+                [
+                    new("$match", new BsonDocument
+                    {
+                        {"deleted", false},
+                        {"barbershopId", barbershopId}
+                    }),
+                    new("$project", new BsonDocument
+                    {
+                        {"_id", 0},
+                        {"id", new BsonDocument("$toString", "$_id")},
+                        {"name", 1}
+                    }),
+                    new("$sort", new BsonDocument { { "createdAt", 1 } } )
+                ];
 
+                List<dynamic> barbers = await repository.GetBarbersAsync(pipeline);
+
+                return new(barbers, 200, "Usuários listados com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
+            }
+        }
+        public async Task<ResponseApi<User>> GetByIdAsync(string id)
+        {
+            try
+            {
+                User user = await repository.GetByIdAsync(id);
+                if(user is null) return new(null, 404, "Usuário não encontrado");
+                
+                return new(user, 200, "Usuários buscado com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
+            }
+        }
         public async Task<ResponseApi<User>> GetByEmailAsync(string email)
         {
-            return await repository.GetByEmailAsync(email);
+            try
+            {
+                User user = await repository.GetByEmailAsync(email);
+                if(user is null) return new(null, 404, "Usuário não encontrado");
+                
+                return new(user, 200, "Usuários buscado com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
+            }
         }
-        public async Task<ResponseApi<User>> SoftDeleteAsync(string id, string barbershopId, string deletedBy)
-        {
-            return await repository.SoftDeleteAsync(id, barbershopId, deletedBy);
-        }
-        public async Task<ResponseApi<User>> UpdateAsync(string id, User entity, string barbershopId)
+        public async Task<ResponseApi<List<dynamic>>> GetBarbersAsync(string barbershopId)
         {
             try
             {
-                var existingResponse = await repository.GetByIdAsync(id, barbershopId);
-                if (existingResponse.Data == null) return new(null, 404, "Registro nÃ£o encontrado");
-                
-                entity.Id = id;
-                if (string.IsNullOrEmpty(entity.BarbershopId)) entity.BarbershopId = barbershopId;
-                entity.CreatedAt = existingResponse.Data.CreatedAt;
-                entity.CreatedBy = existingResponse.Data.CreatedBy;
-                return await repository.UpdateAsync(entity);
+                List<BsonDocument> pipeline =
+                [
+                    new("$match", new BsonDocument
+                    {
+                        {"deleted", false},
+                        {"role", "Barber"},
+                        {"barbershopId", barbershopId}
+                    }),
+                    new("$project", new BsonDocument
+                    {
+                        {"_id", 0},
+                        {"id", new BsonDocument("$toString", "$_id")},
+                        {"name", 1}
+                    }),
+                    new("$sort", new BsonDocument { { "createdAt", 1 } } )
+                ];
+
+                List<dynamic> barbers = await repository.GetBarbersAsync(pipeline);
+
+                return new(barbers, 200, "Barbeiros listados com sucesso");
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                return new (null, 500, "Erro: " + ex.Message);
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
             }
         }
+        #endregion
+
+        #region CREATE
+        public async Task<ResponseApi<User>> CreateAsync(CreateUserRequest request)
+        {
+            try
+            {
+                User entity = ObjectMapper.Map<CreateUserRequest, User>(request);
+
+                User user = await repository.CreateAsync(entity);
+                if(user is null) return new(null, 400, "Falha ao criar usuário");
+
+                return new(user, 201, "Usuário criado com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
+            }
+        }
+        #endregion
+       
+        #region UPDATE
+        public async Task<ResponseApi<User>> UpdateAsync(UpdateUserRequest request)
+        {
+            try
+            {
+                User existedUser = await repository.GetByIdAsync(request.Id);
+                if(existedUser is null) return new(null, 404, "Usuário não encontrado");
+
+                User entity = ObjectMapper.Map<UpdateUserRequest, User>(request);
+
+                User user = await repository.UpdateAsync(entity);
+                if(user is null) return new(null, 400, "Falha ao criar usuário");
+
+                return new(user, 200, "Usuário atualizado com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
+            }
+        }
+        #endregion
+       
+        #region DELETE
+        public async Task<ResponseApi<User>> DeleteAsync(DeleteRequest request)
+        {
+            try
+            {
+                User existedUser = await repository.GetByIdAsync(request.Id);
+                if(existedUser is null) return new(null, 404, "Usuário não encontrado");
+
+                existedUser.Deleted = true;
+                existedUser.DeletedAt = DateTime.Now;
+                existedUser.DeletedBy = request.DeletedBy;
+
+                User user = await repository.DeleteAsync(existedUser);
+                if(user is null) return new(null, 400, "Falha ao criar usuário");
+
+                return new(user, 200, "Usuário atualizado com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
+            }
+        }
+        #endregion
     }
 }
-
