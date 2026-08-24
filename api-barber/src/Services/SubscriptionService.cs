@@ -1,10 +1,7 @@
 using api_barber.Interfaces;
-using api_barber.Models;
 using api_barber.Models.Enums;
 using api_barber.Requests.Subscription;
 using api_barber.src.Requests;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace api_barber.Services
 {
@@ -84,7 +81,6 @@ namespace api_barber.Services
             if (!string.IsNullOrEmpty(barbershop.AsaasCustomerId))
             {
                 var success = await asaasService.CancelSubscriptionAsync(barbershop.AsaasCustomerId);
-                // Mesmo se falhar na Asaas (ex: não há assinatura ativa lá), prosseguimos para cancelar localmente
             }
 
             barbershop.SubscriptionStatus = SubscriptionStatusEnum.Cancelada;
@@ -93,4 +89,5 @@ namespace api_barber.Services
         }
     }
 }
+
 
