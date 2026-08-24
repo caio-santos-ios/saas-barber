@@ -2,7 +2,6 @@ using api_barber.Interfaces;
 using api_barber.Requests.Dashboard;
 using api_barber.src.Requests;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 
 namespace api_barber.Controllers
 {

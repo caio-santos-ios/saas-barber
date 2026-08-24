@@ -16,13 +16,14 @@ namespace api_barber.Services
         IScheduleRepository scheduleRepository,
         IUserRepository userRepository) : IAppointmentService
     {
-        public async Task<ResponseApi<IEnumerable<string>>> GetAvailableSlotsAsync(string barberId, DateTime date, string barbershopId)
+#region READ
+        public async Task<ResponseApi<List<string>>> GetAvailableSlotsAsync(string barberId, DateTime date, string barbershopId)
         {
             try
             {
-                var schedulesResponse = await scheduleRepository.GetAllAsync(barbershopId);
+                var schedulesResponse = await scheduleRepository.GetAllEntitiesAsync(barbershopId);
                 DayOfWeekEnum targetDay = (DayOfWeekEnum)(((int)date.DayOfWeek + 6) % 7);
-                var schedule = schedulesResponse.Data?.FirstOrDefault(s => s.BarberId == barberId && s.Day == targetDay && s.Active);
+                var schedule = schedulesResponse?.FirstOrDefault(s => s.BarberId == barberId && s.Day == targetDay && s.Active);
                 
                 if (schedule == null) return new(new List<string>(), 200, "Nenhuma escala para este dia.");
 
@@ -50,6 +51,9 @@ namespace api_barber.Services
             }
         }
 
+        public async Task<ResponseApi<Appointment>> CreateEntityAsync(Appointment entity) { await repository.CreateAsync(entity); return new(entity, 201, "Criado"); }
+
+        #region CREATE
         public async Task<ResponseApi<Appointment>> CreateAsync(CreateAppointmentRequest request, string barbershopId)
         {
             try
@@ -78,24 +82,24 @@ namespace api_barber.Services
             }
         }
 
-        public async Task<ResponseApi<IEnumerable<Appointment>>> GetAllAsync(string barbershopId)
+        public async Task<ResponseApi<List<Appointment>>> GetAllAsync(string barbershopId)
         {
-            var response = await repository.GetAllAsync(barbershopId);
-            if (response.Data == null) return response;
+            // var response = await repository.GetAllAsync(barbershopId);
+            // if (response.Data == null) return response;
 
-            var usersResponse = await userRepository.GetAllAsync(barbershopId);
-            var users = usersResponse.Data?.ToList() ?? [];
+            // var usersResponse = await userRepository.GetAllEntitiesAsync(barbershopId);
+            // var users = usersResponse.Data?.ToList() ?? [];
 
-            var enriched = response.Data.Select(apt =>
-            {
-                if (string.IsNullOrEmpty(apt.BarberName))
-                    apt.BarberName = users.FirstOrDefault(u => u.Id == apt.BarberId)?.Name ?? "";
-                if (string.IsNullOrEmpty(apt.CustomerName))
-                    apt.CustomerName = users.FirstOrDefault(u => u.Id == apt.CustomerId)?.Name ?? "";
-                return apt;
-            });
+            // var enriched = response.Data.Select(apt =>
+            // {
+            //     if (string.IsNullOrEmpty(apt.BarberName))
+            //         apt.BarberName = users.FirstOrDefault(u => u.Id == apt.BarberId)?.Name ?? "";
+            //     if (string.IsNullOrEmpty(apt.CustomerName))
+            //         apt.CustomerName = users.FirstOrDefault(u => u.Id == apt.CustomerId)?.Name ?? "";
+            //     return apt;
+            // });
 
-            return new(enriched, 200, "Listagem obtida com sucesso");
+            return new([], 200, "Listagem obtida com sucesso");
         }
 
         public async Task<ResponseApi<Appointment>> GetByIdAsync(string id, string barbershopId)
@@ -130,6 +134,9 @@ namespace api_barber.Services
             }
         }
 
+        #endregion
+
+        #region UPDATE
         public async Task<ResponseApi<Appointment>> UpdateAsync(UpdateAppointmentStatusRequest request)
         {
             try
@@ -154,5 +161,10 @@ namespace api_barber.Services
                 return new (null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
             }
         }
+    
+        #endregion
+    
+        #endregion
     }
 }
+

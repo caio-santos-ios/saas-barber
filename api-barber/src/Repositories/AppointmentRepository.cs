@@ -23,7 +23,8 @@ namespace api_barber.src.Repositories
             }
         }
 
-        public async Task<ResponseApi<IEnumerable<Appointment>>> GetAllAsync(string barbershopId)
+        public async Task<List<Appointment>> GetAllEntitiesAsync(string barbershopId) { return await appDbContext.Appointments.Find(x => !x.Deleted && x.BarbershopId == barbershopId).ToListAsync(); }
+        public async Task<ResponseApi<List<Appointment>>> GetAllAsync(string barbershopId)
         {
             try
             {
@@ -76,7 +77,7 @@ namespace api_barber.src.Repositories
             return new (null, 500, "Not implemented directly in repo, use UpdateAsync for soft delete.");
         }
 
-        public async Task<ResponseApi<IEnumerable<Appointment>>> GetByBarberAndDateAsync(string barberId, System.DateTime date, string barbershopId)
+        public async Task<ResponseApi<List<Appointment>>> GetByBarberAndDateAsync(string barberId, System.DateTime date, string barbershopId)
         {
             try
             {
@@ -99,3 +100,4 @@ namespace api_barber.src.Repositories
         }
     }
 }
+

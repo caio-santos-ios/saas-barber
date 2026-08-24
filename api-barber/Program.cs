@@ -10,8 +10,6 @@ var builder = WebApplication.CreateBuilder(args);
 DotNetEnv.Env.Load();
 builder.Configuration.AddEnvironmentVariables();
 builder.Services.AddControllers();
-
-// Configure Firebase
 if (System.IO.File.Exists("firebase-service-account.json")) {
     FirebaseAdmin.FirebaseApp.Create(new FirebaseAdmin.AppOptions {
         Credential = Google.Apis.Auth.OAuth2.GoogleCredential.FromFile("firebase-service-account.json")
@@ -78,5 +76,6 @@ app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseMiddleware<TenantAndPlanMiddleware>();
 app.MapControllers();
 app.Run();
+
 
 

@@ -11,7 +11,7 @@ namespace api_barber.Services
         {
             _repository = repository;
         }
-        public virtual async Task<IEnumerable<T>> GetAllAsync(string barbershopId)
+        public virtual async Task<List<T>> GetAllAsync(string barbershopId)
         {
             return await _repository.GetAllAsync(barbershopId);
         }

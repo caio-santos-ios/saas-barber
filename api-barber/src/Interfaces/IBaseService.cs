@@ -5,7 +5,7 @@ namespace api_barber.Interfaces
 {
     public interface IBaseService<T> where T : ModelBase
     {
-        Task<IEnumerable<T>> GetAllAsync(string barbershopId);
+        Task<List<T>> GetAllAsync(string barbershopId);
         Task<T> GetByIdAsync(string id, string barbershopId);
         Task CreateAsync(T entity);
         Task UpdateAsync(string id, T entity);

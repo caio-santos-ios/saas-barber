@@ -27,7 +27,7 @@ namespace api_barber.Services
             {
                 asaasCustomerId = await asaasService.CreateCustomerAsync(barbershop.Name, barbershop.Document, barbershop.Email);
                 barbershop.AsaasCustomerId = asaasCustomerId;
-                await barbershopService.UpdateAsync(barbershop.Id, barbershop, string.Empty);
+                await barbershopService.UpdateEntityAsync(barbershop);
             }
 
             var creditCardHolderInfo = new {
@@ -56,7 +56,7 @@ namespace api_barber.Services
 
             barbershop.SubscriptionStatus = SubscriptionStatusEnum.Ativa;
             barbershop.PlanId = plan.Id;
-            await barbershopService.UpdateAsync(barbershop.Id, barbershop, string.Empty);
+            await barbershopService.UpdateEntityAsync(barbershop);
 
             return new(subscriptionId, 200, "Subscription activated successfully");
         }
@@ -88,8 +88,9 @@ namespace api_barber.Services
             }
 
             barbershop.SubscriptionStatus = SubscriptionStatusEnum.Cancelada;
-            await barbershopService.UpdateAsync(barbershop.Id, barbershop, string.Empty);
+            await barbershopService.UpdateEntityAsync(barbershop);
             return new(null, 200, "Subscription cancelled successfully");
         }
     }
 }
+

@@ -14,7 +14,7 @@ namespace api_barber.Repositories
             var collectionName = typeof(T).Name.ToLower() + "s";
             _collection = database.GetCollection<T>(collectionName);
         }
-        public async Task<IEnumerable<T>> GetAllAsync(string barbershopId)
+        public async Task<List<T>> GetAllAsync(string barbershopId)
         {
             var filter = Builders<T>.Filter.Eq(e => e.Deleted, false);
             var type = typeof(T);

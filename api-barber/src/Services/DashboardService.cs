@@ -1,3 +1,6 @@
+using MongoDB.Driver;
+using api_barber.Models;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using api_barber.Interfaces;
@@ -9,24 +12,24 @@ using api_barber.Models.Enums;
 namespace api_barber.Services
 {
     public class DashboardService(
-        IAppointmentRepository appointmentRepository,
-        IServiceRepository serviceRepository,
-        IServiceTypeRepository serviceTypeRepository,
-        IUserRepository userRepository) : IDashboardService
+        
+        
+        
+        api_barber.Infrastructures.AppDbContext appDbContext) : IDashboardService
     {
         public async Task<ResponseApi<DashboardMetricsResponse>> GetMetricsAsync(string barbershopId, DashboardQueryRequest query)
         {
             try
             {
-                var appointmentsResponse = await appointmentRepository.GetAllAsync(barbershopId);
-                var servicesResponse = await serviceRepository.GetAllAsync(barbershopId);
-                var serviceTypesResponse = await serviceTypeRepository.GetAllAsync(barbershopId);
-                var usersResponse = await userRepository.GetAllAsync(barbershopId);
+                var appointmentsResponse = await MongoDB.Driver.IAsyncCursorSourceExtensions.ToListAsync(appDbContext.Appointments.Find(x => !x.Deleted && x.BarbershopId == barbershopId));
+                var servicesResponse = await MongoDB.Driver.IAsyncCursorSourceExtensions.ToListAsync(appDbContext.Services.Find(x => !x.Deleted && x.BarbershopId == barbershopId));
+                var serviceTypesResponse = await MongoDB.Driver.IAsyncCursorSourceExtensions.ToListAsync(appDbContext.ServiceTypes.Find(x => !x.Deleted && x.BarbershopId == barbershopId));
+                var usersResponse = await MongoDB.Driver.IAsyncCursorSourceExtensions.ToListAsync(appDbContext.Users.Find(x => !x.Deleted && x.BarbershopId == barbershopId));
 
-                var allAppointments = appointmentsResponse.Data ?? [];
-                var allServices = servicesResponse.Data ?? [];
-                var allServiceTypes = serviceTypesResponse.Data ?? [];
-                var allUsers = usersResponse.Data ?? [];
+                var allAppointments = appointmentsResponse ?? new List<Appointment>();
+                var allServices = servicesResponse ?? new List<Service>();
+                var allServiceTypes = serviceTypesResponse ?? new List<ServiceType>();
+                var allUsers = usersResponse ?? new List<User>();
 
                 var periodAppointments = allAppointments.Where(a => a.Date >= query.StartDate && a.Date <= query.EndDate).ToList();
 
@@ -77,3 +80,8 @@ namespace api_barber.Services
         }
     }
 }
+
+
+
+
+

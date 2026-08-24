@@ -1,16 +1,17 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
 using api_barber.Models;
+using api_barber.Requests.Schedule;
 using api_barber.src.Requests;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 namespace api_barber.Interfaces
 {
     public interface IScheduleService
     {
-        Task<ResponseApi<IEnumerable<Schedule>>> GetAllAsync(string barbershopId);
-        Task<ResponseApi<Schedule>> GetByIdAsync(string id, string barbershopId);
-        Task<ResponseApi<Schedule>> CreateAsync(object request);
-        Task<ResponseApi<Schedule>> UpdateAsync(string id, object request, string barbershopId);
-        Task<ResponseApi<Schedule>> SoftDeleteAsync(string id, string barbershopId, string deletedBy);
+        Task<ResponseApi<List<dynamic>>> GetAllAsync(string barbershopId);
+        Task<ResponseApi<Schedule>> GetByIdAsync(string id);
+        Task<ResponseApi<Schedule>> CreateEntityAsync(Schedule entity);
+        Task<ResponseApi<Schedule>> CreateAsync(CreateScheduleRequest request);
+        Task<ResponseApi<Schedule>> UpdateAsync(UpdateScheduleRequest request);
+        Task<ResponseApi<Schedule>> DeleteAsync(DeleteRequest request);
     }
 }
-

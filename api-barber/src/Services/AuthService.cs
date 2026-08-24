@@ -1,3 +1,4 @@
+using api_barber.Requests.User;
 using api_barber.Interfaces;
 using api_barber.Models;
 using api_barber.Models.Enums;
@@ -65,7 +66,7 @@ namespace api_barber.Services
                     return new (null, 401, "E-mail ou senha inválidos.");
                 }
 
-                var barbershopResponse = await _barbershopService.GetByIdAsync(user.BarbershopId, user.BarbershopId);
+                var barbershopResponse = await _barbershopService.GetByIdAsync(user.BarbershopId);
                 var barbershop = barbershopResponse.Data;
                 var subscriptionStatus = barbershop != null ? barbershop.SubscriptionStatus.ToString() : "Ativa";
 
@@ -106,9 +107,9 @@ namespace api_barber.Services
                     Active = true,
                     CreatedAt = DateTime.UtcNow
                 };
-                await _userService.CreateAsync(user);
+                await _userService.CreateAsync(new CreateUserRequest { Name = user.Name, Email = user.Email, WhatsApp = user.WhatsApp, Role = user.Role, DateOfBirth = user.DateOfBirth, Document = user.Document, Photo = user.Photo });
 
-                var barbershopResponse = await _barbershopService.GetByIdAsync(user.BarbershopId, user.BarbershopId);
+                var barbershopResponse = await _barbershopService.GetByIdAsync(user.BarbershopId);
                 var barbershop = barbershopResponse.Data;
                 var subscriptionStatus = barbershop != null ? barbershop.SubscriptionStatus.ToString() : "Ativa";
 
@@ -151,7 +152,7 @@ namespace api_barber.Services
                     WhatsApp = request.WhatsApp,
                     CreatedAt = DateTime.UtcNow
                 };
-                var barbershopResponse = await _barbershopService.CreateAsync(barbershop);
+                var barbershopResponse = await _barbershopService.CreateEntityAsync(barbershop);
                 var createdBarbershop = (Barbershop)barbershopResponse.Data;
                 var user = new User
                 {
@@ -164,7 +165,7 @@ namespace api_barber.Services
                     Active = true,
                     CreatedAt = DateTime.UtcNow
                 };
-                await _userService.CreateAsync(user);
+                await _userService.CreateAsync(new CreateUserRequest { Name = user.Name, Email = user.Email, WhatsApp = user.WhatsApp, Role = user.Role, DateOfBirth = user.DateOfBirth, Document = user.Document, Photo = user.Photo });
                 var jwt = GenerateJwtToken(user.Id, user.Role.ToString(), user.BarbershopId);
                 var authResponse = new AuthResponse
                 {
@@ -195,7 +196,7 @@ namespace api_barber.Services
                 var user = userResponse.Data;
                 user.Password = BCrypt.Net.BCrypt.HashPassword(tempPassword);
                 user.PasswordResetRequired = true;
-                await _userService.UpdateAsync(user.Id, user, user.BarbershopId);
+                await _userService.UpdateAsync(new UpdateUserRequest { Id = user.Id, Name = user.Name, WhatsApp = user.WhatsApp, DateOfBirth = user.DateOfBirth, Photo = user.Photo, Active = user.Active });
 
                 var html = $"""
                     <div style="font-family:sans-serif;max-width:480px;margin:0 auto;">
@@ -219,4 +220,11 @@ namespace api_barber.Services
         }
     }
 }
+
+
+
+
+
+
+
 

@@ -15,7 +15,7 @@ namespace api_barber.Controllers
         public async Task<IActionResult> GetAll()
         {
             string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
-            ResponseApi<System.Collections.Generic.IEnumerable<Appointment>> response = await service.GetAllAsync(barbershopId);
+            ResponseApi<List<Appointment>> response = await service.GetAllAsync(barbershopId);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
 
@@ -23,7 +23,7 @@ namespace api_barber.Controllers
         public async Task<IActionResult> GetAvailability([FromQuery] string barberId, [FromQuery] System.DateTime date)
         {
             string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
-            ResponseApi<System.Collections.Generic.IEnumerable<string>> response = await service.GetAvailableSlotsAsync(barberId, date, barbershopId);
+            ResponseApi<List<string>> response = await service.GetAvailableSlotsAsync(barberId, date, barbershopId);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
 

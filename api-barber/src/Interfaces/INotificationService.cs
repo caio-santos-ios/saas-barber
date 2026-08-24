@@ -1,16 +1,17 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
 using api_barber.Models;
+using api_barber.Requests.Notification;
 using api_barber.src.Requests;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 namespace api_barber.Interfaces
 {
     public interface INotificationService
     {
-        Task<ResponseApi<IEnumerable<Notification>>> GetAllAsync(string barbershopId);
-        Task<ResponseApi<Notification>> GetByIdAsync(string id, string barbershopId);
-        Task<ResponseApi<Notification>> CreateAsync(object request);
-        Task<ResponseApi<Notification>> UpdateAsync(string id, object request, string barbershopId);
-        Task<ResponseApi<Notification>> SoftDeleteAsync(string id, string barbershopId, string deletedBy);
+        Task<ResponseApi<List<dynamic>>> GetAllAsync(string barbershopId);
+        Task<ResponseApi<Notification>> GetByIdAsync(string id);
+        Task<ResponseApi<Notification>> CreateEntityAsync(Notification entity);
+        Task<ResponseApi<Notification>> CreateAsync(CreateNotificationRequest request);
+        Task<ResponseApi<Notification>> UpdateAsync(UpdateNotificationRequest request);
+        Task<ResponseApi<Notification>> DeleteAsync(DeleteRequest request);
     }
 }
-

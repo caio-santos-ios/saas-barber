@@ -39,11 +39,10 @@ export class Dashboard implements OnInit {
     this.error = '';
     this.cdr.detectChanges();
 
-    const barbershopId = localStorage.getItem('barbershopId') || '';
     Promise.all([
-      api.get(`/appointments?barbershopId=${barbershopId}`),
-      api.get(`/web/dashboard?barbershopId=${barbershopId}&startDate=${this.startDate}&endDate=${this.endDate}`),
-      api.get(`/users?barbershopId=${barbershopId}`)
+      api.get(`/appointments`),
+      api.get(`/web/dashboard?startDate=${this.startDate}&endDate=${this.endDate}`),
+      api.get(`/users/barbers?deleted=false`)
     ]).then(([appointmentsRes, metricsRes, usersRes]) => {
       this.ngZone.run(() => {
         const users: any[] = usersRes.data?.data || [];

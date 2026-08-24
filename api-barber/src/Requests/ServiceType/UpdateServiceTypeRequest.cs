@@ -1,16 +1,17 @@
 using api_barber.src.Requests;
 using api_barber.Models.Enums;
 using System;
-namespace api_barber.Requests.Service
+namespace api_barber.Requests.ServiceType
 {
-    public class UpdateServiceRequest : RequestBase
+    public class UpdateServiceTypeRequest : RequestBase
     {
         public string Id { get; set; } = string.Empty;
         public string Name { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public int Duration { get; set; }
         public decimal Value { get; set; }
-        public string ServiceTypeId { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
         public bool Active { get; set; } = true;
+        public int? DurationMinutes { get; set; }
     }
 }

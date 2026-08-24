@@ -1,102 +1,41 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using MongoDB.Driver;
 using api_barber.Infrastructures;
 using api_barber.Models;
 using api_barber.src.Interfaces;
-using api_barber.src.Requests;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 namespace api_barber.src.Repositories
 {
     public class ScheduleRepository(AppDbContext appDbContext) : IScheduleRepository
     {
-        public async Task<ResponseApi<Schedule>> CreateAsync(Schedule entity)
+        public async Task<List<dynamic>> GetAllAsync(List<BsonDocument> pipeline)
         {
-            try
-            {
-                entity.CreatedAt = DateTime.UtcNow;
-                await appDbContext.Schedules.InsertOneAsync(entity);
-                return new(entity, 201, "Registro criado com sucesso");
-            }
-            catch
-            {
-                return new (null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
-            }
+            List<BsonDocument> results = await appDbContext.Schedules.Aggregate<BsonDocument>(pipeline).ToListAsync();
+            List<dynamic> list = results.Select(doc => BsonSerializer.Deserialize<dynamic>(doc)).ToList();
+            return list;
         }
-        public async Task<ResponseApi<IEnumerable<Schedule>>> GetAllAsync(string barbershopId)
+        public async Task<Schedule> GetByIdAsync(string id)
         {
-            try
-            {
-                var filter = Builders<Schedule>.Filter.Eq(e => e.Deleted, false);
-                var prop = typeof(Schedule).GetProperty("BarbershopId");
-                if (prop != null && !string.IsNullOrEmpty(barbershopId))
-                {
-                    filter &= Builders<Schedule>.Filter.Eq("BarbershopId", barbershopId);
-                }
-                var result = await appDbContext.Schedules.Find(filter).ToListAsync();
-                return new(result, 200, "Listagem obtida com sucesso");
-            }
-            catch
-            {
-                return new (null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
-            }
+            return await appDbContext.Schedules.Find(x => !x.Deleted && x.Id.Equals(id)).FirstOrDefaultAsync();
         }
-        public async Task<ResponseApi<Schedule>> GetByIdAsync(string id, string barbershopId)
+        public async Task<List<Schedule>> GetAllEntitiesAsync(string barbershopId) { return await appDbContext.Schedules.Find(x => !x.Deleted && x.BarbershopId == barbershopId).ToListAsync(); }
+        public async Task<Schedule> CreateAsync(Schedule entity)
         {
-            try
-            {
-                var filter = Builders<Schedule>.Filter.Eq(e => e.Id, id) & Builders<Schedule>.Filter.Eq(e => e.Deleted, false);
-                var prop = typeof(Schedule).GetProperty("BarbershopId");
-                if (prop != null && !string.IsNullOrEmpty(barbershopId))
-                {
-                    filter &= Builders<Schedule>.Filter.Eq("BarbershopId", barbershopId);
-                }
-                var entity = await appDbContext.Schedules.Find(filter).FirstOrDefaultAsync();
-                if (entity == null) return new (null, 404, "Registro nÃ£o encontrado");
-                return new(entity, 200, "Registro obtido com sucesso");
-            }
-            catch
-            {
-                return new (null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
-            }
+            await appDbContext.Schedules.InsertOneAsync(entity);
+            return entity;
         }
-        public async Task<ResponseApi<Schedule>> SoftDeleteAsync(string id, string barbershopId, string deletedBy)
+        public async Task<Schedule> UpdateAsync(Schedule entity)
         {
-            try
-            {
-                var filter = Builders<Schedule>.Filter.Eq(e => e.Id, id);
-                var prop = typeof(Schedule).GetProperty("BarbershopId");
-                if (prop != null && !string.IsNullOrEmpty(barbershopId))
-                {
-                    filter &= Builders<Schedule>.Filter.Eq("BarbershopId", barbershopId);
-                }
-                var update = Builders<Schedule>.Update
-                    .Set(e => e.Deleted, true)
-                    .Set(e => e.UpdatedAt, DateTime.UtcNow)
-                    .Set(e => e.UpdatedBy, deletedBy);
-                var result = await appDbContext.Schedules.UpdateOneAsync(filter, update);
-                if (result.ModifiedCount == 0) return new(null, 404, "Registro nÃ£o encontrado");
-                return new(null, 200, "Registro excluÃ­do com sucesso");
-            }
-            catch
-            {
-                return new (null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
-            }
+            await appDbContext.Schedules.ReplaceOneAsync(x => x.Id.Equals(entity.Id), entity);
+            return entity;
         }
-        public async Task<ResponseApi<Schedule>> UpdateAsync(Schedule entity)
+        public async Task<Schedule> DeleteAsync(Schedule entity)
         {
-            try
-            {
-                entity.UpdatedAt = DateTime.UtcNow;
-                var result = await appDbContext.Schedules.ReplaceOneAsync(e => e.Id == entity.Id, entity);
-                if (result.MatchedCount == 0) return new(null, 404, "Registro nÃ£o encontrado");
-                return new(entity, 200, "Registro atualizado com sucesso");
-            }
-            catch
-            {
-                return new (null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
-            }
+            await appDbContext.Schedules.ReplaceOneAsync(x => x.Id.Equals(entity.Id), entity);
+            return entity;
         }
     }
 }
-

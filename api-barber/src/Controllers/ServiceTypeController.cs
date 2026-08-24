@@ -2,50 +2,54 @@ using api_barber.Interfaces;
 using api_barber.Models;
 using Microsoft.AspNetCore.Mvc;
 using api_barber.src.Requests;
+using api_barber.Requests.ServiceType;
 using System.Threading.Tasks;
 namespace api_barber.Controllers
 {
     [ApiController]
-    [Route("services_types")]
+    [Route("servicetypes")]
     public class ServiceTypeController(IServiceTypeService service) : ControllerBase
     {
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
-            ResponseApi<System.Collections.Generic.IEnumerable<ServiceType>> response = await service.GetAllAsync(barbershopId);
+            var response = await service.GetAllAsync(barbershopId);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(string id)
         {
-            string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
-            ResponseApi<ServiceType> response = await service.GetByIdAsync(id, barbershopId);
+            var response = await service.GetByIdAsync(id);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] object request)
+        public async Task<IActionResult> Create([FromBody] CreateServiceTypeRequest request)
         {
-            string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
-            ResponseApi<ServiceType> response = await service.CreateAsync(request);
+            request.BarbershopId = User.FindFirst("barbershopId")?.Value ?? "";
+            request.CreatedBy = User.FindFirst("userId")?.Value ?? "";
+            var response = await service.CreateAsync(request);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] object request)
+        [HttpPut]
+        public async Task<IActionResult> Update([FromBody] UpdateServiceTypeRequest request)
         {
-            string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
-            ResponseApi<ServiceType> response = await service.UpdateAsync(id, request, barbershopId);
+            request.BarbershopId = User.FindFirst("barbershopId")?.Value ?? "";
+            request.UpdatedBy = User.FindFirst("userId")?.Value ?? "";
+            var response = await service.UpdateAsync(request);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
-            ResponseApi<ServiceType> response = await service.SoftDeleteAsync(id, barbershopId, "admin");
+            string userId = User.FindFirst("userId")?.Value ?? "";
+            DeleteRequest request = new()
+            {
+                Id = id,
+                DeletedBy = userId
+            };
+            var response = await service.DeleteAsync(request);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
     }
 }
-
-
-

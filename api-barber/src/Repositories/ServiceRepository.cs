@@ -1,102 +1,41 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using MongoDB.Driver;
 using api_barber.Infrastructures;
 using api_barber.Models;
 using api_barber.src.Interfaces;
-using api_barber.src.Requests;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 namespace api_barber.src.Repositories
 {
     public class ServiceRepository(AppDbContext appDbContext) : IServiceRepository
     {
-        public async Task<ResponseApi<Service>> CreateAsync(Service entity)
+        public async Task<List<dynamic>> GetAllAsync(List<BsonDocument> pipeline)
         {
-            try
-            {
-                entity.CreatedAt = DateTime.UtcNow;
-                await appDbContext.Services.InsertOneAsync(entity);
-                return new(entity, 201, "Registro criado com sucesso");
-            }
-            catch
-            {
-                return new (null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
-            }
+            List<BsonDocument> results = await appDbContext.Services.Aggregate<BsonDocument>(pipeline).ToListAsync();
+            List<dynamic> list = results.Select(doc => BsonSerializer.Deserialize<dynamic>(doc)).ToList();
+            return list;
         }
-        public async Task<ResponseApi<IEnumerable<Service>>> GetAllAsync(string barbershopId)
+        public async Task<Service> GetByIdAsync(string id)
         {
-            try
-            {
-                var filter = Builders<Service>.Filter.Eq(e => e.Deleted, false);
-                var prop = typeof(Service).GetProperty("BarbershopId");
-                if (prop != null && !string.IsNullOrEmpty(barbershopId))
-                {
-                    filter &= Builders<Service>.Filter.Eq("BarbershopId", barbershopId);
-                }
-                var result = await appDbContext.Services.Find(filter).ToListAsync();
-                return new(result, 200, "Listagem obtida com sucesso");
-            }
-            catch
-            {
-                return new (null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
-            }
+            return await appDbContext.Services.Find(x => !x.Deleted && x.Id.Equals(id)).FirstOrDefaultAsync();
         }
-        public async Task<ResponseApi<Service>> GetByIdAsync(string id, string barbershopId)
+        public async Task<List<Service>> GetAllEntitiesAsync(string barbershopId) { return await appDbContext.Services.Find(x => !x.Deleted && x.BarbershopId == barbershopId).ToListAsync(); }
+        public async Task<Service> CreateAsync(Service entity)
         {
-            try
-            {
-                var filter = Builders<Service>.Filter.Eq(e => e.Id, id) & Builders<Service>.Filter.Eq(e => e.Deleted, false);
-                var prop = typeof(Service).GetProperty("BarbershopId");
-                if (prop != null && !string.IsNullOrEmpty(barbershopId))
-                {
-                    filter &= Builders<Service>.Filter.Eq("BarbershopId", barbershopId);
-                }
-                var entity = await appDbContext.Services.Find(filter).FirstOrDefaultAsync();
-                if (entity == null) return new (null, 404, "Registro nÃ£o encontrado");
-                return new(entity, 200, "Registro obtido com sucesso");
-            }
-            catch
-            {
-                return new (null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
-            }
+            await appDbContext.Services.InsertOneAsync(entity);
+            return entity;
         }
-        public async Task<ResponseApi<Service>> SoftDeleteAsync(string id, string barbershopId, string deletedBy)
+        public async Task<Service> UpdateAsync(Service entity)
         {
-            try
-            {
-                var filter = Builders<Service>.Filter.Eq(e => e.Id, id);
-                var prop = typeof(Service).GetProperty("BarbershopId");
-                if (prop != null && !string.IsNullOrEmpty(barbershopId))
-                {
-                    filter &= Builders<Service>.Filter.Eq("BarbershopId", barbershopId);
-                }
-                var update = Builders<Service>.Update
-                    .Set(e => e.Deleted, true)
-                    .Set(e => e.UpdatedAt, DateTime.UtcNow)
-                    .Set(e => e.UpdatedBy, deletedBy);
-                var result = await appDbContext.Services.UpdateOneAsync(filter, update);
-                if (result.ModifiedCount == 0) return new(null, 404, "Registro nÃ£o encontrado");
-                return new(null, 200, "Registro excluÃ­do com sucesso");
-            }
-            catch
-            {
-                return new (null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
-            }
+            await appDbContext.Services.ReplaceOneAsync(x => x.Id.Equals(entity.Id), entity);
+            return entity;
         }
-        public async Task<ResponseApi<Service>> UpdateAsync(Service entity)
+        public async Task<Service> DeleteAsync(Service entity)
         {
-            try
-            {
-                entity.UpdatedAt = DateTime.UtcNow;
-                var result = await appDbContext.Services.ReplaceOneAsync(e => e.Id == entity.Id, entity);
-                if (result.MatchedCount == 0) return new(null, 404, "Registro nÃ£o encontrado");
-                return new(entity, 200, "Registro atualizado com sucesso");
-            }
-            catch
-            {
-                return new (null, 500, "Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.");
-            }
+            await appDbContext.Services.ReplaceOneAsync(x => x.Id.Equals(entity.Id), entity);
+            return entity;
         }
     }
 }
-

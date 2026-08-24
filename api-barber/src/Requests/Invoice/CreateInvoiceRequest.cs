@@ -1,0 +1,15 @@
+using api_barber.src.Requests;
+using api_barber.Models.Enums;
+using System;
+namespace api_barber.Requests.Invoice
+{
+    public class CreateInvoiceRequest : RequestBase
+    {
+        public string BarbershopId { get; set; } = string.Empty;
+        public string PlanId { get; set; } = string.Empty;
+        public decimal Value { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public DateTime? DueDate { get; set; }
+        public DateTime? PaymentDate { get; set; }
+    }
+}

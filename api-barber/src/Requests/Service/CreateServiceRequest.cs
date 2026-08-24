@@ -1,12 +1,15 @@
-﻿namespace api_barber.Requests.Service
+using api_barber.src.Requests;
+using api_barber.Models.Enums;
+using System;
+namespace api_barber.Requests.Service
 {
-    public class CreateServiceRequest
+    public class CreateServiceRequest : RequestBase
     {
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public int Duration { get; set; }
+        public decimal Value { get; set; }
         public string ServiceTypeId { get; set; } = string.Empty;
-        public string BarberId { get; set; } = string.Empty;
-        public decimal? Price { get; set; }
-        public decimal? Commission { get; set; }
-        public int? DurationMinutes { get; set; }
+        public bool Active { get; set; } = true;
     }
 }
-

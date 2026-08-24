@@ -11,8 +11,8 @@ namespace api_barber.Requests.Dashboard
         public int InProgressAppointments { get; set; }
         public int ConfirmedAppointments { get; set; }
 
-        public IEnumerable<RankingItem> TopServices { get; set; } = [];
-        public IEnumerable<RankingItem> TopBarbers { get; set; } = [];
+        public List<RankingItem> TopServices { get; set; } = [];
+        public List<RankingItem> TopBarbers { get; set; } = [];
     }
 
     public class RankingItem

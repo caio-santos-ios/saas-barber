@@ -1,4 +1,4 @@
-﻿using api_barber.Interfaces;
+using api_barber.Interfaces;
 using api_barber.Models.Enums;
 using api_barber.src.Requests;
 using System.Linq;
@@ -22,12 +22,12 @@ namespace api_barber.Services
                     if (eventObj == "PAYMENT_RECEIVED")
                     {
                         barbershop.SubscriptionStatus = SubscriptionStatusEnum.Ativa;
-                        await barbershopService.UpdateAsync(barbershop.Id, barbershop, string.Empty);
+                        await barbershopService.UpdateEntityAsync(barbershop);
                     }
                     else if (eventObj == "PAYMENT_OVERDUE")
                     {
                         barbershop.SubscriptionStatus = SubscriptionStatusEnum.Inadimplente;
-                        await barbershopService.UpdateAsync(barbershop.Id, barbershop, string.Empty);
+                        await barbershopService.UpdateEntityAsync(barbershop);
                     }
                 }
                 return new(null, 200, "Webhook processado");
@@ -39,4 +39,5 @@ namespace api_barber.Services
         }
     }
 }
+
 
