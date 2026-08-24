@@ -1,8 +1,8 @@
 ﻿using api_barber.Models.Enums;
-using System;
+using api_barber.src.Requests;
 namespace api_barber.Requests.User
 {
-    public class CreateUserRequest
+    public class CreateUserRequest : RequestBase
     {
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
