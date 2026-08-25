@@ -42,6 +42,9 @@ export const metadata: Metadata = {
     images: ["/dashboard-preview.png"],
   },
   robots: { index: true, follow: true },
+  verification: {
+    google: "csKkXM-YJfmBVvWbHChV-NBz7UTyDiKPMa0F9zbaDBQ",
+  },
 };
 
 export default function RootLayout({
