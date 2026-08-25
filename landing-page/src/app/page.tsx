@@ -230,7 +230,7 @@ export default function Home() {
               target={adminBaseUrl ? undefined : "_blank"}
               rel={adminBaseUrl ? undefined : "noopener noreferrer"}
               eventName="cta_click"
-              eventParams={{ location: "nav", destination: adminBaseUrl ? "signup" : "whatsapp" }}
+              eventParams={{ cta_location: "nav", cta_destination: adminBaseUrl ? "signup" : "whatsapp" }}
             >
               {adminBaseUrl ? "Começar agora" : "Falar conosco"}
             </TrackedLink>
@@ -241,7 +241,7 @@ export default function Home() {
             target={adminBaseUrl ? undefined : "_blank"}
             rel={adminBaseUrl ? undefined : "noopener noreferrer"}
             eventName="cta_click"
-            eventParams={{ location: "mobile-nav", destination: adminBaseUrl ? "signup" : "whatsapp" }}
+            eventParams={{ cta_location: "mobile-nav", cta_destination: adminBaseUrl ? "signup" : "whatsapp" }}
           >
             Começar
           </TrackedLink>
@@ -263,7 +263,7 @@ export default function Home() {
                 target={adminBaseUrl ? undefined : "_blank"}
                 rel={adminBaseUrl ? undefined : "noopener noreferrer"}
                 eventName="cta_click"
-                eventParams={{ location: "hero", destination: adminBaseUrl ? "signup" : "whatsapp" }}
+                eventParams={{ cta_location: "hero", cta_destination: adminBaseUrl ? "signup" : "whatsapp" }}
               >
                 {signupLabel} <span aria-hidden="true">→</span>
               </TrackedLink>
@@ -416,7 +416,7 @@ export default function Home() {
               target={adminBaseUrl ? undefined : "_blank"}
               rel={adminBaseUrl ? undefined : "noopener noreferrer"}
               eventName="cta_click"
-              eventParams={{ location: "pricing", destination: adminBaseUrl ? "signup" : "whatsapp" }}
+              eventParams={{ cta_location: "pricing", cta_destination: adminBaseUrl ? "signup" : "whatsapp" }}
             >
               {signupLabel} <span aria-hidden="true">→</span>
             </TrackedLink>
@@ -438,7 +438,7 @@ export default function Home() {
               target={adminBaseUrl ? undefined : "_blank"}
               rel={adminBaseUrl ? undefined : "noopener noreferrer"}
               eventName="cta_click"
-              eventParams={{ location: "final", destination: adminBaseUrl ? "signup" : "whatsapp" }}
+              eventParams={{ cta_location: "final", cta_destination: adminBaseUrl ? "signup" : "whatsapp" }}
             >
               {signupLabel} <span aria-hidden="true">→</span>
             </TrackedLink>
@@ -449,7 +449,7 @@ export default function Home() {
       <footer className="footer">
         <div className="footer-inner">
           <div><Brand /><p className="footer-tagline">Gestão simples para barbearias que querem crescer.</p></div>
-          <div className="footer-links"><a href="#produto">Produtos</a><a href="#beneficios">Benefícios</a><a href="#pricing">Planos</a><a href="#faq">FAQ</a><a href={whatsappUrl("footer")} target="_blank" rel="noopener noreferrer">Contato</a></div>
+          <div className="footer-links"><a href="#produto">Produtos</a><a href="#beneficios">Benefícios</a><a href="#pricing">Planos</a><a href="#faq">FAQ</a><TrackedLink href={whatsappUrl("footer")} target="_blank" rel="noopener noreferrer" eventName="cta_click" eventParams={{ cta_location: "footer", cta_destination: "whatsapp" }}>Contato</TrackedLink></div>
           <div className="footer-bottom"><span>© 2026 SaaS Barbearia. Todos os direitos reservados.</span><span>Desenvolvido por Caio Santos.</span></div>
         </div>
       </footer>
