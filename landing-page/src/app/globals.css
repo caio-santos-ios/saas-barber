@@ -240,6 +240,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .price span { color: var(--gold-bright); }
 .price small { margin-left: 8px; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; letter-spacing: 0; }
 .price-description { margin-top: 5px; color: var(--muted); font-size: 13px; }
+.price-regular { margin-top: 9px; color: var(--muted-deep); font-size: 11px; }
+.price-regular strong { color: #d2d1c8; font-weight: 700; }
 .plan-features { display: grid; gap: 12px; margin: 26px 0; padding-top: 24px; border-top: 1px solid var(--line); list-style: none; color: #d1d1ca; font-size: 13px; }
 .plan-features li::before { content: '✓'; margin-right: 9px; color: var(--gold-bright); }
 .pricing-footnote { display: block; margin-top: 13px; color: var(--muted-deep); font-size: 10px; text-align: center; }

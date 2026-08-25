@@ -21,13 +21,26 @@ const productJsonLd = {
   operatingSystem: "Web, Android, iOS",
   description:
     "Sistema de gestão para barbearias com painel administrativo, agenda, controle financeiro, comissões e aplicativos para barbeiros e clientes.",
-  offers: {
-    "@type": "Offer",
-    price: "39.99",
-    priceCurrency: "BRL",
-    url: "https://saas-barber-xi.vercel.app/#pricing",
-    availability: "https://schema.org/InStock",
-  },
+  offers: [
+    {
+      "@type": "Offer",
+      name: "Plano Barbearia Fundadora",
+      price: "29.90",
+      priceCurrency: "BRL",
+      url: "https://saas-barber-xi.vercel.app/#pricing",
+      description: "Condição especial para as 10 primeiras barbearias durante 6 meses.",
+      availability: "https://schema.org/InStock",
+    },
+    {
+      "@type": "Offer",
+      name: "Plano Pro",
+      price: "39.99",
+      priceCurrency: "BRL",
+      url: "https://saas-barber-xi.vercel.app/#pricing",
+      description: "Preço oficial mensal do plano Pro.",
+      availability: "https://schema.org/InStock",
+    },
+  ],
 };
 
 const benefits = [
@@ -76,7 +89,7 @@ const faqs = [
   {
     question: "Como funciona a cobrança?",
     answer:
-      "O plano apresentado é de R$ 39,99 por mês, com cobrança recorrente processada pelo Asaas. O cancelamento pode ser feito a qualquer momento, conforme os termos da assinatura.",
+      "A condição de lançamento para as 10 primeiras barbearias é de R$ 29,90 por mês durante os 6 primeiros meses. Depois desse período, aplica-se o preço oficial de R$ 39,99 por mês, com cobrança recorrente processada pelo Asaas.",
   },
   {
     question: "Tenho ajuda para configurar a barbearia?",
@@ -386,15 +399,16 @@ export default function Home() {
 
         <section id="pricing" className="section-shell pricing-section">
           <div className="pricing-copy">
-            <p className="section-eyebrow">Plano único para começar</p>
-            <h2>O essencial para profissionalizar sua operação.</h2>
-            <p>Comece com as funções que mais impactam o dia a dia e evolua junto com a sua barbearia.</p>
-            <div className="pricing-notes"><span>✓ Agendamentos ilimitados</span><span>✓ Profissionais ilimitados</span><span>✓ Suporte especializado</span></div>
+            <p className="section-eyebrow">Condição especial de lançamento</p>
+            <h2>Comece como uma das 10 primeiras barbearias do Nordeste.</h2>
+            <p>Use o sistema completo por uma condição especial durante os 6 primeiros meses e ajude a construir a próxima fase do produto.</p>
+            <div className="pricing-notes"><span>✓ R$ 29,90 nos 6 primeiros meses</span><span>✓ Agendamentos e profissionais ilimitados</span><span>✓ Configuração acompanhada</span></div>
           </div>
           <div className="pricing-card">
-            <div className="pricing-card-top"><span className="plan-badge">PLANO PRO</span><span className="plan-note">Mais completo</span></div>
-            <div className="price">R$ 39<span>,99</span><small>/mês</small></div>
-            <p className="price-description">Tudo em um só lugar para sua barbearia operar melhor.</p>
+            <div className="pricing-card-top"><span className="plan-badge">PLANO FUNDADOR</span><span className="plan-note">10 vagas</span></div>
+            <div className="price">R$ 29<span>,90</span><small>/mês</small></div>
+            <p className="price-description">Condição especial durante os 6 primeiros meses.</p>
+            <p className="price-regular">Preço oficial depois: <strong>R$ 39,99/mês</strong></p>
             <ul className="plan-features"><li>Dashboard financeiro e operacional</li><li>Agenda da equipe e escalas</li><li>Serviços, profissionais e comissões</li><li>App para barbeiros e clientes</li><li>Notificações e suporte em português</li></ul>
             <TrackedLink
               href={pricingDestination}
@@ -406,7 +420,7 @@ export default function Home() {
             >
               {signupLabel} <span aria-hidden="true">→</span>
             </TrackedLink>
-            <small className="pricing-footnote">Cancele quando quiser. Sem contrato de fidelidade.</small>
+            <small className="pricing-footnote">Válido para as 10 primeiras barbearias. Cancele quando quiser.</small>
           </div>
         </section>
 
