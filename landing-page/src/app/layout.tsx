@@ -2,16 +2,46 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
 
+const siteUrl = "https://saas-barber-xi.vercel.app";
+
 export const metadata: Metadata = {
-  title: "SaaS Barbearia | Gestão Completa para o seu Negócio",
-  description: "Revolucione a gestão da sua barbearia com o nosso SaaS. Agendamentos, controle de caixa, assinaturas e muito mais em um único lugar.",
-  keywords: "barbearia, sistema para barbearia, gestão de barbearia, agendamento online, saas",
+  metadataBase: new URL(siteUrl),
+  title: "Sistema para Barbearia | Agenda, Caixa e Equipe",
+  description:
+    "Organize agenda, profissionais, comissões e caixa em um único sistema. SaaS de gestão para barbearias com painel Web e apps para clientes e barbeiros.",
+  keywords: [
+    "sistema para barbearia",
+    "gestão de barbearia",
+    "agendamento para barbearia",
+    "app para barbearia",
+    "agenda de barbeiro",
+  ],
+  alternates: { canonical: "/" },
   openGraph: {
-    title: "SaaS Barbearia | Gestão Completa",
-    description: "Revolucione a gestão da sua barbearia com o nosso SaaS. Agendamentos, controle de caixa, assinaturas e muito mais.",
-    type: "website",
+    title: "SaaS Barbearia | Gestão simples para crescer",
+    description:
+      "Agenda, equipe, comissões e caixa em um só lugar — com painel para o administrador e apps para barbeiros e clientes.",
+    url: siteUrl,
+    siteName: "SaaS Barbearia",
     locale: "pt_BR",
-  }
+    type: "website",
+    images: [
+      {
+        url: "/dashboard-preview.png",
+        width: 1024,
+        height: 498,
+        alt: "Dashboard do SaaS Barbearia",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SaaS Barbearia | Gestão simples para crescer",
+    description:
+      "Agenda, equipe, comissões e caixa em um só lugar para sua barbearia.",
+    images: ["/dashboard-preview.png"],
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({
@@ -31,7 +61,6 @@ export default function RootLayout({
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-
             gtag('config', 'G-3EGKNN013P');
           `}
         </Script>

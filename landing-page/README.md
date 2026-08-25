@@ -20,6 +20,12 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Configuração do CTA de cadastro
+
+Defina a variável `NEXT_PUBLIC_ADMIN_URL` no ambiente de produção com a URL pública do painel Web. A landing acrescentará `/register` automaticamente aos CTAs principais. Enquanto essa variável estiver vazia, os CTAs usarão o atendimento pelo WhatsApp como fallback.
+
+O arquivo `.env.example` mostra o formato esperado. Nunca comite chaves de API, senhas ou arquivos `.env` reais.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
