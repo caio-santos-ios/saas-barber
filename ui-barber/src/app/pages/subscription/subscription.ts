@@ -51,7 +51,6 @@ export class Subscription implements OnInit {
     try {
       const response = await api.get(`/plans?deleted=false`);
       this.plans = response.data.data || [];
-      console.log(this.plans)
 
       const shopRes = await api.get(`/barbershops?deleted=false`);
       if (shopRes.data.data && shopRes.data.data.length > 0) {
