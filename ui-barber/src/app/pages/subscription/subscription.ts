@@ -19,8 +19,13 @@ export class Subscription implements OnInit {
   loading = true;
   processing = false;
   isCancelModalOpen = false;
-  
   currentPlanId = '';
+  selectedPlan: any = null;
+  billingType: 'CREDIT_CARD' | 'PIX' | 'BOLETO' = 'CREDIT_CARD';
+  invoices: any[] = [];
+
+  pixResult: { pixQrCode?: string; pixKey?: string; expirationDate?: string } | null = null;
+  boletoResult: { boletoUrl?: string; boletoBarCode?: string; dueDate?: string } | null = null;
 
   paymentData = {
     holderName: '',
@@ -29,10 +34,6 @@ export class Subscription implements OnInit {
     expiryYear: '',
     ccv: ''
   };
-
-  selectedPlan: any = null;
-
-  invoices: any[] = [];
 
   constructor(
     private toastr: ToastrService,
@@ -78,13 +79,28 @@ export class Subscription implements OnInit {
     }
   }
 
-  openCancelModal() {
-    this.isCancelModalOpen = true;
+  selectPlan(plan: any) {
+    this.selectedPlan = plan;
+    this.billingType = 'CREDIT_CARD';
+    this.pixResult = null;
+    this.boletoResult = null;
+    this.paymentData = { holderName: '', number: '', expiryMonth: '', expiryYear: '', ccv: '' };
   }
 
-  closeCancelModal() {
-    this.isCancelModalOpen = false;
+  cancelCheckout() {
+    this.selectedPlan = null;
+    this.pixResult = null;
+    this.boletoResult = null;
   }
+
+  selectBillingType(type: 'CREDIT_CARD' | 'PIX' | 'BOLETO') {
+    this.billingType = type;
+    this.pixResult = null;
+    this.boletoResult = null;
+  }
+
+  openCancelModal() { this.isCancelModalOpen = true; }
+  closeCancelModal() { this.isCancelModalOpen = false; }
 
   async confirmCancelSubscription() {
     try {
@@ -99,57 +115,76 @@ export class Subscription implements OnInit {
     }
   }
 
-  selectPlan(plan: any) {
-    this.selectedPlan = plan;
-  }
-
-  cancelCheckout() {
-    this.selectedPlan = null;
-  }
-
   async processPayment() {
     if (!this.selectedPlan) return;
-    
-    if (!this.paymentData.holderName || !this.paymentData.number || !this.paymentData.expiryMonth || !this.paymentData.expiryYear || !this.paymentData.ccv) {
-      this.toastr.warning('Por favor, preencha todos os campos do cartão de crédito.', 'Campos Obrigatórios');
-      return;
+
+    if (this.billingType === 'CREDIT_CARD') {
+      if (!this.paymentData.holderName || !this.paymentData.number || !this.paymentData.expiryMonth || !this.paymentData.expiryYear || !this.paymentData.ccv) {
+        this.toastr.warning('Por favor, preencha todos os campos do cartão de crédito.', 'Campos Obrigatórios');
+        return;
+      }
     }
 
     this.processing = true;
     this.cdr.detectChanges();
-    
+
     try {
       const barbershopId = localStorage.getItem('barbershopId');
-      
-      // Clean credit card number format
       const ccNumber = this.paymentData.number.replace(/\s+/g, '');
 
-      const payload = {
+      const payload: any = {
         planId: this.selectedPlan.id,
-        creditCard: {
+        billingType: this.billingType
+      };
+
+      if (this.billingType === 'CREDIT_CARD') {
+        payload.creditCard = {
           holderName: this.paymentData.holderName,
           number: ccNumber,
           expiryMonth: this.paymentData.expiryMonth,
           expiryYear: this.paymentData.expiryYear,
           ccv: this.paymentData.ccv
-        }
-      };
+        };
+      }
 
-      await api.post(`/subscriptions/checkout?barbershopId=${barbershopId}`, payload);
-      this.toastr.success('Pagamento aprovado e assinatura ativada com sucesso!', 'Sucesso');
+      const res = await api.post(`/subscriptions/checkout?barbershopId=${barbershopId}`, payload);
+      const data = res.data?.data || res.data;
+
       this.auth.setSubscriptionStatus('Ativa');
       this.currentPlanId = this.selectedPlan.id;
-      this.selectedPlan = null;
-      setTimeout(() => this.router.navigate(['/dashboard']), 1500);
+
+      if (this.billingType === 'PIX' && data?.pixKey) {
+        this.pixResult = data;
+        this.toastr.success('Assinatura gerada! Pague via PIX para ativar.', 'PIX Gerado');
+      } else if (this.billingType === 'BOLETO' && data?.boletoUrl) {
+        this.boletoResult = data;
+        this.toastr.success('Boleto gerado! Pague para ativar sua assinatura.', 'Boleto Gerado');
+      } else {
+        this.toastr.success('Pagamento aprovado e assinatura ativada com sucesso!', 'Sucesso');
+        this.selectedPlan = null;
+        setTimeout(() => this.router.navigate(['/dashboard']), 1500);
+      }
     } catch (err: any) {
       console.error('Erro ao processar pagamento', err);
-      const msg = err.response?.data?.message || 'Falha ao processar o pagamento. Verifique os dados do cartão.';
+      const msg = err.response?.data?.message || 'Falha ao processar o pagamento. Verifique os dados e tente novamente.';
       this.toastr.error(msg, 'Pagamento Recusado');
     } finally {
       this.processing = false;
       this.cdr.detectChanges();
     }
   }
+
+  copyPixKey() {
+    if (this.pixResult?.pixKey) {
+      navigator.clipboard.writeText(this.pixResult.pixKey);
+      this.toastr.info('Chave PIX copiada!', 'Copiado');
+    }
+  }
+
+  goToDashboard() {
+    this.router.navigate(['/dashboard']);
+  }
+
   translateStatus(status: string): string {
     const map: Record<string, string> = {
       'PENDING': 'Pendente',

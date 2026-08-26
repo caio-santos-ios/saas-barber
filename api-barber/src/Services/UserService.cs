@@ -77,7 +77,7 @@ namespace api_barber.Services
                     {
                         {"deleted", false},
                         {"role", "Barber"},
-                        {"barbershopId", barbershopId}
+                        {"barbershop_id", barbershopId}
                     }),
                     new("$project", new BsonDocument
                     {
@@ -137,8 +137,6 @@ namespace api_barber.Services
                 return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
             }
         }
-        #endregion
-
         public async Task<ResponseApi<User>> UpdatePasswordAsync(string userId, string newPassword)
         {
             try
@@ -159,6 +157,7 @@ namespace api_barber.Services
                 return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
             }
         }
+        #endregion
 
         #region DELETE
         public async Task<ResponseApi<User>> DeleteAsync(DeleteRequest request)

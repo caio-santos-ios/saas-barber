@@ -48,6 +48,7 @@ export class Barbers implements OnInit {
     this.cdr.detectChanges();
     try {
       const response = await api.get(`/users/barbers`);
+      console.log(response.data.data)
       this.barbers = response.data.data || [];
     } catch (err) {
       console.error('Erro ao carregar profissionais', err);

@@ -45,7 +45,7 @@
   </div>
 
   <div *ngIf="loading" class="text-center py-4 text-muted">Carregando planos...</div>
-    
+
   <div class="plans-grid" *ngIf="!loading && !selectedPlan">
     <div class="plan-card" *ngFor="let p of plans" [class.current]="p.id === currentPlanId">
       <div class="plan-header">
@@ -58,7 +58,6 @@
         <span class="period">/mês</span>
       </div>
       <p class="plan-desc">{{ p.description }}</p>
-      
       <button class="btn-primary w-100" *ngIf="p.id !== currentPlanId" (click)="selectPlan(p)">
         Assinar {{ p.name }}
       </button>
@@ -68,53 +67,121 @@
     </div>
   </div>
 
-  <div class="card checkout-container" *ngIf="selectedPlan" style="max-width: 800px; margin: 0 auto; padding: 32px; margin-top: 32px;">
+  <div class="card checkout-container" *ngIf="selectedPlan && !pixResult && !boletoResult">
     <div style="margin-bottom: 24px;">
-      <h2 style="color: var(--text-main); margin-bottom: 8px;">Checkout Seguro</h2>
-      <p style="color: var(--text-muted);">Você está assinando o plano: <strong>{{ selectedPlan.name }} (R$ {{ selectedPlan.price | number:'1.2-2' }})</strong></p>
+      <h2 style="color: var(--text-main); margin-bottom: 4px;">Checkout Seguro</h2>
+      <p style="color: var(--text-muted);">Plano: <strong>{{ selectedPlan.name }} — R$ {{ selectedPlan.price | number:'1.2-2' }}/mês</strong></p>
+    </div>
+
+    <div style="margin-bottom: 28px;">
+      <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 14px; color: var(--text-muted);">FORMA DE PAGAMENTO</h3>
+      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <button type="button" class="payment-method-btn" [class.selected]="billingType === 'CREDIT_CARD'" (click)="selectBillingType('CREDIT_CARD')">
+          <span style="font-size: 20px;">💳</span>
+          <span>Cartão de Crédito</span>
+        </button>
+        <button type="button" class="payment-method-btn" [class.selected]="billingType === 'PIX'" (click)="selectBillingType('PIX')">
+          <span style="font-size: 20px;">⚡</span>
+          <span>PIX</span>
+        </button>
+        <button type="button" class="payment-method-btn" [class.selected]="billingType === 'BOLETO'" (click)="selectBillingType('BOLETO')">
+          <span style="font-size: 20px;">🧾</span>
+          <span>Boleto Bancário</span>
+        </button>
+      </div>
     </div>
 
     <form (ngSubmit)="processPayment()">
-      <h3 style="margin-bottom: 16px; color: var(--text-main); font-size: 16px;">Dados do Cartão de Crédito</h3>
-      
-      <div class="form-row">
-        <div class="form-group">
-          <label>Nome no Cartão</label>
-          <input type="text" name="holderName" [(ngModel)]="paymentData.holderName" required class="form-input" placeholder="Como impresso no cartão" style="text-transform: uppercase;" />
+      <div *ngIf="billingType === 'CREDIT_CARD'">
+        <h3 style="margin-bottom: 16px; color: var(--text-muted); font-size: 14px; font-weight: 600; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">DADOS DO CARTÃO</h3>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nome no Cartão</label>
+            <input type="text" name="holderName" [(ngModel)]="paymentData.holderName" required class="form-input" placeholder="Como impresso no cartão" style="text-transform: uppercase;" />
+          </div>
+          <div class="form-group">
+            <label>Número do Cartão</label>
+            <input type="text" name="number" [(ngModel)]="paymentData.number" mask="0000 0000 0000 0000" [dropSpecialCharacters]="false" required class="form-input" placeholder="0000 0000 0000 0000" />
+          </div>
         </div>
 
-        <div class="form-group">
-          <label>Número do Cartão</label>
-          <input type="text" name="number" [(ngModel)]="paymentData.number" mask="0000 0000 0000 0000" [dropSpecialCharacters]="false" required class="form-input" placeholder="0000 0000 0000 0000" />
+        <div class="form-row">
+          <div class="form-group">
+            <label>Mês (MM)</label>
+            <input type="text" name="expiryMonth" [(ngModel)]="paymentData.expiryMonth" mask="00" required class="form-input" placeholder="MM" />
+          </div>
+          <div class="form-group">
+            <label>Ano (AAAA)</label>
+            <input type="text" name="expiryYear" [(ngModel)]="paymentData.expiryYear" mask="0000" required class="form-input" placeholder="AAAA" />
+          </div>
+          <div class="form-group">
+            <label>CVC</label>
+            <input type="text" name="ccv" [(ngModel)]="paymentData.ccv" mask="000||0000" required class="form-input" placeholder="123" />
+          </div>
         </div>
       </div>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label>Mês (MM)</label>
-          <input type="text" name="expiryMonth" [(ngModel)]="paymentData.expiryMonth" mask="00" required class="form-input" placeholder="MM" />
-        </div>
-        <div class="form-group">
-          <label>Ano (AAAA)</label>
-          <input type="text" name="expiryYear" [(ngModel)]="paymentData.expiryYear" mask="0000" required class="form-input" placeholder="AAAA" />
-        </div>
-        <div class="form-group">
-          <label>CVC</label>
-          <input type="text" name="ccv" [(ngModel)]="paymentData.ccv" mask="000||0000" required class="form-input" placeholder="123" />
-        </div>
+      <div *ngIf="billingType === 'PIX'" style="background: var(--bg-body); border-radius: 10px; padding: 20px; text-align: center; color: var(--text-muted);">
+        <div style="font-size: 40px; margin-bottom: 8px;">⚡</div>
+        <p style="margin: 0; font-weight: 500;">Clique em "Gerar PIX" para gerar o QR Code de pagamento.</p>
+        <p style="font-size: 13px; margin-top: 6px;">A assinatura será ativada após a confirmação do pagamento pelo Asaas.</p>
       </div>
 
-      <div class="modal-footer" style="margin-top: 32px; border-top: none; padding-top: 0;">
+      <div *ngIf="billingType === 'BOLETO'" style="background: var(--bg-body); border-radius: 10px; padding: 20px; text-align: center; color: var(--text-muted);">
+        <div style="font-size: 40px; margin-bottom: 8px;">🧾</div>
+        <p style="margin: 0; font-weight: 500;">Clique em "Gerar Boleto" para emitir o boleto bancário.</p>
+        <p style="font-size: 13px; margin-top: 6px;">O prazo de compensação é de até 3 dias úteis.</p>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 28px; border-top: 1px solid var(--border-color); padding-top: 20px;">
         <button type="button" class="btn-secondary" (click)="cancelCheckout()" [disabled]="processing">Cancelar</button>
         <button type="submit" class="btn-primary" [disabled]="processing">
-          {{ processing ? 'Processando Pagamento...' : 'Pagar e Assinar' }}
+          <span *ngIf="!processing">
+            {{ billingType === 'CREDIT_CARD' ? 'Pagar e Assinar' : billingType === 'PIX' ? 'Gerar PIX' : 'Gerar Boleto' }}
+          </span>
+          <span *ngIf="processing">Processando...</span>
         </button>
       </div>
-      
+
       <div style="text-align: center; margin-top: 16px;">
         <small style="color: var(--text-muted);">🔒 Pagamento processado de forma segura pelo Asaas</small>
       </div>
     </form>
+  </div>
+
+  <div class="card checkout-container" *ngIf="pixResult" style="max-width: 500px; text-align: center;">
+    <div style="font-size: 48px; margin-bottom: 16px;">⚡</div>
+    <h2 style="margin-bottom: 8px;">PIX Gerado!</h2>
+    <p style="color: var(--text-muted); margin-bottom: 24px;">Escaneie o QR Code ou copie a chave PIX para pagar.</p>
+
+    <div *ngIf="pixResult.pixQrCode" style="margin-bottom: 20px;">
+      <img [src]="'data:image/png;base64,' + pixResult.pixQrCode" alt="QR Code PIX" style="width: 220px; height: 220px; border: 1px solid var(--border-color); border-radius: 8px;" />
+    </div>
+
+    <div *ngIf="pixResult.pixKey" style="background: var(--bg-body); border-radius: 8px; padding: 14px; margin-bottom: 16px; word-break: break-all; font-size: 13px; color: var(--text-main);">
+      {{ pixResult.pixKey }}
+    </div>
+
+    <button type="button" class="btn-primary w-100" style="margin-bottom: 12px;" (click)="copyPixKey()">Copiar Chave PIX</button>
+    <button type="button" class="btn-secondary w-100" (click)="goToDashboard()">Ir para o Dashboard</button>
+    <p *ngIf="pixResult.expirationDate" style="font-size: 12px; color: var(--text-muted); margin-top: 12px;">Expira em: {{ pixResult.expirationDate | date:'dd/MM/yyyy HH:mm' }}</p>
+  </div>
+
+  <div class="card checkout-container" *ngIf="boletoResult" style="max-width: 500px; text-align: center;">
+    <div style="font-size: 48px; margin-bottom: 16px;">🧾</div>
+    <h2 style="margin-bottom: 8px;">Boleto Gerado!</h2>
+    <p style="color: var(--text-muted); margin-bottom: 24px;">Seu boleto foi emitido. Pague até o vencimento para ativar sua assinatura.</p>
+
+    <div *ngIf="boletoResult.dueDate" style="margin-bottom: 16px;">
+      <span style="font-size: 14px; color: var(--text-muted);">Vencimento: </span>
+      <strong>{{ boletoResult.dueDate | date:'dd/MM/yyyy' }}</strong>
+    </div>
+
+    <a *ngIf="boletoResult.boletoUrl" [href]="boletoResult.boletoUrl" target="_blank" class="btn-primary w-100" style="display: block; margin-bottom: 12px; text-decoration: none; padding: 12px; border-radius: 8px; text-align: center;">
+      Abrir Boleto PDF
+    </a>
+    <button type="button" class="btn-secondary w-100" (click)="goToDashboard()">Ir para o Dashboard</button>
   </div>
 </div>
 
@@ -125,7 +192,7 @@
       <h2 style="margin-bottom: 8px;">Cancelar Assinatura?</h2>
       <p style="color: var(--text-muted); margin-bottom: 24px;">Tem certeza que deseja cancelar sua assinatura? <strong>O acesso ao sistema será bloqueado imediatamente.</strong></p>
       <div class="modal-footer" style="justify-content: center;">
-        <button type="button" class="btn-secondary" (click)="closeCancelModal()">Cancelar</button>
+        <button type="button" class="btn-secondary" (click)="closeCancelModal()">Voltar</button>
         <button type="button" class="btn-primary" style="background-color: #ef4444;" (click)="confirmCancelSubscription()">Confirmar Cancelamento</button>
       </div>
     </div>

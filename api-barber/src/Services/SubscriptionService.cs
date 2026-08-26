@@ -17,8 +17,22 @@ namespace api_barber.Services
             Barbershop barbershop = foundBarbershop.Data;
 
             var plans = await planService.GetAllAsync();
-            var plan = plans.Data?.FirstOrDefault(p => p.Id == request.PlanId);
-            if (plan == null) return new(null, 404, "Plan not found");
+            var planDynamic = plans.Data?.FirstOrDefault(p => p.id == request.PlanId);
+            if (planDynamic == null) return new(null, 404, "Plan not found");
+
+            var planResponse = await planService.GetByIdAsync((string)planDynamic.id);
+            if (planResponse.Data is null) return new(null, 404, "Plan not found");
+            var plan = planResponse.Data;
+
+            var billingType = request.BillingType?.ToUpper() switch
+            {
+                "PIX" => "PIX",
+                "BOLETO" => "BOLETO",
+                _ => "CREDIT_CARD"
+            };
+
+            if (billingType == "CREDIT_CARD" && request.CreditCard == null)
+                return new(null, 400, "Dados do cartão de crédito são obrigatórios.");
 
             string asaasCustomerId = barbershop.AsaasCustomerId;
             if (string.IsNullOrEmpty(asaasCustomerId))
@@ -28,62 +42,61 @@ namespace api_barber.Services
                 await barbershopService.UpdateEntityAsync(barbershop);
             }
 
-            dynamic creditCardHolderInfo = new
+            object? creditCardHolderInfo = null;
+            if (billingType == "CREDIT_CARD")
             {
-                name = string.IsNullOrEmpty(barbershop.Name) ? "Titular Padrão" : barbershop.Name,
-                email = string.IsNullOrEmpty(barbershop.Email) ? "titular@asaas.com" : barbershop.Email,
-                cpfCnpj = string.IsNullOrEmpty(barbershop.Document) ? "00000000000" : barbershop.Document,
-                postalCode = "01311000",
-                addressNumber = "123",
-                phone = string.IsNullOrEmpty(barbershop.Phone) ? "11999999999" : barbershop.Phone
-            };
+                creditCardHolderInfo = new
+                {
+                    name = string.IsNullOrEmpty(barbershop.Name) ? "Titular Padrão" : barbershop.Name,
+                    email = string.IsNullOrEmpty(barbershop.Email) ? "titular@asaas.com" : barbershop.Email,
+                    cpfCnpj = string.IsNullOrEmpty(barbershop.Document) ? "00000000000" : barbershop.Document,
+                    postalCode = "01311000",
+                    addressNumber = "123",
+                    phone = string.IsNullOrEmpty(barbershop.Phone) ? "11999999999" : barbershop.Phone
+                };
+            }
 
-            string subscriptionId = string.Empty;
+            object paymentResult;
             try
             {
-                subscriptionId = await asaasService.CreateSubscriptionAsync(asaasCustomerId, plan.Id, plan.Price, request.CreditCard, creditCardHolderInfo);
+                paymentResult = await asaasService.CreateSubscriptionAsync(asaasCustomerId, plan.Id, plan.Price, billingType, request.CreditCard, creditCardHolderInfo);
             }
             catch (Exception ex)
             {
                 return new(null, 400, $"Erro do Asaas: {ex.Message}");
             }
 
-            if (string.IsNullOrEmpty(subscriptionId))
-            {
-                return new(null, 400, "Failed to process payment in Asaas.");
-            }
-
             barbershop.SubscriptionStatus = SubscriptionStatusEnum.Ativa;
             barbershop.PlanId = plan.Id;
             await barbershopService.UpdateEntityAsync(barbershop);
 
-            return new(subscriptionId, 200, "Subscription activated successfully");
+            return new(paymentResult, 200, "Assinatura ativada com sucesso");
         }
 
         public async Task<ResponseApi<object>> GetHistoryAsync(string barbershopId)
         {
             if (string.IsNullOrEmpty(barbershopId)) return new(null, 400, "BarbershopId is required");
-            var barbershops = await barbershopService.GetAllAsync(string.Empty);
-            var barbershop = barbershops.Data?.FirstOrDefault(b => b.Id == barbershopId);
-            if (barbershop == null || string.IsNullOrEmpty(barbershop.AsaasCustomerId))
-                return new(null, 404, "Barbershop or Asaas Customer not found");
 
-            var invoices = await asaasService.GetInvoicesAsync(barbershop.AsaasCustomerId);
+            var barbershopResponse = await barbershopService.GetByIdAsync(barbershopId);
+            if (barbershopResponse.Data is null || string.IsNullOrEmpty(barbershopResponse.Data.AsaasCustomerId))
+                return new(null, 404, "Barbershop ou cliente Asaas não encontrado");
+
+            var invoices = await asaasService.GetInvoicesAsync(barbershopResponse.Data.AsaasCustomerId);
             return new(invoices, 200, "Invoices retrieved successfully");
         }
 
         public async Task<ResponseApi<object>> CancelAsync(string barbershopId)
         {
             if (string.IsNullOrEmpty(barbershopId)) return new(null, 400, "BarbershopId is required");
-            var barbershops = await barbershopService.GetAllAsync(string.Empty);
-            var barbershop = barbershops.Data?.FirstOrDefault(b => b.Id == barbershopId);
-            if (barbershop == null)
+
+            var barbershopResponse = await barbershopService.GetByIdAsync(barbershopId);
+            if (barbershopResponse.Data is null)
                 return new(null, 404, "Barbershop not found");
 
+            var barbershop = barbershopResponse.Data;
+
             if (!string.IsNullOrEmpty(barbershop.AsaasCustomerId))
-            {
-                var success = await asaasService.CancelSubscriptionAsync(barbershop.AsaasCustomerId);
-            }
+                await asaasService.CancelSubscriptionAsync(barbershop.AsaasCustomerId);
 
             barbershop.SubscriptionStatus = SubscriptionStatusEnum.Cancelada;
             await barbershopService.UpdateEntityAsync(barbershop);

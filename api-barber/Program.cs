@@ -6,9 +6,9 @@ using api_barber.src.Repositories;
 using api_barber.Handlers;
 using api_barber.Middlewares;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Mvc;
-
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -80,32 +80,34 @@ builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddHttpClient<IAsaasService, AsaasService>();
 builder.Services.AddScoped<IWebhookService, WebhookService>();
 builder.Services.AddSingleton<FirebaseAuthHandler>();
-builder.Services.AddControllers(options =>
-{
-})
-.ConfigureApiBehaviorOptions(options =>
-{
-    options.InvalidModelStateResponseFactory = context =>
+builder.Services.AddControllers(options => { })
+    .AddJsonOptions(options =>
     {
-        var errors = context.ModelState
-            .Where(e => e.Value!.Errors.Count > 0)
-            .Select(e => new {
-                Field   = e.Key,
-                Message = e.Value!.Errors.First().ErrorMessage,
-                Order   = context.ActionDescriptor.Parameters
-                    .SelectMany(p => p.ParameterType.GetProperties())
-                    .FirstOrDefault(p => p.Name == e.Key)?
-                    .GetCustomAttributes(typeof(DisplayAttribute), false)
-                    .Cast<DisplayAttribute>()
-                    .FirstOrDefault()?.Order ?? 999
-            })
-            .OrderBy(e => e.Order)
-            .Select(e => new { e.Field, e.Message })
-            .ToList();
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    })
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var errors = context.ModelState
+                .Where(e => e.Value!.Errors.Count > 0)
+                .Select(e => new {
+                    Field   = e.Key,
+                    Message = e.Value!.Errors.First().ErrorMessage,
+                    Order   = context.ActionDescriptor.Parameters
+                        .SelectMany(p => p.ParameterType.GetProperties())
+                        .FirstOrDefault(p => p.Name == e.Key)?
+                        .GetCustomAttributes(typeof(DisplayAttribute), false)
+                        .Cast<DisplayAttribute>()
+                        .FirstOrDefault()?.Order ?? 999
+                })
+                .OrderBy(e => e.Order)
+                .Select(e => new { e.Field, e.Message })
+                .ToList();
 
-        return new BadRequestObjectResult(new { errors });
-    };
-});
+            return new BadRequestObjectResult(new { errors });
+        };
+    });
 string firebaseKeyPath = Path.Combine(builder.Environment.ContentRootPath, "firebase-service-account.json");
 if (File.Exists(firebaseKeyPath))
 {
@@ -127,7 +129,3 @@ app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseMiddleware<TenantAndPlanMiddleware>();
 app.MapControllers();
 app.Run();
-
-
-
-

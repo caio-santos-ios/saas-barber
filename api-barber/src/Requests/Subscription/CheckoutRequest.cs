@@ -3,7 +3,8 @@ namespace api_barber.Requests.Subscription
     public class CheckoutRequest
     {
         public string PlanId { get; set; } = string.Empty;
-        public CreditCardRequest CreditCard { get; set; } = new();
+        public string BillingType { get; set; } = "CREDIT_CARD";
+        public CreditCardRequest? CreditCard { get; set; }
     }
 
     public class CreditCardRequest

@@ -188,3 +188,30 @@
 .mt-3 {
   margin-top: 16px;
 }
+
+.payment-method-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  background: var(--bg-main);
+  color: var(--text-main);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: border-color 0.2s, background 0.2s;
+  min-width: 160px;
+}
+
+.payment-method-btn:hover {
+  border-color: var(--primary-color);
+}
+
+.payment-method-btn.selected {
+  border-color: var(--primary-color);
+  background: color-mix(in srgb, var(--primary-color) 8%, var(--bg-main));
+  color: var(--primary-color);
+  font-weight: 600;
+}
