@@ -57,7 +57,7 @@ class AuthRepository {
     try {
       final response = await apiClient.dio.post(
         '/auth/reset-password',
-        data: {'email': email},
+        data: {'email': email, 'originUrl': 'https://app.barber.com'}, // TODO: Set dynamically if needed
       );
       return response.statusCode == 200;
     } on DioException catch (e) {
@@ -66,6 +66,33 @@ class AuthRepository {
   }
 
   Future<bool> updatePassword(String newPassword) async {
+    try {
+      final response = await apiClient.dio.post(
+        '/auth/update-password',
+        data: {'password': newPassword},
+      );
+      if (response.statusCode == 200) {
+        final authBox = Hive.box('auth');
+        await authBox.put('passwordResetRequired', false);
+        return true;
+      }
+      return false;
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Erro.');
+    }
+  }
+
+  Future<bool> confirmResetPassword(String code, String newPassword) async {
+    try {
+      final response = await apiClient.dio.post(
+        '/auth/confirm-reset-password',
+        data: {'code': code, 'newPassword': newPassword},
+      );
+      return response.statusCode == 200;
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['message'] ?? 'Ocorreu um erro inesperado.');
+    }
+  
     try {
       final response = await apiClient.dio.post(
         '/auth/update-password',
@@ -93,3 +120,5 @@ class AuthRepository {
     authBox.delete('photo');
   }
 }
+
+

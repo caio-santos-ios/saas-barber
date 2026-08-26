@@ -5,10 +5,13 @@ using api_barber.src.Interfaces;
 using api_barber.src.Repositories;
 using api_barber.Handlers;
 using api_barber.Middlewares;
-var builder = WebApplication.CreateBuilder(args);
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 DotNetEnv.Env.Load();
 builder.Configuration.AddEnvironmentVariables();
-builder.Services.AddControllers();
+
 if (System.IO.File.Exists("firebase-service-account.json"))
 {
     FirebaseAdmin.FirebaseApp.Create(new FirebaseAdmin.AppOptions
@@ -21,7 +24,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
     {
-        policy.WithOrigins("http://localhost:4200", "http://localhost:65303")
+        policy.WithOrigins("http://localhost:4200", "http://localhost:60870")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -58,7 +61,33 @@ builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddHttpClient<IAsaasService, AsaasService>();
 builder.Services.AddScoped<IWebhookService, WebhookService>();
 builder.Services.AddSingleton<FirebaseAuthHandler>();
-var firebaseKeyPath = Path.Combine(builder.Environment.ContentRootPath, "firebase-service-account.json");
+builder.Services.AddControllers(options =>
+{
+})
+.ConfigureApiBehaviorOptions(options =>
+{
+    options.InvalidModelStateResponseFactory = context =>
+    {
+        var errors = context.ModelState
+            .Where(e => e.Value!.Errors.Count > 0)
+            .Select(e => new {
+                Field   = e.Key,
+                Message = e.Value!.Errors.First().ErrorMessage,
+                Order   = context.ActionDescriptor.Parameters
+                    .SelectMany(p => p.ParameterType.GetProperties())
+                    .FirstOrDefault(p => p.Name == e.Key)?
+                    .GetCustomAttributes(typeof(DisplayAttribute), false)
+                    .Cast<DisplayAttribute>()
+                    .FirstOrDefault()?.Order ?? 999
+            })
+            .OrderBy(e => e.Order)
+            .Select(e => new { e.Field, e.Message })
+            .ToList();
+
+        return new BadRequestObjectResult(new { errors });
+    };
+});
+string firebaseKeyPath = Path.Combine(builder.Environment.ContentRootPath, "firebase-service-account.json");
 if (File.Exists(firebaseKeyPath))
 {
     FirebaseAdmin.FirebaseApp.Create(new FirebaseAdmin.AppOptions()

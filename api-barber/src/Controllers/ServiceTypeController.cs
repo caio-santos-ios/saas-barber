@@ -5,7 +5,7 @@ using api_barber.Requests.ServiceType;
 namespace api_barber.Controllers
 {
     [ApiController]
-    [Route("servicetypes")]
+    [Route("services_types")]
     public class ServiceTypeController(IServiceTypeService service) : ControllerBase
     {
         [HttpGet]

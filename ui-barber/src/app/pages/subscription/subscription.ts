@@ -49,12 +49,10 @@ export class Subscription implements OnInit {
     this.loading = true;
     this.cdr.detectChanges();
     try {
-      const barbershopId = localStorage.getItem('barbershopId');
-      
-      const response = await api.get(`/plans?barbershopId=${barbershopId}`);
+      const response = await api.get(`/plans?deleted=false`);
       this.plans = response.data.data || [];
 
-      const shopRes = await api.get(`/barbershops?barbershopId=${barbershopId}`);
+      const shopRes = await api.get(`/barbershops?deleted=false`);
       if (shopRes.data.data && shopRes.data.data.length > 0) {
         this.currentPlanId = shopRes.data.data[0].planId;
       }
@@ -97,7 +95,6 @@ export class Subscription implements OnInit {
       this.closeCancelModal();
       this.router.navigate(['/']);
     } catch (err) {
-      console.error('Erro ao cancelar', err);
       this.toastr.error('Erro ao cancelar assinatura. Tente novamente.', 'Erro');
     }
   }

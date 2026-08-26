@@ -33,12 +33,26 @@ namespace api_barber.Services
                 var json = JsonSerializer.Deserialize<JsonElement>(responseBody);
                 return json.GetProperty("id").GetString() ?? string.Empty;
             }
-            else
+                        else
             {
                 var errorBody = await response.Content.ReadAsStringAsync();
                 Console.WriteLine("ASAAS ERROR (Customer): " + errorBody);
+                
+                try
+                {
+                    var json = JsonSerializer.Deserialize<JsonElement>(errorBody);
+                    var errorMessage = json.GetProperty("errors")[0].GetProperty("description").GetString();
+                    throw new Exception(errorMessage);
+                }
+                catch (Exception ex) when (ex.Message != null && ex.Message != "")
+                {
+                    if (ex is not JsonException && ex is not KeyNotFoundException)
+                    {
+                        throw;
+                    }
+                    throw new Exception("Erro ao cadastrar cliente no Asaas.");
+                }
             }
-            return string.Empty;
         }
         public async Task<string> CreateSubscriptionAsync(string asaasCustomerId, string planId, decimal value, api_barber.Requests.Subscription.CreditCardRequest? creditCard = null, object? creditCardHolderInfo = null)
         {
@@ -110,5 +124,6 @@ namespace api_barber.Services
         }
     }
 }
+
 
 

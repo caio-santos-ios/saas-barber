@@ -8,7 +8,7 @@ namespace api_barber.Interfaces
         Task<ResponseApi<AuthResponse>> LoginAsync(LoginRequest request);
         Task<ResponseApi<AuthResponse>> RegisterCustomerAsync(CreateCustomerRequest request);
         Task<ResponseApi<AuthResponse>> RegisterAdminAsync(CreateAdminRequest request);
-        Task<ResponseApi<ResetPasswordResponse>> ResetPasswordAsync(string email);
+        Task<ResponseApi<ResetPasswordResponse>> ResetPasswordAsync(ResetPasswordRequest request);
+        Task<ResponseApi<object>> ConfirmResetPasswordAsync(ConfirmResetPasswordRequest request);
     }
 }
-

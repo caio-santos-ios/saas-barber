@@ -105,7 +105,6 @@ namespace api_barber.Services
             try
             {
                 User entity = ObjectMapper.Map<CreateUserRequest, User>(request);
-
                 User user = await repository.CreateAsync(entity);
                 if (user is null) return new(null, 400, "Falha ao criar usuário");
 
@@ -139,6 +138,27 @@ namespace api_barber.Services
             }
         }
         #endregion
+
+        public async Task<ResponseApi<User>> UpdatePasswordAsync(string userId, string newPassword)
+        {
+            try
+            {
+                User existedUser = await repository.GetByIdAsync(userId);
+                if (existedUser is null) return new(null, 404, "Usuário não encontrado");
+
+                existedUser.Password = newPassword;
+                existedUser.PasswordResetRequired = false;
+
+                User user = await repository.UpdateAsync(existedUser);
+                if (user is null) return new(null, 400, "Falha ao atualizar senha");
+
+                return new(user, 200, "Senha atualizada com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
+            }
+        }
 
         #region DELETE
         public async Task<ResponseApi<User>> DeleteAsync(DeleteRequest request)

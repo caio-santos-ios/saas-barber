@@ -10,10 +10,12 @@ import { Subscription } from './pages/subscription/subscription';
 import { Settings } from './pages/settings/settings';
 import { Login } from './pages/login/login';
 import { Register } from './pages/register/register';
+import { ResetPassword } from './pages/reset-password/reset-password';
 import { AuthGuard } from './guards/auth-guard';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
+  { path: 'reset-password', component: ResetPassword },
   { path: 'register', component: Register },
   {
     path: '',
@@ -33,3 +35,4 @@ export const routes: Routes = [
   },
   { path: '**', redirectTo: 'dashboard' }
 ];
+

@@ -50,11 +50,11 @@ export class Login {
     }
     this.resetLoading = true;
     try {
-      await api.post('/auth/reset-password', { email: this.resetEmail });
+      await api.post('/auth/reset-password', { email: this.resetEmail, originUrl: window.location.origin });
       this.closeResetModal();
       this.toastr.success(
         'Uma nova senha temporária foi enviada para o seu e-mail.',
-        'Senha Redefinida',
+        'E-mail Enviado',
         { timeOut: 8000 }
       );
     } catch (err: any) {
@@ -102,3 +102,4 @@ export class Login {
     }
   }
 }
+
