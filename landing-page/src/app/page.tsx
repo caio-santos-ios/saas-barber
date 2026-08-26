@@ -4,7 +4,7 @@ import TrackedLink from "./TrackedLink";
 const whatsappNumber = "5511965079106";
 const adminBaseUrl = process.env.NEXT_PUBLIC_ADMIN_URL?.replace(/\/$/, "");
 const signupUrl = adminBaseUrl ? `${adminBaseUrl}/register` : "#contact";
-const signupLabel = adminBaseUrl ? "Criar conta grátis" : "Quero testar com ajuda";
+const signupLabel = adminBaseUrl ? "Criar minha conta grátis" : "Quero começar com ajuda";
 
 function whatsappUrl(source: string) {
   const message = encodeURIComponent(
@@ -90,6 +90,11 @@ const faqs = [
     question: "Como funciona a cobrança?",
     answer:
       "A condição de lançamento para as 10 primeiras barbearias é de R$ 29,90 por mês durante os 6 primeiros meses. Depois desse período, aplica-se o preço oficial de R$ 39,99 por mês, com cobrança recorrente processada pelo Asaas.",
+  },
+  {
+    question: "Preciso instalar algo para começar?",
+    answer:
+      "O dono da barbearia começa pelo painel Web. Os barbeiros usam o aplicativo da equipe e os clientes usam o aplicativo de agendamento, cada um com as funções do seu perfil.",
   },
   {
     question: "Tenho ajuda para configurar a barbearia?",
@@ -252,9 +257,9 @@ export default function Home() {
         <section className="hero section-shell">
           <div className="hero-copy">
             <div className="eyebrow"><span className="eyebrow-dot" /> Gestão para barbearias que querem crescer</div>
-            <h1>Chega de perder horários e controlar a barbearia no improviso.</h1>
+            <h1>Organize agenda, equipe e caixa da sua barbearia em um só lugar.</h1>
             <p className="hero-lead">
-              Organize agenda, profissionais, comissões e caixa em um único sistema — com painel para o administrador e aplicativos para barbeiros e clientes.
+              Um sistema completo para o dono administrar a operação, o barbeiro acompanhar a própria rotina e o cliente agendar sem depender de várias mensagens.
             </p>
             <div className="hero-actions">
               <TrackedLink
@@ -269,6 +274,7 @@ export default function Home() {
               </TrackedLink>
               <a href="#produto" className="text-link">Ver como funciona <span aria-hidden="true">↓</span></a>
             </div>
+            <p className="hero-assurance">Cadastro rápido · Configuração acompanhada · Cancele quando quiser</p>
             <div className="hero-proof" aria-label="Benefícios de começar">
               <span><i>✓</i> Configuração simples</span>
               <span><i>✓</i> Suporte em português</span>
@@ -387,6 +393,7 @@ export default function Home() {
             <article className="process-step"><span>02</span><div><h3>Configure a equipe</h3><p>Adicione serviços, profissionais, horários e regras da operação.</p></div></article>
             <article className="process-step"><span>03</span><div><h3>Compartilhe o app</h3><p>Convide barbeiros e clientes para deixar os agendamentos mais independentes.</p></div></article>
           </div>
+          <p className="process-note"><strong>Entrou como barbearia fundadora?</strong> Você recebe ajuda para configurar profissionais, serviços e horários iniciais.</p>
         </section>
 
         <section className="section-shell comparison-section">
@@ -394,6 +401,13 @@ export default function Home() {
             <div className="comparison-column old-way"><span className="comparison-label">ANTES</span><h3>O negócio preso ao improviso.</h3><p>Horários espalhados, cliente esperando resposta e comissão conferida no fim do mês.</p><div className="comparison-line"><span>×</span> Agenda no papel e WhatsApp</div><div className="comparison-line"><span>×</span> Faltas sem lembrete</div><div className="comparison-line"><span>×</span> Números difíceis de enxergar</div></div>
             <div className="comparison-divider"><span>→</span></div>
             <div className="comparison-column new-way"><span className="comparison-label">DEPOIS</span><h3>Uma operação mais previsível.</h3><p>Agenda sincronizada, equipe alinhada e informações que ajudam você a decidir.</p><div className="comparison-line"><span>✓</span> Agendamentos organizados</div><div className="comparison-line"><span>✓</span> Gestão por profissional</div><div className="comparison-line"><span>✓</span> Visão de caixa e desempenho</div></div>
+          </div>
+        </section>
+
+        <section className="section-shell trust-section">
+          <div className="trust-card">
+            <div className="trust-intro"><p className="section-eyebrow">Por que começar agora</p><h2>Você não precisa configurar tudo sozinho.</h2><p>A condição de fundador foi criada para as primeiras barbearias que querem testar a operação com acompanhamento próximo e ajudar a evoluir o produto.</p></div>
+            <div className="trust-points"><div className="trust-point"><strong>01</strong><span><b>Teste com uma rotina real</b><small>Use profissionais, serviços e horários da sua própria barbearia.</small></span></div><div className="trust-point"><strong>02</strong><span><b>Tenha ajuda na configuração</b><small>Comece com orientação para colocar a agenda em funcionamento.</small></span></div><div className="trust-point"><strong>03</strong><span><b>Contribua com a próxima fase</b><small>Seu feedback ajuda a construir uma ferramenta melhor para o segmento.</small></span></div></div>
           </div>
         </section>
 
@@ -453,6 +467,18 @@ export default function Home() {
           <div className="footer-bottom"><span>© 2026 SaaS Barbearia. Todos os direitos reservados.</span><span>Desenvolvido por Caio Santos.</span></div>
         </div>
       </footer>
+      <div className="mobile-sticky-cta">
+        <TrackedLink
+          href={primaryDestination}
+          className="btn-primary full-width"
+          target={adminBaseUrl ? undefined : "_blank"}
+          rel={adminBaseUrl ? undefined : "noopener noreferrer"}
+          eventName="cta_click"
+          eventParams={{ cta_location: "mobile-sticky", cta_destination: adminBaseUrl ? "signup" : "whatsapp" }}
+        >
+          {signupLabel} <span aria-hidden="true">→</span>
+        </TrackedLink>
+      </div>
     </div>
   );
 }

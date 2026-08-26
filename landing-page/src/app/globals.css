@@ -336,3 +336,125 @@ button, a { -webkit-tap-highlight-color: transparent; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
 }
+
+
+/* Conversion support */
+.hero-assurance {
+  margin: 1.1rem 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+}
+
+.process-note {
+  max-width: 48rem;
+  margin: 2rem auto 0;
+  padding: 1rem 1.25rem;
+  border: 1px solid rgba(212, 169, 74, 0.24);
+  border-radius: 0.75rem;
+  color: var(--ink);
+  background: rgba(212, 169, 74, 0.07);
+  text-align: center;
+}
+
+.process-note strong {
+  color: var(--gold-bright);
+}
+
+.trust-section {
+  padding-top: 0;
+}
+
+.trust-card {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: clamp(2rem, 5vw, 5rem);
+  align-items: center;
+  padding: clamp(1.5rem, 4vw, 3.5rem);
+  border: 1px solid rgba(212, 169, 74, 0.24);
+  border-radius: 1.25rem;
+  background: linear-gradient(135deg, rgba(212, 169, 74, 0.09), rgba(255, 255, 255, 0.025));
+}
+
+.trust-intro h2 {
+  max-width: 28rem;
+  margin: 0.4rem 0 1rem;
+}
+
+.trust-intro > p:last-child {
+  max-width: 34rem;
+  color: var(--muted);
+}
+
+.trust-points {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.trust-point {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.trust-point:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.trust-point > strong {
+  min-width: 2rem;
+  color: var(--gold-bright);
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+}
+
+.trust-point b,
+.trust-point small {
+  display: block;
+}
+
+.trust-point b {
+  margin-bottom: 0.25rem;
+  color: var(--ink);
+}
+
+.trust-point small {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.mobile-sticky-cta {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  body {
+    padding-bottom: 5.25rem;
+  }
+
+  .trust-card {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding: 1.35rem;
+  }
+
+  .mobile-sticky-cta {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 20;
+    display: block;
+    padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+    border-top: 1px solid rgba(212, 169, 74, 0.2);
+    background: rgba(17, 18, 20, 0.92);
+    backdrop-filter: blur(14px);
+  }
+
+  .mobile-sticky-cta .btn-primary {
+    margin: 0;
+  }
+}
