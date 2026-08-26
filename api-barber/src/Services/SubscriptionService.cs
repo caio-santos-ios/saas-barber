@@ -1,4 +1,5 @@
 using api_barber.Interfaces;
+using api_barber.Models;
 using api_barber.Models.Enums;
 using api_barber.Requests.Subscription;
 using api_barber.src.Requests;
@@ -11,11 +12,11 @@ namespace api_barber.Services
         {
             if (string.IsNullOrEmpty(barbershopId)) return new(null, 400, "BarbershopId is required");
 
-            var barbershops = await barbershopService.GetAllAsync(string.Empty);
-            var barbershop = barbershops.Data?.FirstOrDefault(b => b.Id == barbershopId);
-            if (barbershop == null) return new(null, 404, "Barbershop not found");
+            ResponseApi<Barbershop> foundBarbershop = await barbershopService.GetByIdAsync(barbershopId);
+            if (foundBarbershop.Data is null) return new(null, 404, "Barbershop not found");
+            Barbershop barbershop = foundBarbershop.Data;
 
-            var plans = await planService.GetAllAsync(string.Empty);
+            var plans = await planService.GetAllAsync();
             var plan = plans.Data?.FirstOrDefault(p => p.Id == request.PlanId);
             if (plan == null) return new(null, 404, "Plan not found");
 
@@ -27,7 +28,7 @@ namespace api_barber.Services
                 await barbershopService.UpdateEntityAsync(barbershop);
             }
 
-            var creditCardHolderInfo = new
+            dynamic creditCardHolderInfo = new
             {
                 name = string.IsNullOrEmpty(barbershop.Name) ? "Titular Padrão" : barbershop.Name,
                 email = string.IsNullOrEmpty(barbershop.Email) ? "titular@asaas.com" : barbershop.Email,

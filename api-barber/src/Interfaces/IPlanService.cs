@@ -5,7 +5,7 @@ namespace api_barber.Interfaces
 {
     public interface IPlanService
     {
-        Task<ResponseApi<List<dynamic>>> GetAllAsync(string barbershopId);
+        Task<ResponseApi<List<dynamic>>> GetAllAsync();
         Task<ResponseApi<Plan>> GetByIdAsync(string id);
         Task<ResponseApi<Plan>> CreateEntityAsync(Plan entity);
         Task<ResponseApi<Plan>> CreateAsync(CreatePlanRequest request);

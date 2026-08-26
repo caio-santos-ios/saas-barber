@@ -11,7 +11,7 @@ namespace api_barber.Services
     public class PlanService(IPlanRepository repository) : IPlanService
     {
         #region READ
-        public async Task<ResponseApi<List<dynamic>>> GetAllAsync(string barbershopId)
+        public async Task<ResponseApi<List<dynamic>>> GetAllAsync()
         {
             try
             {
@@ -20,7 +20,6 @@ namespace api_barber.Services
                     new("$match", new BsonDocument
                     {
                         {"deleted", false},
-                        {"barbershopId", barbershopId}
                     }),
                     new("$project", new BsonDocument
                     {
@@ -28,7 +27,7 @@ namespace api_barber.Services
                         {"id", new BsonDocument("$toString", "$_id")},
                         {"name", 1},
                         {"description", 1},
-                        {"value", 1},
+                        {"price", new BsonDocument("$toString", "$price")},
                         {"active", 1},
                         {"createdAt", 1}
                     }),
@@ -79,7 +78,7 @@ namespace api_barber.Services
         {
             try
             {
-                var existed = await repository.GetByIdAsync(request.Id);
+                Plan existed = await repository.GetByIdAsync(request.Id);
                 if (existed is null) return new(null, 404, "Não encontrado");
                 Plan entity = ObjectMapper.Map<UpdatePlanRequest, Plan>(request);
                 entity.CreatedAt = existed.CreatedAt;

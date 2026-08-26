@@ -8,6 +8,10 @@ using api_barber.Middlewares;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 DotNetEnv.Env.Load();
 builder.Configuration.AddEnvironmentVariables();
@@ -31,6 +35,21 @@ builder.Services.AddCors(options =>
     });
 });
 builder.Services.AddOpenApi();
+
+var secret = builder.Configuration["Jwt:Key"] ?? "MinhaChaveSuperSecretaDePeloMenos32Caracteres!";
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+builder.Services.AddAuthorization();
 builder.Services.AddSingleton<MongoDB.Driver.IMongoClient>(s =>
     new MongoDB.Driver.MongoClient(builder.Configuration.GetConnectionString("MongoDbConnection")));
 builder.Services.AddScoped<MongoDB.Driver.IMongoDatabase>(s =>
@@ -102,10 +121,13 @@ if (app.Environment.IsDevelopment())
 }
 app.UseHttpsRedirection();
 app.UseCors("AllowAngular");
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseMiddleware<ErrorHandlingMiddleware>();
 app.UseMiddleware<TenantAndPlanMiddleware>();
 app.MapControllers();
 app.Run();
+
 
 
 

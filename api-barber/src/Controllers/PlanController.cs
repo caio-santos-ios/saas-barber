@@ -11,9 +11,7 @@ namespace api_barber.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
-            System.Console.WriteLine(barbershopId);
-            var response = await service.GetAllAsync(barbershopId);
+            var response = await service.GetAllAsync();
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
         [HttpGet("{id}")]
