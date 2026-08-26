@@ -400,7 +400,7 @@ export default function Home() {
         <section id="pricing" className="section-shell pricing-section">
           <div className="pricing-copy">
             <p className="section-eyebrow">Condição especial de lançamento</p>
-            <h2>Comece como uma das 10 primeiras barbearias do Nordeste.</h2>
+            <h2>Comece como uma das 10 primeiras barbearias.</h2>
             <p>Use o sistema completo por uma condição especial durante os 6 primeiros meses e ajude a construir a próxima fase do produto.</p>
             <div className="pricing-notes"><span>✓ R$ 29,90 nos 6 primeiros meses</span><span>✓ Agendamentos e profissionais ilimitados</span><span>✓ Configuração acompanhada</span></div>
           </div>
