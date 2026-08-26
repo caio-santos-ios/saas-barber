@@ -47,17 +47,17 @@ export class Settings implements OnInit {
     try {
       const barbershopId = localStorage.getItem('barbershopId');
       
-      const response = await api.get(`/barbershops?barbershopId=${barbershopId}`); 
-      if (response.data.data && response.data.data.length > 0) {
-        const shop = response.data.data[0];
+      const response = await api.get(`/barbershops/${barbershopId}`);
+      const shop = response.data?.data;
+      if (shop) {
         this.formData = {
-          id: shop.id,
-          name: shop.name,
-          document: shop.document,
-          phone: shop.phone,
+          id: shop.id || shop.Id || barbershopId || '',
+          name: shop.name || shop.Name || '',
+          document: shop.document || shop.Document || '',
+          phone: shop.phone || shop.Phone || shop.whatsApp || shop.WhatsApp || '',
           address: {
             zipCode: shop.address?.zipCode || shop.address?.ZipCode || '',
-            street: shop.address?.street || shop.address?.Street || (typeof shop.address === 'string' ? shop.address : ''),
+            street: shop.address?.street || shop.address?.Street || '',
             number: shop.address?.number || shop.address?.Number || '',
             complement: shop.address?.complement || shop.address?.Complement || '',
             neighborhood: shop.address?.neighborhood || shop.address?.Neighborhood || '',

@@ -7,7 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+  final String? barbershopId;
+  const RegisterPage({super.key, this.barbershopId});
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
@@ -68,6 +69,7 @@ class _RegisterPageState extends State<RegisterPage> {
           whatsapp: _whatsappController.text,
           password: _passwordController.text,
           passwordConfirm: _passwordConfirmController.text,
+          barbershopId: widget.barbershopId,
         );
         
         final success = await _authRepository.registerCustomer(request);

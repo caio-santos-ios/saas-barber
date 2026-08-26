@@ -20,7 +20,7 @@ namespace api_barber.Services
                     new("$match", new BsonDocument
                     {
                         {"deleted", false},
-                        {"barbershopId", barbershopId}
+                        {"barbershop_id", barbershopId}
                     }),
                     new("$project", new BsonDocument
                     {
@@ -32,7 +32,7 @@ namespace api_barber.Services
                         {"value", 1},
                         {"category", 1},
                         {"active", 1},
-                        {"durationMinutes", 1},
+                        {"durationMinutes", "$duration_minutes"},
                         {"createdAt", 1}
                     }),
                     new("$sort", new BsonDocument { { "createdAt", -1 } } )

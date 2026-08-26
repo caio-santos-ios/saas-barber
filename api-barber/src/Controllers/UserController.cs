@@ -26,8 +26,14 @@ namespace api_barber.Controllers
         public async Task<IActionResult> GetBarbers()
         {
             string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
-            string role = User.FindFirst("role")?.Value ?? "";
             ResponseApi<List<dynamic>> response = await service.GetBarbersAsync(barbershopId);
+            return StatusCode(response.Status, new { response.Data, response.Message });
+        }
+        [HttpGet("customers")]
+        public async Task<IActionResult> GetCustomer()
+        {
+            string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
+            ResponseApi<List<dynamic>> response = await service.GetCustomersAsync(barbershopId);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
         [HttpPost]

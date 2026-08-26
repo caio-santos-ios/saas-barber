@@ -1,5 +1,6 @@
 using api_barber.Interfaces;
 using api_barber.Models;
+using api_barber.Models.Enums;
 using api_barber.Requests.User;
 using api_barber.src.Interfaces;
 using api_barber.src.Requests;
@@ -19,7 +20,7 @@ namespace api_barber.Services
                     new("$match", new BsonDocument
                     {
                         {"deleted", false},
-                        {"barbershopId", barbershopId}
+                        {"barbershop_id", barbershopId}
                     }),
                     new("$project", new BsonDocument
                     {
@@ -53,11 +54,11 @@ namespace api_barber.Services
                 return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
             }
         }
-        public async Task<ResponseApi<User>> GetByEmailAsync(string email)
+        public async Task<ResponseApi<User>> GetByEmailAsync(string email, RoleUserEnum? role)
         {
             try
             {
-                User user = await repository.GetByEmailAsync(email);
+                User user = await repository.GetByEmailAsync(email, role);
                 if (user is null) return new(null, 404, "Usuário não encontrado");
 
                 return new(user, 200, "Usuários buscado com sucesso");
@@ -83,7 +84,42 @@ namespace api_barber.Services
                     {
                         {"_id", 0},
                         {"id", new BsonDocument("$toString", "$_id")},
-                        {"name", 1}
+                        {"name", 1},
+                        {"email", 1},
+                        {"whatsapp", 1},
+                        {"document", 1},
+                    }),
+                    new("$sort", new BsonDocument { { "createdAt", 1 } } )
+                ];
+
+                List<dynamic> barbers = await repository.GetBarbersAsync(pipeline);
+
+                return new(barbers, 200, "Barbeiros listados com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
+            }
+        }
+        public async Task<ResponseApi<List<dynamic>>> GetCustomersAsync(string barbershopId)
+        {
+            try
+            {
+                List<BsonDocument> pipeline =
+                [
+                    new("$match", new BsonDocument
+                    {
+                        {"deleted", false},
+                        {"role", "Customer"},
+                        {"barbershop_id", barbershopId}
+                    }),
+                    new("$project", new BsonDocument
+                    {
+                        {"_id", 0},
+                        {"id", new BsonDocument("$toString", "$_id")},
+                        {"name", 1},
+                        {"active", 1},
+                        {"createdAt", 1},
                     }),
                     new("$sort", new BsonDocument { { "createdAt", 1 } } )
                 ];

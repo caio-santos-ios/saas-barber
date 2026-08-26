@@ -93,6 +93,14 @@ export class Services implements OnInit {
     return nameValid && durValid && valValid;
   }
 
+  onDurationInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const raw = input.value.replace(/\D/g, '');
+    const num = parseInt(raw, 10);
+    this.formData.durationMinutes = isNaN(num) || num <= 0 ? 0 : num;
+    input.value = this.formData.durationMinutes > 0 ? this.formData.durationMinutes.toString() : '';
+  }
+
   async saveService() {
     if (!this.isFormValid()) {
       this.toastr.warning('Preencha todos os campos obrigatórios corretamente.', 'Atenção');
@@ -102,17 +110,19 @@ export class Services implements OnInit {
       const barbershopId = localStorage.getItem('barbershopId');
       
       const numericValue = this.getParsedValue();
+      const durationMinutes = Number(this.formData.durationMinutes) || 0;
 
       const payload: any = { 
-        ...this.formData, 
+        name: this.formData.name,
+        description: this.formData.description,
+        duration: durationMinutes,
+        durationMinutes: durationMinutes,
         value: numericValue,
+        category: this.formData.category || 'Cabelo',
+        active: true,
         barbershopId 
       };
       
-      if (!payload.id) {
-        delete payload.id;
-      }
-
       if (this.isEditing) {
         await api.put(`/services_types/${this.formData.id}?barbershopId=${barbershopId}`, payload);
       } else {

@@ -27,7 +27,7 @@ namespace api_barber.Services
                     new("$match", new BsonDocument
                     {
                         {"deleted", false},
-                        {"barbershopId", barbershopId}
+                        {"barbershop_id", barbershopId}
                     }),
                     new("$project", new BsonDocument
                     {
@@ -75,7 +75,7 @@ namespace api_barber.Services
             try
             {
                 var schedulesResponse = await scheduleRepository.GetAllEntitiesAsync(barbershopId);
-                DayOfWeekEnum targetDay = (DayOfWeekEnum)(((int)date.DayOfWeek + 6) % 7);
+                int targetDay = ((int)date.DayOfWeek + 6) % 7;
                 var schedule = schedulesResponse?.FirstOrDefault(s => s.BarberId == barberId && s.Day == targetDay && s.Active);
                 
                 if (schedule == null) return new(new List<string>(), 200, "Nenhuma escala para este dia.");

@@ -68,7 +68,16 @@ export class Register {
 
     this.loading = true;
     try {
-      await api.post('/auth/admins/register', this.formData);
+      const payload = {
+        name: this.formData.name,
+        barbershopName: this.formData.barbershopName,
+        typePerson: this.formData.typePerson,
+        document: this.formData.document.replace(/\D/g, ''),
+        whatsApp: this.formData.whatsApp.replace(/\D/g, ''),
+        email: this.formData.email,
+        password: this.formData.password
+      };
+      await api.post('/auth/admins/register', payload);
       this.toastr.success('Cadastro realizado com sucesso!', 'Sucesso');
       setTimeout(() => this.router.navigate(['/login']), 2000);
     } catch (err: any) {

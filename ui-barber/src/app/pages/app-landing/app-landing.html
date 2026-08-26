@@ -1,0 +1,79 @@
+<div class="landing-page">
+  <!-- Navigation Header -->
+  <header class="landing-header">
+    <div class="header-container">
+      <div class="logo-area">
+        <span class="logo-icon">✂️</span>
+        <span class="logo-text">Cortaê</span>
+      </div>
+      <div class="shop-badge">
+        <span>Barbearia Parceira</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main class="landing-hero">
+    <div class="hero-card">
+      <div class="shop-avatar">
+        <span>{{ barbershopName.charAt(0).toUpperCase() }}</span>
+      </div>
+
+      <div class="shop-welcome">BEM-VINDO À</div>
+      <h1 class="shop-title">{{ barbershopName }}</h1>
+      <p class="hero-desc">
+        Baixe nosso aplicativo oficial para agendar seus cortes, escolher seu barbeiro favorito e acumular vantagens exclusivas!
+      </p>
+
+      <div class="features-pill-row">
+        <div class="feature-pill">⚡ Agendamento em 30s</div>
+        <div class="feature-pill">🔔 Lembretes no Celular</div>
+        <div class="feature-pill">⭐ Barbeiros Especialistas</div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="download-section">
+        <h3 class="download-heading">Baixe agora no seu smartphone:</h3>
+        
+        <div class="store-buttons">
+          <button class="btn-store btn-google" (click)="openAppOrStore('play')">
+            <div class="store-icon">🤖</div>
+            <div class="store-text">
+              <span class="small-text">DISPONÍVEL NO</span>
+              <span class="bold-text">Google Play</span>
+            </div>
+          </button>
+
+          <button class="btn-store btn-apple" (click)="openAppOrStore('apple')">
+            <div class="store-icon">🍎</div>
+            <div class="store-text">
+              <span class="small-text">BAIXAR NA</span>
+              <span class="bold-text">App Store</span>
+            </div>
+          </button>
+        </div>
+
+        <div class="deep-link-cta">
+          <button class="btn-open-app" (click)="openAppOrStore('web')">
+            <span>Já tem o app instalado?</span>
+            <strong>Abrir Aplicativo &rarr;</strong>
+          </button>
+        </div>
+      </div>
+
+      <!-- Shop Info Footer -->
+      <div class="shop-info-footer" *ngIf="barbershopAddress || barbershopPhone">
+        <div *ngIf="barbershopPhone" class="info-item">
+          <span>📞</span> {{ barbershopPhone }}
+        </div>
+        <div *ngIf="barbershopAddress" class="info-item">
+          <span>📍</span> {{ barbershopAddress }}
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="landing-footer">
+    <p>© {{ barbershopName }} • Powered by <strong>Cortaê App</strong></p>
+  </footer>
+</div>

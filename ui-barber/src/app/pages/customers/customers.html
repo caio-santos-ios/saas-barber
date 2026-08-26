@@ -4,7 +4,12 @@
       <h1 class="page-title">Clientes</h1>
       <p class="page-subtitle">Gerencie os clientes da sua barbearia</p>
     </div>
-    <button class="btn-primary" (click)="openModal()">+ Novo Cliente</button>
+    <div style="display: flex; gap: 12px;">
+      <button class="btn-secondary" routerLink="/share" style="display: flex; align-items: center; gap: 8px;">
+        <span>📲</span> Divulgar App & Cartaz
+      </button>
+      <button class="btn-primary" (click)="openModal()">+ Novo Cliente</button>
+    </div>
   </div>
 
   <div class="card">
@@ -52,7 +57,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="isModalOpen" (click)="closeModal()">
+<div class="modal-overlay" *ngIf="isModalOpen">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>{{ isEditing ? 'Editar Cliente' : 'Novo Cliente' }}</h2>
@@ -81,7 +86,7 @@
   </div>
 </div>
 
-<div class="modal-overlay" *ngIf="isDeleteModalOpen" (click)="closeDeleteModal()">
+<div class="modal-overlay" *ngIf="isDeleteModalOpen">
   <div class="modal-content" style="max-width: 400px; text-align: center;" (click)="$event.stopPropagation()">
     <div class="modal-body" style="padding-top: 32px;">
       <div style="font-size: 48px; margin-bottom: 16px;">🗑️</div>

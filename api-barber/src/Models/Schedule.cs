@@ -1,13 +1,11 @@
-﻿using MongoDB.Bson;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using api_barber.Models.Enums;
 namespace api_barber.Models
 {
     public class Schedule : ModelBase
     {
         [BsonElement("day")]
-        [BsonRepresentation(BsonType.String)]
-        public DayOfWeekEnum Day { get; set; }
+        public int Day { get; set; }
         [BsonElement("start_hour")]
         public TimeSpan StartHour { get; set; }
         [BsonElement("end_hour")]

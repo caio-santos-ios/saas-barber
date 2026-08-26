@@ -6,10 +6,12 @@ import { ToastrService } from 'ngx-toastr';
 import { NgxMaskDirective } from 'ngx-mask';
 import { ChangeDetectorRef } from '@angular/core';
 
+import { RouterLink } from '@angular/router';
+
 @Component({
   selector: 'app-customers',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgxMaskDirective],
+  imports: [CommonModule, FormsModule, NgxMaskDirective, RouterLink],
   templateUrl: './customers.html',
   styleUrls: ['./customers.css']
 })
@@ -42,8 +44,7 @@ export class Customers implements OnInit {
     this.loading = true;
     this.cdr.detectChanges();
     try {
-      const barbershopId = localStorage.getItem('barbershopId');
-      const response = await api.get(`/users?role=Customer&barbershopId=${barbershopId}`);
+      const response = await api.get(`/users/customers?deleted=false`);
       this.customers = response.data.data || [];
     } catch (err) {
       console.error('Erro ao carregar clientes', err);

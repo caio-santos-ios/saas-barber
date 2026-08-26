@@ -20,20 +20,36 @@ namespace api_barber.Services
                     new("$match", new BsonDocument
                     {
                         {"deleted", false},
-                        {"barbershopId", barbershopId}
+                        {"barbershop_id", barbershopId}
+                    }),
+                    new("$addFields", new BsonDocument {
+                        {"userObjectId", new BsonDocument("$toObjectId", "$barber_id")}
+                    }),
+                    new("$lookup", new BsonDocument {
+                        {"from", "users"},
+                        {"localField", "userObjectId"},
+                        {"foreignField", "_id"},
+                        {"as", "barberData"}
+                    }),
+                    new("$addFields", new BsonDocument {
+                        {"barberName", new BsonDocument("$ifNull", new BsonArray {
+                            new BsonDocument("$arrayElemAt", new BsonArray { "$barberData.name", 0 }),
+                            "Removido"
+                        })}
                     }),
                     new("$project", new BsonDocument
                     {
                         {"_id", 0},
                         {"id", new BsonDocument("$toString", "$_id")},
-                        {"barberId", 1},
+                        {"barberId", "$barber_id"},
+                        {"barberName", 1},
                         {"day", 1},
-                        {"startHour", 1},
-                        {"endHour", 1},
-                        {"startInterval", 1},
-                        {"endInterval", 1},
+                        {"startHour", "$start_hour"},
+                        {"endHour", "$end_hour"},
+                        {"intervalMinutes", "$interval_minutes"},
+                        {"notes", 1},
                         {"active", 1},
-                        {"createdAt", 1}
+                        {"createdAt", 1},
                     }),
                     new("$sort", new BsonDocument { { "createdAt", -1 } } )
                 ];

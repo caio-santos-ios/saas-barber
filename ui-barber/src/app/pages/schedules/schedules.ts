@@ -54,10 +54,9 @@ export class Schedules implements OnInit {
     this.loading = true;
     this.cdr.detectChanges();
     try {
-      const barbershopId = localStorage.getItem('barbershopId');
       const [schedRes, barbRes] = await Promise.all([
-        api.get(`/schedules?barbershopId=${barbershopId}`),
-        api.get(`/users?role=Barber&barbershopId=${barbershopId}`)
+        api.get(`/schedules?deleted=false`),
+        api.get(`/users/barbers?deleted=false`)
       ]);
       
       this.schedules = schedRes.data.data || [];

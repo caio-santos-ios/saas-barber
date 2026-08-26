@@ -104,13 +104,26 @@ namespace api_barber.Services
                     Active = true,
                     CreatedAt = DateTime.UtcNow
                 };
-                await _userService.CreateAsync(new CreateUserRequest { Name = user.Name, Email = user.Email, WhatsApp = user.WhatsApp, Role = user.Role, DateOfBirth = user.DateOfBirth, Document = user.Document, Photo = user.Photo, Password = user.Password });
+                var createdUserRes = await _userService.CreateAsync(new CreateUserRequest 
+                { 
+                    Name = user.Name, 
+                    Email = user.Email, 
+                    WhatsApp = user.WhatsApp, 
+                    Role = user.Role, 
+                    DateOfBirth = user.DateOfBirth, 
+                    Document = user.Document, 
+                    Photo = user.Photo, 
+                    Password = user.Password,
+                    BarbershopId = user.BarbershopId
+                });
+
+                string userId = createdUserRes.Data?.Id ?? user.Id;
 
                 var barbershopResponse = await _barbershopService.GetByIdAsync(user.BarbershopId);
                 var barbershop = barbershopResponse.Data;
                 var subscriptionStatus = barbershop != null ? barbershop.SubscriptionStatus.ToString() : "Ativa";
 
-                var jwt = GenerateJwtToken(user.Id, user.Role.ToString(), user.BarbershopId);
+                var jwt = GenerateJwtToken(userId, user.Role.ToString(), user.BarbershopId);
                 var authResponse = new AuthResponse
                 {
                     Token = jwt,
@@ -165,7 +178,7 @@ namespace api_barber.Services
                     CreatedAt = DateTime.UtcNow
                 };
 
-                await _userService.CreateAsync(new CreateUserRequest
+                var createdAdminRes = await _userService.CreateAsync(new CreateUserRequest
                 {
                     Name = user.Name,
                     Email = user.Email,
@@ -178,7 +191,8 @@ namespace api_barber.Services
                     BarbershopId = barbershop.Id
                 });
 
-                string jwt = GenerateJwtToken(user.Id, user.Role.ToString(), user.BarbershopId);
+                string adminUserId = createdAdminRes.Data?.Id ?? user.Id;
+                string jwt = GenerateJwtToken(adminUserId, user.Role.ToString(), user.BarbershopId);
                 AuthResponse authResponse = new()
                 {
                     Token = jwt,

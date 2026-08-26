@@ -1,0 +1,158 @@
+<div class="page-container no-print">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Divulgar Aplicativo</h1>
+      <p class="page-subtitle">Compartilhe o link do seu app com seus clientes ou imprima o cartaz com QR Code para seu estabelecimento</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-secondary" (click)="downloadQrCode()">
+        <span style="font-size: 16px;">💾</span> Baixar QR Code
+      </button>
+      <button class="btn-primary" (click)="printPoster()">
+        <span style="font-size: 16px;">🖨️</span> Imprimir Cartaz
+      </button>
+    </div>
+  </div>
+
+  <div class="share-grid">
+    <!-- Left Column: Share Options -->
+    <div class="share-controls">
+      <!-- Link Card -->
+      <div class="card mb-4">
+        <h3 class="card-title">
+          <span>🔗</span> Link Exclusivo da Barbearia
+        </h3>
+        <p class="card-desc">
+          Este link direciona seus clientes diretamente para a página de download e agendamento da sua barbearia.
+        </p>
+
+        <div class="link-box">
+          <input type="text" [value]="appUrl" readonly class="form-input link-input" />
+          <button class="btn-primary copy-btn" (click)="copyLink()">
+            Copiar
+          </button>
+        </div>
+
+        <div class="actions-row mt-3">
+          <button class="btn-whatsapp" (click)="shareWhatsApp()">
+            <span style="font-size: 18px;">💬</span> Compartilhar no WhatsApp
+          </button>
+        </div>
+      </div>
+
+      <!-- Instructions Card -->
+      <div class="card mb-4">
+        <h3 class="card-title">
+          <span>💡</span> Como utilizar na sua barbearia
+        </h3>
+        <ul class="tips-list">
+          <li>
+            <strong>No Balcão e Espelhos:</strong> Imprima o cartaz ao lado em folha A4 e coloque em um display de acrílico ou fixe perto dos espelhos.
+          </li>
+          <li>
+            <strong>No WhatsApp e Instagram:</strong> Envie o link ou adicione na biografia do perfil da sua barbearia.
+          </li>
+          <li>
+            <strong>Vinculação Automática:</strong> Todos os clientes que baixarem pelo seu QR Code/Link já iniciam vinculados à sua barbearia no cadastro!
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Right Column: Interactive Poster Preview -->
+    <div class="poster-preview-wrapper">
+      <div class="poster-preview-header">
+        <h4>Pré-visualização do Cartaz (A4)</h4>
+        <span class="badge">Pronto para Imprimir</span>
+      </div>
+
+      <div class="poster-card">
+        <div class="poster-badge">APLICATIVO OFICIAL</div>
+        <h2 class="poster-shop-name">{{ barbershopName }}</h2>
+        <p class="poster-tagline">Agende seu horário com facilidade e rapidez!</p>
+
+        <div class="poster-qr-frame">
+          <img *ngIf="qrCodeDataUrl" [src]="qrCodeDataUrl" alt="QR Code da Barbearia" class="poster-qr-img" />
+          <div *ngIf="!qrCodeDataUrl" class="qr-loading">Gerando QR Code...</div>
+        </div>
+
+        <div class="poster-instructions">
+          <div class="instruction-item">
+            <span class="step-num">1</span>
+            <span>Aponte a câmera do seu celular</span>
+          </div>
+          <div class="instruction-item">
+            <span class="step-num">2</span>
+            <span>Baixe o aplicativo</span>
+          </div>
+          <div class="instruction-item">
+            <span class="step-num">3</span>
+            <span>Escolha o serviço e horário</span>
+          </div>
+        </div>
+
+        <div class="poster-footer" *ngIf="barbershopAddress || barbershopPhone">
+          <div *ngIf="barbershopPhone">📞 {{ barbershopPhone }}</div>
+          <div *ngIf="barbershopAddress" class="poster-address">📍 {{ barbershopAddress }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Printable Poster Area (Only visible when printing) -->
+<div class="print-poster-container print-only">
+  <div class="print-poster-inner">
+    <div class="print-header">
+      <div class="print-sub">AGENDE PELO CELULAR</div>
+      <h1 class="print-title">{{ barbershopName }}</h1>
+      <p class="print-desc">Baixe nosso aplicativo e agende seu horário com os nossos melhores profissionais!</p>
+    </div>
+
+    <div class="print-qr-section">
+      <div class="print-qr-box">
+        <img *ngIf="qrCodeDataUrl" [src]="qrCodeDataUrl" alt="QR Code" class="print-qr-img" />
+      </div>
+      <div class="print-scan-text">
+        <span class="camera-icon">📷</span>
+        <span>Aponte a câmera do seu celular para escanear</span>
+      </div>
+    </div>
+
+    <div class="print-steps">
+      <div class="print-step">
+        <div class="step-circle">1</div>
+        <div class="step-info">
+          <strong>Escaneie o QR Code</strong>
+          <small>Acesse o link direto do app</small>
+        </div>
+      </div>
+      <div class="print-step">
+        <div class="step-circle">2</div>
+        <div class="step-info">
+          <strong>Crie sua Conta</strong>
+          <small>Leva menos de 1 minuto</small>
+        </div>
+      </div>
+      <div class="print-step">
+        <div class="step-circle">3</div>
+        <div class="step-info">
+          <strong>Escolha seu Horário</strong>
+          <small>Agendamento confirmado na hora</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="print-footer">
+      <div class="footer-contacts" *ngIf="barbershopPhone">
+        <strong>Atendimento:</strong> {{ barbershopPhone }}
+      </div>
+      <div class="footer-address" *ngIf="barbershopAddress">
+        {{ barbershopAddress }}
+      </div>
+      <div class="powered-by">
+        Powered by <strong>Cortaê</strong> • Sistema de Gestão para Barbearias
+      </div>
+    </div>
+  </div>
+</div>

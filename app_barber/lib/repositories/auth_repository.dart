@@ -20,12 +20,13 @@ class AuthRepository {
       final refreshToken = data['refreshToken'] ?? '';
       final photo = data['photo'] ?? '';
       final role = data['role'] ?? '';
+      final barbershopId = data['barbershopId'] ?? '';
 
       final session = UserSession(
         token: token,
         refreshToken: refreshToken,
         photo: photo,
-        barbershopId: "",
+        barbershopId: barbershopId,
         role: role,
         passwordResetRequired: false
       );
@@ -35,6 +36,7 @@ class AuthRepository {
       await authBox.put('refreshToken', refreshToken);
       await authBox.put('photo', photo);
       await authBox.put('role', role);
+      await authBox.put('barbershopId', barbershopId);
 
       return session;
     }

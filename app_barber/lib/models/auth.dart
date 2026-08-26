@@ -20,6 +20,7 @@ class RegisterRequest {
   final String whatsapp;
   final String password;
   final String passwordConfirm;
+  final String? barbershopId;
 
   RegisterRequest({
     required this.name,
@@ -27,6 +28,7 @@ class RegisterRequest {
     required this.whatsapp,
     required this.password,
     required this.passwordConfirm,
+    this.barbershopId,
   });
 
   Map<String, dynamic> toJson() {
@@ -36,6 +38,7 @@ class RegisterRequest {
       'whatsapp': whatsapp.replaceAll(RegExp(r'[^0-9]'), ''),
       'password': password,
       'passwordConfirm': passwordConfirm,
+      if (barbershopId != null && barbershopId!.isNotEmpty) 'barbershopId': barbershopId,
     };
   }
 }
