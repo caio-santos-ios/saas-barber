@@ -131,11 +131,38 @@
   padding: 1.25rem;
 }
 
+.chart-scroll-container {
+  width: 100%;
+  max-height: 220px;
+  overflow-y: auto;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
+
+.chart-scroll-container::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.chart-scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chart-scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 4px;
+}
+
+.chart-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
 .chart-wrapper {
   position: relative;
   height: 200px;
   width: 100%;
-  min-width: 0;
+  min-width: 100%;
 }
 
 @media (max-width: 1100px) {

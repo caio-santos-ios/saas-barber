@@ -132,6 +132,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
   renderRevenueChart() {
     const ctx = document.getElementById('revenueChart') as HTMLCanvasElement;
+    const wrapper = document.getElementById('revenueChartWrapper');
     if (!ctx) return;
 
     let dailyData = this.metrics?.dailyRevenues;
@@ -149,6 +150,10 @@ export class Dashboard implements OnInit, OnDestroy {
       dailyData = Object.entries(grouped)
         .map(([date, revenue]) => ({ date, revenue }))
         .sort((a, b) => a.date.localeCompare(b.date));
+    }
+
+    if (wrapper) {
+      wrapper.style.minWidth = dailyData.length > 25 ? `${dailyData.length * 30}px` : '100%';
     }
 
     const labels = dailyData.map((d: any) => d.date);
@@ -182,7 +187,14 @@ export class Dashboard implements OnInit, OnDestroy {
           }
         },
         scales: {
-          x: { grid: { display: false } },
+          x: {
+            grid: { display: false },
+            ticks: {
+              autoSkip: true,
+              maxTicksLimit: 12,
+              maxRotation: 0
+            }
+          },
           y: {
             beginAtZero: true,
             ticks: {
@@ -196,6 +208,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
   renderHourlyChart() {
     const ctx = document.getElementById('hourlyChart') as HTMLCanvasElement;
+    const wrapper = document.getElementById('hourlyChartWrapper');
     if (!ctx) return;
 
     let hourlyData = this.metrics?.hourlyDistribution;
@@ -210,6 +223,10 @@ export class Dashboard implements OnInit, OnDestroy {
       hourlyData = Object.entries(grouped)
         .map(([hour, count]) => ({ hour, count }))
         .sort((a, b) => a.hour.localeCompare(b.hour));
+    }
+
+    if (wrapper) {
+      wrapper.style.minWidth = hourlyData.length > 15 ? `${hourlyData.length * 38}px` : '100%';
     }
 
     const labels = hourlyData.map((h: any) => h.hour);
@@ -233,7 +250,14 @@ export class Dashboard implements OnInit, OnDestroy {
           legend: { display: false }
         },
         scales: {
-          x: { grid: { display: false } },
+          x: {
+            grid: { display: false },
+            ticks: {
+              autoSkip: true,
+              maxTicksLimit: 12,
+              maxRotation: 0
+            }
+          },
           y: {
             beginAtZero: true,
             ticks: { stepSize: 1 }
@@ -280,6 +304,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
   renderBarberChart() {
     const ctx = document.getElementById('barberChart') as HTMLCanvasElement;
+    const wrapper = document.getElementById('barberChartWrapper');
     if (!ctx) return;
 
     let barberData = this.metrics?.barberRevenues;
@@ -296,6 +321,10 @@ export class Dashboard implements OnInit, OnDestroy {
       barberData = Object.entries(grouped)
         .map(([name, revenue]) => ({ name, revenue }))
         .sort((a, b) => b.revenue - a.revenue);
+    }
+
+    if (wrapper) {
+      wrapper.style.height = barberData.length > 5 ? `${barberData.length * 36}px` : '200px';
     }
 
     const labels = barberData.map((b: any) => b.name);
