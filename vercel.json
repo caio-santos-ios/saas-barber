@@ -1,5 +1,5 @@
 {
-  "outputDirectory": "dist/ui-barber/browser",
+  "outputDirectory": "ui-barber/dist/ui-barber/browser",
   "rewrites": [
     {
       "source": "/(.*)",
