@@ -11,10 +11,17 @@ namespace api_barber.Services
         public AsaasService(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
-            _apiKey = Environment.GetEnvironmentVariable("ASAAS_API_KEY") ?? configuration["Asaas:ApiKey"] ?? string.Empty;
+            _apiKey = (Environment.GetEnvironmentVariable("ASAAS_API_KEY") ?? configuration["Asaas:ApiKey"] ?? string.Empty).Trim();
             var baseUrl = Environment.GetEnvironmentVariable("ASAAS_BASE_URL") ?? configuration["Asaas:BaseUrl"] ?? "https://api.asaas.com/v3/";
+            if (!baseUrl.EndsWith("/"))
+            {
+                baseUrl += "/";
+            }
             _httpClient.BaseAddress = new System.Uri(baseUrl);
-            _httpClient.DefaultRequestHeaders.Add("access_token", _apiKey);
+            if (!string.IsNullOrEmpty(_apiKey))
+            {
+                _httpClient.DefaultRequestHeaders.Add("access_token", _apiKey);
+            }
             _httpClient.DefaultRequestHeaders.Add("User-Agent", "SaaS-Barbearia/1.0");
         }
 
