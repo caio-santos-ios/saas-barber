@@ -2,17 +2,17 @@ class LoginRequest {
   final String email;
   final String password;
   final String? tokenFCM;
-  final String role;
+  final String? role;
   final String barbershopId;
 
-  LoginRequest({required this.email, required this.password, this.tokenFCM, required this.role, required this.barbershopId});
+  LoginRequest({required this.email, required this.password, this.tokenFCM, this.role, required this.barbershopId});
 
   Map<String, dynamic> toJson() {
     return {
       'email': email,
       'password': password,
       if (tokenFCM != null) 'tokenFCM': tokenFCM,
-      'role': role,
+      if (role != null && role!.isNotEmpty) 'role': role,
       'barbershopId': barbershopId
     };
   }

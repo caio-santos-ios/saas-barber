@@ -69,6 +69,14 @@ namespace api_barber.Services
                 else
                 {
                     ResponseApi<User> userResponse = await _userService.GetByEmailAsync(request.Email, request.BarbershopId, request.Role);
+                    if (userResponse.Data == null)
+                    {
+                        userResponse = await _userService.GetByEmailAsync(request.Email, request.BarbershopId, null);
+                    }
+                    if (userResponse.Data == null)
+                    {
+                        userResponse = await _userService.GetByEmailAdminAsync(request.Email);
+                    }
                     if (userResponse.Data == null) return new(null, 400, "E-mail ou senha inválidos.");
                     user = userResponse.Data;
                 }
