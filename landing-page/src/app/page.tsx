@@ -2,7 +2,7 @@ import Image from "next/image";
 import TrackedLink from "./TrackedLink";
 
 const whatsappNumber = "5511965079106";
-const adminBaseUrl = process.env.NEXT_PUBLIC_ADMIN_URL?.replace(/\/$/, "");
+const adminBaseUrl = (process.env.NEXT_PUBLIC_ADMIN_URL || "https://saas-barber-k7nn.vercel.app").replace(/\/$/, "");
 const signupUrl = adminBaseUrl ? `${adminBaseUrl}/register` : "#contact";
 const signupLabel = adminBaseUrl ? "Criar minha conta grátis" : "Quero começar com ajuda";
 
