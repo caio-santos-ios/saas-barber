@@ -31,28 +31,34 @@
     <span style="font-size: 1.25rem;">ℹ️</span> Não há dados consolidados para o período selecionado. Os valores exibidos estão zerados.
   </div>
 
-  <div class="metrics-grid" *ngIf="metrics && !loading" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+  <div class="metrics-grid" *ngIf="metrics && !loading" style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
     <div class="card primary" style="background: #1e293b; color: white; border: none;">
       <div style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem;">Faturamento</div>
-      <div style="font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem;">{{ (metrics.totalRevenue || 0) | currency:'BRL' }}</div>
+      <div style="font-size: 1.85rem; font-weight: 700; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ (metrics.totalRevenue || 0) | currency:'BRL' }}</div>
       <div style="font-size: 0.8rem; opacity: 0.8;">no período</div>
     </div>
     
     <div class="card">
       <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem;">Agendamentos</div>
-      <div style="font-size: 2rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.25rem;">{{ metrics.totalAppointments }}</div>
+      <div style="font-size: 1.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.25rem;">{{ metrics.totalAppointments }}</div>
       <div style="font-size: 0.8rem; color: var(--text-muted);">totais no período</div>
+    </div>
+
+    <div class="card">
+      <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem;">Agendados</div>
+      <div style="font-size: 1.85rem; font-weight: 700; color: #3b82f6; margin-bottom: 0.25rem;">{{ metrics.scheduledAppointments ?? metrics.confirmedAppointments ?? 0 }}</div>
+      <div style="font-size: 0.8rem; color: var(--text-muted);">pendentes</div>
     </div>
     
     <div class="card">
       <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem;">Finalizados</div>
-      <div style="font-size: 2rem; font-weight: 700; color: #10b981; margin-bottom: 0.25rem;">{{ metrics.completedAppointments }}</div>
+      <div style="font-size: 1.85rem; font-weight: 700; color: #10b981; margin-bottom: 0.25rem;">{{ metrics.completedAppointments }}</div>
       <div style="font-size: 0.8rem; color: var(--text-muted);">serviços concluídos</div>
     </div>
     
     <div class="card">
       <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem;">Cancelados</div>
-      <div style="font-size: 2rem; font-weight: 700; color: #ef4444; margin-bottom: 0.25rem;">{{ metrics.canceledAppointments }}</div>
+      <div style="font-size: 1.85rem; font-weight: 700; color: #ef4444; margin-bottom: 0.25rem;">{{ metrics.canceledAppointments }}</div>
       <div style="font-size: 0.8rem; color: var(--text-muted);">desistências</div>
     </div>
   </div>

@@ -30,16 +30,21 @@ namespace api_barber.Services
 
                 var periodAppointments = allAppointments.Where(a => a.Date.Date >= startOfPeriod.Date && a.Date.Date <= endOfPeriod.Date).ToList();
 
+                var scheduledCount = periodAppointments.Count(a => a.Status == AppointmentStatusEnum.Marcado || (int)a.Status == 0);
+                var completedCount = periodAppointments.Count(a => a.Status == AppointmentStatusEnum.Finalizado || (int)a.Status == 2 || (int)a.Status == 3);
+                var canceledCount = periodAppointments.Count(a => a.Status == AppointmentStatusEnum.Cancelado || (int)a.Status == 1);
+
                 var metrics = new DashboardMetricsResponse
                 {
                     TotalAppointments = periodAppointments.Count,
-                    CompletedAppointments = periodAppointments.Count(a => a.Status == AppointmentStatusEnum.Finalizado || (int)a.Status == 3),
-                    CanceledAppointments = periodAppointments.Count(a => a.Status == AppointmentStatusEnum.Cancelado || (int)a.Status == 2),
+                    ScheduledAppointments = scheduledCount,
+                    CompletedAppointments = completedCount,
+                    CanceledAppointments = canceledCount,
                     InProgressAppointments = 0,
-                    ConfirmedAppointments = periodAppointments.Count(a => a.Status == AppointmentStatusEnum.Marcado || (int)a.Status == 1 || (int)a.Status == 0)
+                    ConfirmedAppointments = scheduledCount
                 };
 
-                var completedApps = periodAppointments.Where(a => a.Status == AppointmentStatusEnum.Finalizado || (int)a.Status == 3);
+                var completedApps = periodAppointments.Where(a => a.Status == AppointmentStatusEnum.Finalizado || (int)a.Status == 2 || (int)a.Status == 3);
                 metrics.TotalRevenue = completedApps.Sum(a => a.Value);
 
                 var serviceTypeMap = allServiceTypes.ToDictionary(st => st.Id, st => st.Name);
