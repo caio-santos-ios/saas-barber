@@ -5,6 +5,7 @@ import { api } from '../../services/api';
 import { ToastrService } from 'ngx-toastr';
 import { NgxMaskDirective } from 'ngx-mask';
 import { ChangeDetectorRef } from '@angular/core';
+import { GlobalService } from '../../services/global.service';
 
 @Component({
   selector: 'app-barbers',
@@ -13,7 +14,7 @@ import { ChangeDetectorRef } from '@angular/core';
   templateUrl: './barbers.html',
   styleUrls: ['./barbers.css']
 })
-export class Barbers implements OnInit {
+export class Barbers extends GlobalService implements OnInit {
   barbers: any[] = [];
   loading = true;
   
@@ -35,9 +36,10 @@ export class Barbers implements OnInit {
   };
 
   constructor(
-    private toastr: ToastrService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) {
+    super();
+  }
 
   ngOnInit() {
     this.loadBarbers();
@@ -50,6 +52,7 @@ export class Barbers implements OnInit {
       const response = await api.get(`/users/barbers?deleted=false`);
       this.barbers = response.data.data || [];
     } catch (err) {
+      this.errorNotification(err);
       console.error('Erro ao carregar profissionais', err);
     } finally {
       this.loading = false;
@@ -57,22 +60,36 @@ export class Barbers implements OnInit {
     }
   }
 
-  openModal(barber?: any) {
-    if (barber) {
+  async openModal(barber?: any) {
+    const barberId = typeof barber === 'string' ? barber : barber?.id;
+    if (barberId) {
       this.isEditing = true;
-      this.formData = {
-        id: barber.id,
-        name: barber.name,
-        email: barber.email,
-        whatsApp: barber.whatsApp || '',
-        document: barber.document || '',
-        password: ''
-      };
+      await this.getById(barberId);
     } else {
+      this.isModalOpen = true;
       this.isEditing = false;
       this.formData = { id: '', name: '', email: '', whatsApp: '', document: '', password: '' };
     }
-    this.isModalOpen = true;
+  }
+
+  async getById(id: string) {
+    try {
+      this.isModalOpen = true;
+      const response = await api.get(`/users/${id}`);
+      const data = response.data.data;
+      
+      this.formData = {
+        id: data.id,
+        name: data.name || '',
+        email: data.email || '',
+        whatsApp: data.whatsApp || '',
+        document: data.document || '',
+        password: ''
+      };
+      this.cdr.detectChanges();
+    } catch (error) {
+      this.toastrNotification.error('Erro ao buscar dados do profissional', 'Erro');
+    }
   }
 
   closeModal() {
@@ -95,7 +112,7 @@ export class Barbers implements OnInit {
 
   async saveBarber() {
     if (!this.isFormValid()) {
-      this.toastr.warning('Preencha todos os campos obrigatórios corretamente.', 'Atenção');
+      this.toastrNotification.warning('Preencha todos os campos obrigatórios corretamente.', 'Atenção');
       return;
     }
     try {
@@ -115,12 +132,12 @@ export class Barbers implements OnInit {
         await api.post(`/users`, payload);
       }
       
-      this.toastr.success('Profissional salvo com sucesso!', 'Sucesso');
+      this.toastrNotification.success('Profissional salvo com sucesso!', 'Sucesso');
       this.closeModal();
       await this.loadBarbers();
     } catch (err) {
       console.error('Erro ao salvar profissional', err);
-      this.toastr.error('Erro ao salvar profissional. Tente novamente.', 'Erro');
+      this.toastrNotification.error('Erro ao salvar profissional. Tente novamente.', 'Erro');
     } finally {
       this.cdr.detectChanges();
     }
@@ -142,12 +159,12 @@ export class Barbers implements OnInit {
     try {
       await api.delete(`/users/${this.barberToDelete.id}`);
       
-      this.toastr.success('Profissional excluído com sucesso!', 'Sucesso');
+      this.toastrNotification.success('Profissional excluído com sucesso!', 'Sucesso');
       this.closeDeleteModal();
       await this.loadBarbers();
     } catch (err) {
       console.error('Erro ao excluir profissional', err);
-      this.toastr.error('Erro ao excluir profissional. Tente novamente.', 'Erro');
+      this.toastrNotification.error('Erro ao excluir profissional. Tente novamente.', 'Erro');
     } finally {
       this.cdr.detectChanges();
     }
@@ -167,16 +184,16 @@ export class Barbers implements OnInit {
 
   async savePassword() {
     if (this.newPassword.length < 6) {
-      this.toastr.warning('A senha deve ter pelo menos 6 caracteres.', 'Atenção');
+      this.toastrNotification.warning('A senha deve ter pelo menos 6 caracteres.', 'Atenção');
       return;
     }
     try {
       await api.patch(`/users/${this.barberToChangePassword.id}/password`, { password: this.newPassword });
-      this.toastr.success('Senha alterada com sucesso!', 'Sucesso');
+      this.toastrNotification.success('Senha alterada com sucesso!', 'Sucesso');
       this.closePasswordModal();
     } catch (err) {
       console.error('Erro ao alterar senha', err);
-      this.toastr.error('Erro ao alterar senha. Tente novamente.', 'Erro');
+      this.toastrNotification.error('Erro ao alterar senha. Tente novamente.', 'Erro');
     } finally {
       this.cdr.detectChanges();
     }

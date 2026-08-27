@@ -11,12 +11,10 @@ export class AuthGuard implements CanActivate {
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
     if (this.auth.isAuthenticated()) {
-      // Allow access to subscription screen regardless of plan status
       if (state.url.includes('/subscription')) {
         return true;
       }
 
-      // For all other authenticated routes, check subscription status
       if (!this.auth.hasActiveSubscription()) {
         this.router.navigate(['/subscription']);
         return false;

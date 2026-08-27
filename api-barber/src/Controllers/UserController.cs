@@ -3,9 +3,11 @@ using api_barber.Models;
 using Microsoft.AspNetCore.Mvc;
 using api_barber.src.Requests;
 using api_barber.Requests.User;
+using Microsoft.AspNetCore.Authorization;
 namespace api_barber.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("users")]
     public class UserController(IUserService service) : ControllerBase
     {

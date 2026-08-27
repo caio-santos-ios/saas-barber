@@ -84,19 +84,13 @@ export class Schedules implements OnInit {
     return timeSpan.substring(0, 5);
   }
 
-  openModal(sched?: any) {
-    if (sched) {
+  async openModal(sched?: any) {
+    const schedId = typeof sched === 'string' ? sched : sched?.id;
+    if (schedId) {
       this.isEditing = true;
-      this.formData = {
-        id: sched.id,
-        barberId: sched.barberId,
-        day: sched.day,
-        startHour: this.formatTimeSpanToTime(sched.startHour),
-        endHour: this.formatTimeSpanToTime(sched.endHour),
-        intervalMinutes: sched.intervalMinutes || 30,
-        notes: sched.notes || ''
-      };
+      await this.getById(schedId);
     } else {
+      this.isModalOpen = true;
       this.isEditing = false;
       this.formData = { 
         id: '', 
@@ -108,7 +102,26 @@ export class Schedules implements OnInit {
         notes: ''
       };
     }
-    this.isModalOpen = true;
+  }
+
+  async getById(id: string) {
+    try {
+      this.isModalOpen = true;
+      const response = await api.get(`/schedules/${id}`);
+      const sched = response.data.data;
+      this.formData = {
+        id: sched.id,
+        barberId: sched.barberId,
+        day: sched.day,
+        startHour: this.formatTimeSpanToTime(sched.startHour),
+        endHour: this.formatTimeSpanToTime(sched.endHour),
+        intervalMinutes: sched.intervalMinutes || 30,
+        notes: sched.notes || ''
+      };
+      this.cdr.detectChanges();
+    } catch (error) {
+      this.toastr.error('Erro ao buscar dados da escala', 'Erro');
+    }
   }
 
   closeModal() {
@@ -126,19 +139,22 @@ export class Schedules implements OnInit {
     }
 
     try {
-      const barbershopId = localStorage.getItem('barbershopId');
       const payload: any = {
+        id: this.formData.id,
         barberId: this.formData.barberId,
         day: Number(this.formData.day),
         startHour: `${this.formData.startHour}:00`,
         endHour: `${this.formData.endHour}:00`,
         intervalMinutes: this.formData.intervalMinutes,
-        notes: this.formData.notes || '',
-        barbershopId: barbershopId
+        notes: this.formData.notes || ''
       };
 
+      if (!payload.id) {
+        delete payload.id;
+      }
+
       if (this.isEditing) {
-        await api.put(`/schedules/${this.formData.id}?barbershopId=${barbershopId}`, payload);
+        await api.put(`/schedules`, payload);
       } else {
         await api.post(`/schedules`, payload);
       }

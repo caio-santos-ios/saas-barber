@@ -38,11 +38,9 @@ export class Agenda implements OnInit {
 
   async loadAppointments() {
     try {
-      const barbershopId = localStorage.getItem('barbershopId');
-
       const [aptsRes, usersRes] = await Promise.all([
-        api.get(`/appointments?barbershopId=${barbershopId}`),
-        api.get(`/users?barbershopId=${barbershopId}`)
+        api.get(`/appointments`),
+        api.get(`/users`)
       ]);
 
       const users: any[] = usersRes.data.data || [];
@@ -72,14 +70,12 @@ export class Agenda implements OnInit {
 
   async loadSelectOptions() {
     try {
-      const barbershopId = localStorage.getItem('barbershopId');
-      
-      const usersRes = await api.get(`/users?barbershopId=${barbershopId}`);
+      const usersRes = await api.get(`/users`);
       const users = usersRes.data.data || [];
       this.barbers = users.filter((u: any) => u.role === 'Barber' || u.role === 1);
       this.customers = users.filter((u: any) => u.role === 'Customer' || u.role === 2);
 
-      const servicesRes = await api.get(`/services_types?barbershopId=${barbershopId}`);
+      const servicesRes = await api.get(`/services_types`);
       this.services = servicesRes.data.data || [];
     } catch (err) {
       console.error('Erro ao carregar opções', err);
@@ -90,8 +86,7 @@ export class Agenda implements OnInit {
     if (!this.formData.barberId || !this.formData.date) return;
     
     try {
-      const barbershopId = localStorage.getItem('barbershopId');
-      const res = await api.get(`/appointments/availability?barberId=${this.formData.barberId}&date=${this.formData.date}&barbershopId=${barbershopId}`);
+      const res = await api.get(`/appointments/availability?barberId=${this.formData.barberId}&date=${this.formData.date}`);
       this.availableSlots = res.data.data || [];
       this.formData.hour = '';
     } catch (err) {
@@ -110,16 +105,42 @@ export class Agenda implements OnInit {
     this.loadAppointments();
   }
 
-  openModal() {
-    this.formData = {
-      customerId: '',
-      barberId: '',
-      serviceId: '',
-      date: this.selectedDate.toISOString().split('T')[0],
-      hour: ''
-    };
-    this.availableSlots = [];
-    this.isModalOpen = true;
+  async openModal(apt?: any) {
+    const aptId = typeof apt === 'string' ? apt : apt?.id;
+    if (aptId) {
+      await this.getById(aptId);
+    } else {
+      this.formData = {
+        customerId: '',
+        barberId: '',
+        serviceId: '',
+        date: this.selectedDate.toISOString().split('T')[0],
+        hour: ''
+      };
+      this.availableSlots = [];
+      this.isModalOpen = true;
+    }
+  }
+
+  async getById(id: string) {
+    try {
+      this.isModalOpen = true;
+      const response = await api.get(`/appointments/${id}`);
+      const apt = response.data.data;
+      this.formData = {
+        customerId: apt.customerId || '',
+        barberId: apt.barberId || '',
+        serviceId: apt.serviceTypeId || apt.serviceId || '',
+        date: (apt.date || '').split('T')[0],
+        hour: apt.hour || ''
+      };
+      if (this.formData.barberId && this.formData.date) {
+        await this.loadAvailableSlots();
+      }
+      this.cdr.detectChanges();
+    } catch (error) {
+      this.toastr.error('Erro ao buscar dados do agendamento', 'Erro');
+    }
   }
 
   closeModal() {
@@ -136,8 +157,6 @@ export class Agenda implements OnInit {
       return;
     }
     try {
-      const barbershopId = localStorage.getItem('barbershopId');
-
       const customer = this.customers.find(c => c.id === this.formData.customerId);
       const service = this.services.find(s => s.id === this.formData.serviceId);
       
@@ -147,15 +166,14 @@ export class Agenda implements OnInit {
         date: new Date(this.formData.date).toISOString(),
         customerName: customer?.name || '',
         serviceTypeName: service?.name || '',
-        value: service?.value || 0,
-        barbershopId: barbershopId
+        value: service?.value || 0
       };
 
       if (!payload.id) {
         delete payload.id;
       }
 
-      await api.post(`/appointments?barbershopId=${barbershopId}`, payload);
+      await api.post(`/appointments`, payload);
       
       this.toastr.success('Agendamento salvo com sucesso!', 'Sucesso');
       this.closeModal();

@@ -3,10 +3,12 @@ using api_barber.Models;
 using Microsoft.AspNetCore.Mvc;
 using api_barber.Requests.Appointment;
 using api_barber.src.Requests;
+using Microsoft.AspNetCore.Authorization;
 
 namespace api_barber.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("appointments")]
     public class AppointmentController(IAppointmentService service) : ControllerBase
     {

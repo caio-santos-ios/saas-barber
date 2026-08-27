@@ -205,7 +205,6 @@ namespace api_barber.Services
         {
             try
             {
-                System.Console.WriteLine(request.Id);
                 Appointment existed = await repository.GetByIdAsync(request.Id);
                 if (existed is null) return new(null, 404, "Agendamento não encontrado");
 

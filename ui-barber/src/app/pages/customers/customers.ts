@@ -54,20 +54,33 @@ export class Customers implements OnInit {
     }
   }
 
-  openModal(customer?: any) {
-    if (customer) {
+  async openModal(customer?: any) {
+    const customerId = typeof customer === 'string' ? customer : customer?.id;
+    if (customerId) {
       this.isEditing = true;
-      this.formData = {
-        id: customer.id,
-        name: customer.name,
-        email: customer.email,
-        whatsApp: customer.whatsApp || ''
-      };
+      await this.getById(customerId);
     } else {
+      this.isModalOpen = true;
       this.isEditing = false;
       this.formData = { id: '', name: '', email: '', whatsApp: '' };
     }
-    this.isModalOpen = true;
+  }
+
+  async getById(id: string) {
+    try {
+      this.isModalOpen = true;
+      const response = await api.get(`/users/${id}`);
+      const data = response.data.data;
+      this.formData = {
+        id: data.id,
+        name: data.name || '',
+        email: data.email || '',
+        whatsApp: data.whatsapp || data.whatsApp || ''
+      };
+      this.cdr.detectChanges();
+    } catch (error) {
+      this.toastr.error('Erro ao buscar dados do cliente', 'Erro');
+    }
   }
 
   closeModal() {
@@ -101,7 +114,7 @@ export class Customers implements OnInit {
       }
 
       if (this.isEditing) {
-        await api.put(`/users/${this.formData.id}`, payload);
+        await api.put(`/users`, payload);
       } else {
         await api.post(`/auth/customers/register`, payload);
       }

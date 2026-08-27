@@ -195,7 +195,12 @@ namespace api_barber.Services
                 User existedUser = await repository.GetByIdAsync(request.Id);
                 if (existedUser is null) return new(null, 404, "Usuário não encontrado");
 
-                User entity = ObjectMapper.Map<UpdateUserRequest, User>(request);
+                User entity = existedUser;
+
+                entity.Name = request.Name;
+                entity.Email = request.Email;
+                entity.WhatsApp = request.WhatsApp;
+                entity.Document = request.Document;
 
                 User user = await repository.UpdateAsync(entity);
                 if (user is null) return new(null, 400, "Falha ao criar usuário");
