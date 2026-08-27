@@ -10,7 +10,7 @@ import { NgxMaskDirective } from 'ngx-mask';
   standalone: true,
   imports: [CommonModule, FormsModule, NgxMaskDirective],
   templateUrl: './settings.html',
-  styleUrls: []
+  styleUrls: ['./settings.css']
 })
 export class Settings implements OnInit {
   loading = true;

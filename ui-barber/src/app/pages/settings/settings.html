@@ -10,64 +10,61 @@
     </div>
   </div>
 
-  <div class="card" style="width: 100%; margin: 0 auto;">
+  <div class="card" style="width: 100%; margin: 0 auto; padding: 0; overflow: hidden;">
     <div *ngIf="loading" class="text-center py-4 text-muted">Carregando...</div>
     
-    <form *ngIf="!loading" (ngSubmit)="saveSettings()" style="padding: 32px;">
+    <form *ngIf="!loading" (ngSubmit)="saveSettings()" class="settings-form">
       
-      <!-- Row 1: Nome, Document, Phone -->
-      <div style="display: flex; gap: 16px;">
-        <div class="form-group" style="flex: 2;">
+      <div class="settings-row settings-row-1">
+        <div class="form-group">
           <label>Nome da Barbearia</label>
           <input type="text" name="name" [(ngModel)]="formData.name" required class="form-input" />
         </div>
-        <div class="form-group" style="flex: 1;">
+        <div class="form-group">
           <label>CNPJ / CPF</label>
           <input type="text" name="document" [(ngModel)]="formData.document" mask="00.000.000/0000-00||000.000.000-00" [dropSpecialCharacters]="false" class="form-input" placeholder="00.000.000/0000-00" />
         </div>
-        <div class="form-group" style="flex: 1;">
+        <div class="form-group">
           <label>Telefone / WhatsApp</label>
           <input type="text" name="phone" [(ngModel)]="formData.phone" mask="(00) 00000-0000||(00) 0000-0000" [dropSpecialCharacters]="false" class="form-input" placeholder="(11) 99999-9999" />
         </div>
       </div>
 
-      <!-- Row 2: CEP, Street, Number, Complement -->
-      <div style="display: flex; gap: 16px;">
-        <div class="form-group" style="flex: 1;">
+      <div class="settings-row settings-row-2">
+        <div class="form-group">
           <label>CEP</label>
           <input type="text" name="zipCode" [(ngModel)]="formData.address.zipCode" (ngModelChange)="searchCep()" mask="00000-000" [dropSpecialCharacters]="false" class="form-input" placeholder="00000-000" />
         </div>
-        <div class="form-group" style="flex: 2;">
+        <div class="form-group">
           <label>Logradouro</label>
           <input type="text" name="street" [(ngModel)]="formData.address.street" class="form-input" placeholder="Rua Exemplo" />
         </div>
-        <div class="form-group" style="flex: 1;">
+        <div class="form-group">
           <label>Número</label>
           <input type="text" name="number" [(ngModel)]="formData.address.number" class="form-input" placeholder="123" />
         </div>
-        <div class="form-group" style="flex: 1;">
+        <div class="form-group">
           <label>Complemento</label>
           <input type="text" name="complement" [(ngModel)]="formData.address.complement" class="form-input" placeholder="Apto 45" />
         </div>
       </div>
 
-      <!-- Row 3: Neighborhood, City, State -->
-      <div style="display: flex; gap: 16px;">
-        <div class="form-group" style="flex: 1.5;">
+      <div class="settings-row settings-row-3">
+        <div class="form-group">
           <label>Bairro</label>
           <input type="text" name="neighborhood" [(ngModel)]="formData.address.neighborhood" class="form-input" placeholder="Centro" />
         </div>
-        <div class="form-group" style="flex: 2;">
+        <div class="form-group">
           <label>Cidade</label>
           <input type="text" name="city" [(ngModel)]="formData.address.city" class="form-input" />
         </div>
-        <div class="form-group" style="flex: 1;">
+        <div class="form-group">
           <label>Estado</label>
           <input type="text" name="state" [(ngModel)]="formData.address.state" class="form-input" maxlength="2" placeholder="UF" style="text-transform: uppercase;" />
         </div>
       </div>
 
-      <div class="modal-footer" style="margin-top: 40px; border-top: none; padding-top: 0; justify-content: flex-start;">
+      <div class="modal-footer" style="margin-top: 32px; border-top: none; padding-top: 0; justify-content: flex-start;">
         <button type="submit" class="btn-primary" [disabled]="saving">
           {{ saving ? 'Salvando...' : 'Salvar Alterações' }}
         </button>

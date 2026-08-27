@@ -119,90 +119,50 @@ button {
 .table-responsive {
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
 }
 
-.table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  text-align: left;
-}
-
-.table th {
-  padding: 16px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid var(--border-color);
-  background-color: var(--bg-main);
-}
-
-.table td {
-  padding: 16px;
-  font-size: 14px;
-  color: var(--text-main);
-  border-bottom: 1px solid var(--border-color);
-  vertical-align: middle;
-}
-
-.table tbody tr {
-  transition: background-color 0.2s ease;
-}
-
-.table tbody tr:hover {
-  background-color: var(--bg-main);
-}
-
-.table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.btn-icon {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  font-size: 18px;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
-  transition: background-color 0.2s, color 0.2s;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.btn-icon:hover {
-  background-color: #f0f0f0;
-  color: var(--text-main);
-}
-
-.status-badge.inactive {
-  background-color: #ffebee;
-  color: #c62828;
-}
-
-/* Global Page & Modal Styles extracted from customers */
 .page-container {
-  padding: 16px; 
+  padding: 0;
+  width: 100%;
+  max-width: 100%;
 }
 
 .page-header {
   display: flex;
   flex-direction: column; 
-  gap: 16px;
+  gap: 14px;
   margin-bottom: 24px;
+  width: 100%;
+}
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
 }
 
 @media (min-width: 768px) {
-  .page-container {
-    padding: 0; 
-  }
   .page-header {
     flex-direction: row;
     justify-content: space-between;
     align-items: flex-end;
+  }
+}
+
+@media (max-width: 767px) {
+  .header-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+  .header-actions button,
+  .header-actions select,
+  .header-actions a {
+    width: 100%;
+    justify-content: center;
   }
 }
 
