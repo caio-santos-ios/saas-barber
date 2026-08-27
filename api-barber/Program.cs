@@ -25,12 +25,27 @@ if (File.Exists(firebaseKeyPath) && FirebaseAdmin.FirebaseApp.DefaultInstance ==
         Credential = Google.Apis.Auth.OAuth2.GoogleCredential.FromFile(firebaseKeyPath)
     });
 }
+var port = Environment.GetEnvironmentVariable("PORT");
+if (!string.IsNullOrEmpty(port))
+{
+    builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+}
+
 builder.Services.AddHostedService<api_barber.Works.PushNotificationWork>();
+
+var allowedOriginsEnv = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS") ?? "";
+var defaultOrigins = new List<string> { "http://localhost:4200", "http://localhost:50364", "https://saas-barber-k7nn.vercel.app" };
+if (!string.IsNullOrWhiteSpace(allowedOriginsEnv))
+{
+    var extraOrigins = allowedOriginsEnv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    defaultOrigins.AddRange(extraOrigins);
+}
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
     {
-        policy.WithOrigins("http://localhost:4200", "http://localhost:50364")
+        policy.WithOrigins(defaultOrigins.ToArray())
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -117,7 +132,10 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-app.UseHttpsRedirection();
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseCors("AllowAngular");
 app.UseAuthentication();
 app.UseAuthorization();
