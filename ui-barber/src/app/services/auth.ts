@@ -47,4 +47,7 @@ export class Auth {
     return !!this.getToken();
   }
 
+  errorNotification(err: any) {
+    console.log(err)
+  }
 }

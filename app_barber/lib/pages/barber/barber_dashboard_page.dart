@@ -58,6 +58,7 @@ class _BarberDashboardPageState extends State<BarberDashboardPage> {
     
     setState(() => _isLoading = true);
     final success = await _appointmentRepo.updateAppointmentStatus(appt.id, newStatus, barbershopId);
+    print(success);
     if (!success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Erro ao atualizar o agendamento.')),
@@ -104,7 +105,7 @@ class _BarberDashboardPageState extends State<BarberDashboardPage> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              _updateStatus(appt, 2); // 2 = Cancelado
+              _updateStatus(appt, 2);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Sim, cancelar', style: TextStyle(color: Colors.white)),

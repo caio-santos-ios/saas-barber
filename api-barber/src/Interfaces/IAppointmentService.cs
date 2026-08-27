@@ -11,6 +11,7 @@ namespace api_barber.Interfaces
         Task<ResponseApi<List<string>>> GetAvailableSlotsAsync(string barberId, DateTime date, string barbershopId);
         Task<ResponseApi<Appointment>> CreateAsync(CreateAppointmentRequest request);
         Task<ResponseApi<Appointment>> UpdateAsync(UpdateAppointmentRequest request);
+        Task<ResponseApi<Appointment>> UpdateStatusAsync(UpdateAppointmentStatusRequest request);
         Task<ResponseApi<Appointment>> DeleteAsync(DeleteRequest request);
     }
 }

@@ -5,6 +5,8 @@ import { api } from '../../services/api';
 import { ToastrService } from 'ngx-toastr';
 import { ChangeDetectorRef } from '@angular/core';
 import { NgxMaskDirective } from 'ngx-mask';
+import { Auth } from '../../services/auth';
+import { GlobalService } from '../../services/global.service';
 
 @Component({
   selector: 'app-services',
@@ -27,13 +29,14 @@ export class Services implements OnInit {
     name: '',
     description: '',
     durationMinutes: 30,
-    value: 0,
+    price: 0,
     category: ''
   };
 
   constructor(
     private toastr: ToastrService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private globalService: GlobalService
   ) {}
 
   ngOnInit() {
@@ -54,22 +57,26 @@ export class Services implements OnInit {
     }
   }
 
-  openModal(srv?: any) {
-    if (srv) {
+  async openModal(serviceId: string) {
+    
+    if(serviceId) {
       this.isEditing = true;
-      this.formData = {
-        id: srv.id,
-        name: srv.name,
-        description: srv.description || '',
-        durationMinutes: srv.durationMinutes || srv.duration || 30,
-        value: srv.value || srv.price || 0,
-        category: srv.category || 'Cabelo'
-      };
+      await this.getById(serviceId);
     } else {
+      this.isModalOpen = true;
       this.isEditing = false;
-      this.formData = { id: '', name: '', description: '', durationMinutes: 30, value: 0, category: 'Cabelo' };
+      this.formData = { id: '', name: '', description: '', durationMinutes: 30, price: 0, category: 'Cabelo' };
     }
-    this.isModalOpen = true;
+  }
+
+  async getById(serviceId: string) {
+    try {
+      this.isModalOpen = true;
+      const response = await api.get(`/services_types/${serviceId}`);
+      this.formData = { ...response.data.data };
+    } catch (error) {
+      this.globalService.errorNotification(error);
+    }
   }
 
   closeModal() {
@@ -77,7 +84,7 @@ export class Services implements OnInit {
   }
 
   getParsedValue(): number {
-    const stringValue = (this.formData.value || 0).toString();
+    const stringValue = (this.formData.price || 0).toString();
     const cleanValue = stringValue.replace(/[R$\s\.]/g, '').replace(',', '.');
     return parseFloat(cleanValue) || 0;
   }
@@ -117,7 +124,6 @@ export class Services implements OnInit {
         description: this.formData.description,
         duration: durationMinutes,
         durationMinutes: durationMinutes,
-        value: numericValue,
         price: numericValue,
         category: this.formData.category || 'Cabelo',
         active: true,
@@ -134,7 +140,7 @@ export class Services implements OnInit {
       this.closeModal();
       await this.loadServices();
     } catch (err) {
-      console.error('Erro ao salvar serviço', err);
+      this.globalService.errorNotification(err);
       this.toastr.error('Erro ao salvar serviço. Tente novamente.', 'Erro');
     } finally {
       this.cdr.detectChanges();
@@ -155,8 +161,7 @@ export class Services implements OnInit {
     if (!this.serviceToDelete) return;
     
     try {
-      const barbershopId = localStorage.getItem('barbershopId');
-      await api.delete(`/services_types/${this.serviceToDelete.id}?barbershopId=${barbershopId}`);
+      await api.delete(`/services_types/${this.serviceToDelete.id}`);
       
       this.toastr.success('Serviço excluído com sucesso!', 'Sucesso');
       this.closeDeleteModal();

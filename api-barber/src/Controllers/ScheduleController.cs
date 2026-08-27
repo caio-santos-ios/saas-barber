@@ -29,10 +29,9 @@ namespace api_barber.Controllers
             var response = await service.CreateAsync(request);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] UpdateScheduleRequest request)
+        [HttpPut]
+        public async Task<IActionResult> Update([FromBody] UpdateScheduleRequest request)
         {
-            request.Id = id;
             request.BarbershopId = User.FindFirst("barbershopId")?.Value ?? "";
             request.UpdatedBy = User.FindFirst("userId")?.Value ?? "";
             var response = await service.UpdateAsync(request);

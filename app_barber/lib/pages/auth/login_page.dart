@@ -30,6 +30,7 @@ class _LoginPageState extends State<LoginPage> {
   
   bool _obscurePassword = true;
   bool _isLoading = false;
+  String _selectedRole = 'Customer';
 
   late final AuthRepository _authRepository;
 
@@ -143,7 +144,7 @@ class _LoginPageState extends State<LoginPage> {
           email: _emailController.text.trim(),
           password: _passwordController.text,
           tokenFCM: fcmToken,
-          role: null,
+          role: _selectedRole,
           barbershopId: currentBarbershopId,
         );
 
@@ -180,6 +181,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     final authBox = Hive.box('auth');
     final barbershopName = authBox.get('barbershopName', defaultValue: '') as String;
+    final primary = Theme.of(context).colorScheme.primary;
 
     return Scaffold(
       body: SafeArea(
@@ -203,17 +205,17 @@ class _LoginPageState extends State<LoginPage> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+                        color: primary.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
+                          color: primary.withValues(alpha: 0.25),
                         ),
                       ),
                       child: Row(
                         children: [
                           Icon(
                             Icons.storefront_rounded,
-                            color: Theme.of(context).colorScheme.primary,
+                            color: primary,
                             size: 20,
                           ),
                           const SizedBox(width: 8),
@@ -222,7 +224,7 @@ class _LoginPageState extends State<LoginPage> {
                               barbershopName,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: Theme.of(context).colorScheme.primary,
+                                color: primary,
                                 fontSize: 14,
                               ),
                               overflow: TextOverflow.ellipsis,
@@ -255,12 +257,66 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 16),
                   ],
-                  Text(
-                    'Entrar',
-                    style: Theme.of(context).textTheme.titleLarge,
-                    textAlign: TextAlign.center,
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? const Color(0xFF2C2C2C)
+                          : const Color(0xFFE9ECEF),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.all(4),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => setState(() => _selectedRole = 'Customer'),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                color: _selectedRole == 'Customer' ? primary : Colors.transparent,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                'Sou Cliente',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: _selectedRole == 'Customer'
+                                      ? Colors.white
+                                      : Theme.of(context).textTheme.bodyMedium?.color,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => setState(() => _selectedRole = 'Barber'),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                color: _selectedRole == 'Barber' ? primary : Colors.transparent,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                'Sou Profissional',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: _selectedRole == 'Barber'
+                                      ? Colors.white
+                                      : Theme.of(context).textTheme.bodyMedium?.color,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
                   CustomTextField(
                     controller: _emailController,
                     labelText: 'E-mail',

@@ -201,6 +201,30 @@ namespace api_barber.Services
                 return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
             }
         }
+        public async Task<ResponseApi<Appointment>> UpdateStatusAsync(UpdateAppointmentStatusRequest request)
+        {
+            try
+            {
+                System.Console.WriteLine(request.Id);
+                Appointment existed = await repository.GetByIdAsync(request.Id);
+                if (existed is null) return new(null, 404, "Agendamento não encontrado");
+
+                Appointment entity = existed;
+                entity.UpdatedAt = existed.CreatedAt;
+                entity.UpdatedBy = existed.CreatedBy;
+                entity.Status = request.Status;
+                entity.CancelNotes = request.CancelNotes;
+
+                Appointment updated = await repository.UpdateAsync(entity);
+                if (updated is null) return new(null, 400, "Falha ao atualizar agendamento");
+
+                return new(updated, 200, "Agendamento atualizado com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
+            }
+        }
         #endregion
 
         #region DELETE

@@ -83,12 +83,13 @@ class AppointmentRepository {
   Future<bool> updateAppointmentStatus(String appointmentId, int status, String barbershopId) async {
     try {
       final response = await apiClient.dio.put(
-        '/appointments/$appointmentId/status?barbershopId=$barbershopId',
+        '/appointments/status',
         data: {
           'id': appointmentId,
           'status': status,
         },
       );
+      print(response.data);
       return response.statusCode == 200;
     } catch (e) {
       return false;
