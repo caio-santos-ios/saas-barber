@@ -9,26 +9,29 @@ import { ToastrService } from 'ngx-toastr';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './schedules.html',
-  styleUrls: []
+  styleUrls: ['./schedules.css']
 })
 export class Schedules implements OnInit {
   schedules: any[] = [];
   barbers: any[] = [];
   loading = true;
 
+  selectedBarberFilter: string = '';
+
   isModalOpen = false;
+  isBatchModalOpen = false;
   isDeleteModalOpen = false;
   isEditing = false;
   scheduleToDelete: any = null;
-  
+
   daysOfWeek = [
-    { value: 0, label: 'Segunda-feira' },
-    { value: 1, label: 'Terça-feira' },
-    { value: 2, label: 'Quarta-feira' },
-    { value: 3, label: 'Quinta-feira' },
-    { value: 4, label: 'Sexta-feira' },
-    { value: 5, label: 'Sábado' },
-    { value: 6, label: 'Domingo' }
+    { value: 0, label: 'Segunda', short: 'Seg' },
+    { value: 1, label: 'Terça', short: 'Ter' },
+    { value: 2, label: 'Quarta', short: 'Qua' },
+    { value: 3, label: 'Quinta', short: 'Qui' },
+    { value: 4, label: 'Sexta', short: 'Sex' },
+    { value: 5, label: 'Sábado', short: 'Sáb' },
+    { value: 6, label: 'Domingo', short: 'Dom' }
   ];
 
   formData = {
@@ -38,6 +41,15 @@ export class Schedules implements OnInit {
     startHour: '09:00',
     endHour: '18:00',
     intervalMinutes: 30,
+    notes: ''
+  };
+
+  batchFormData = {
+    barberId: '',
+    startHour: '09:00',
+    endHour: '18:00',
+    intervalMinutes: 30,
+    selectedDays: [0, 1, 2, 3, 4, 5],
     notes: ''
   };
 
@@ -69,6 +81,21 @@ export class Schedules implements OnInit {
     }
   }
 
+  get filteredBarbers(): any[] {
+    if (!this.selectedBarberFilter) {
+      return this.barbers;
+    }
+    return this.barbers.filter(b => b.id === this.selectedBarberFilter);
+  }
+
+  getScheduleForBarberAndDay(barberId: string, day: number): any {
+    return this.schedules.find(s => s.barberId === barberId && s.day === day) || null;
+  }
+
+  getActiveDaysCount(barberId: string): number {
+    return this.schedules.filter(s => s.barberId === barberId).length;
+  }
+
   getDayName(dayValue: number): string {
     const day = this.daysOfWeek.find(d => d.value === dayValue);
     return day ? day.label : 'Desconhecido';
@@ -97,6 +124,25 @@ export class Schedules implements OnInit {
         barberId: this.barbers.length > 0 ? this.barbers[0].id : '', 
         day: 0, 
         startHour: '09:00', 
+        endHour: '18:00',
+        intervalMinutes: 30,
+        notes: ''
+      };
+    }
+  }
+
+  openModalForSlot(barberId: string, day: number) {
+    const existing = this.getScheduleForBarberAndDay(barberId, day);
+    if (existing) {
+      this.openModal(existing);
+    } else {
+      this.isModalOpen = true;
+      this.isEditing = false;
+      this.formData = {
+        id: '',
+        barberId,
+        day,
+        startHour: '09:00',
         endHour: '18:00',
         intervalMinutes: 30,
         notes: ''
@@ -170,6 +216,79 @@ export class Schedules implements OnInit {
     }
   }
 
+  openBatchModal(barberId?: string) {
+    this.batchFormData = {
+      barberId: barberId || (this.barbers.length > 0 ? this.barbers[0].id : ''),
+      startHour: '09:00',
+      endHour: '18:00',
+      intervalMinutes: 30,
+      selectedDays: [0, 1, 2, 3, 4, 5],
+      notes: ''
+    };
+    this.isBatchModalOpen = true;
+  }
+
+  closeBatchModal() {
+    this.isBatchModalOpen = false;
+  }
+
+  toggleBatchDay(dayValue: number) {
+    const index = this.batchFormData.selectedDays.indexOf(dayValue);
+    if (index > -1) {
+      this.batchFormData.selectedDays.splice(index, 1);
+    } else {
+      this.batchFormData.selectedDays.push(dayValue);
+    }
+  }
+
+  isBatchDaySelected(dayValue: number): boolean {
+    return this.batchFormData.selectedDays.includes(dayValue);
+  }
+
+  async saveBatchSchedule() {
+    if (!this.batchFormData.barberId) {
+      this.toastr.warning('Selecione um profissional.', 'Atenção');
+      return;
+    }
+    if (this.batchFormData.selectedDays.length === 0) {
+      this.toastr.warning('Selecione pelo menos um dia da semana.', 'Atenção');
+      return;
+    }
+
+    try {
+      this.loading = true;
+      for (const day of this.batchFormData.selectedDays) {
+        const existing = this.getScheduleForBarberAndDay(this.batchFormData.barberId, day);
+        const payload: any = {
+          id: existing ? existing.id : undefined,
+          barberId: this.batchFormData.barberId,
+          day: Number(day),
+          startHour: `${this.batchFormData.startHour}:00`,
+          endHour: `${this.batchFormData.endHour}:00`,
+          intervalMinutes: this.batchFormData.intervalMinutes,
+          notes: this.batchFormData.notes || ''
+        };
+
+        if (existing) {
+          await api.put(`/schedules`, payload);
+        } else {
+          delete payload.id;
+          await api.post(`/schedules`, payload);
+        }
+      }
+
+      this.toastr.success('Escala semanal aplicada com sucesso!', 'Sucesso');
+      this.closeBatchModal();
+      await this.loadInitialData();
+    } catch (err) {
+      console.error('Erro ao aplicar escala semanal', err);
+      this.toastr.error('Erro ao configurar escala semanal.', 'Erro');
+    } finally {
+      this.loading = false;
+      this.cdr.detectChanges();
+    }
+  }
+
   openDeleteModal(sched: any) {
     this.scheduleToDelete = sched;
     this.isDeleteModalOpen = true;
@@ -184,9 +303,7 @@ export class Schedules implements OnInit {
     if (!this.scheduleToDelete) return;
     
     try {
-      const barbershopId = localStorage.getItem('barbershopId');
-      await api.delete(`/schedules/${this.scheduleToDelete.id}?barbershopId=${barbershopId}`);
-      
+      await api.delete(`/schedules/${this.scheduleToDelete.id}`);
       this.toastr.success('Escala excluída com sucesso!', 'Sucesso');
       this.closeDeleteModal();
       await this.loadInitialData();
