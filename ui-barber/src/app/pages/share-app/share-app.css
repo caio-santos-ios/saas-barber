@@ -1,5 +1,10 @@
 @import '../../../styles.css';
 
+.header-actions {
+  display: flex;
+  gap: 1rem;
+}
+
 .share-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

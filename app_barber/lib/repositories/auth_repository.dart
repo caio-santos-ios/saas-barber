@@ -9,10 +9,13 @@ class AuthRepository {
   AuthRepository(this.apiClient);
 
   Future<UserSession?> login(LoginRequest request) async {
+    print(request.toJson());
     final response = await apiClient.dio.post(
       '/auth/login',
       data: request.toJson(),
     );
+
+    print(response.data);
 
     if (response.statusCode == 200) {
       final data = response.data['data'] ?? response.data;

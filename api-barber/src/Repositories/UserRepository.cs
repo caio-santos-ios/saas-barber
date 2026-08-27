@@ -20,10 +20,10 @@ namespace api_barber.src.Repositories
         {
             return await appDbContext.Users.Find(x => !x.Deleted && x.Id.Equals(id)).FirstOrDefaultAsync();
         }
-        public async Task<User> GetByEmailAsync(string email, RoleUserEnum? role)
+        public async Task<User> GetByEmailAsync(string email, string barbershopId, RoleUserEnum? role)
         {
-            if(role is not null) return await appDbContext.Users.Find(x => !x.Deleted && x.Email.Equals(email) && x.Role == role).FirstOrDefaultAsync();
-            return await appDbContext.Users.Find(x => !x.Deleted && x.Email.Equals(email)).FirstOrDefaultAsync();
+            if(role is not null) return await appDbContext.Users.Find(x => !x.Deleted && x.Email.Equals(email) && x.Role == role && x.BarbershopId == barbershopId).FirstOrDefaultAsync();
+            return await appDbContext.Users.Find(x => !x.Deleted && x.Email.Equals(email) && x.BarbershopId == barbershopId).FirstOrDefaultAsync();
         }
         public async Task<List<dynamic>> GetBarbersAsync(List<BsonDocument> pipeline)
         {

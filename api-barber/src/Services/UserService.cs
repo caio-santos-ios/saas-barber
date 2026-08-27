@@ -54,11 +54,11 @@ namespace api_barber.Services
                 return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
             }
         }
-        public async Task<ResponseApi<User>> GetByEmailAsync(string email, RoleUserEnum? role)
+        public async Task<ResponseApi<User>> GetByEmailAsync(string email, string barbershopId, RoleUserEnum? role)
         {
             try
             {
-                User user = await repository.GetByEmailAsync(email, role);
+                User user = await repository.GetByEmailAsync(email, barbershopId, role);
                 if (user is null) return new(null, 404, "Usuário não encontrado");
 
                 return new(user, 200, "Usuários buscado com sucesso");
@@ -118,6 +118,8 @@ namespace api_barber.Services
                         {"_id", 0},
                         {"id", new BsonDocument("$toString", "$_id")},
                         {"name", 1},
+                        {"email", 1},
+                        {"whatsapp", 1},
                         {"active", 1},
                         {"createdAt", 1},
                     }),

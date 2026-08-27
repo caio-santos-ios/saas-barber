@@ -19,7 +19,8 @@ namespace api_barber.Controllers
         [HttpPost("customers/register")]
         public async Task<IActionResult> RegisterCustomer([FromBody] CreateCustomerRequest request)
         {
-            string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
+            System.Console.WriteLine(request.BarbershopId);
+
             ResponseApi<AuthResponse> response = await authService.RegisterCustomerAsync(request);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
@@ -27,7 +28,6 @@ namespace api_barber.Controllers
         [HttpPost("admins/register")]
         public async Task<IActionResult> RegisterAdmin([FromBody] CreateAdminRequest request)
         {
-            string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
             ResponseApi<AuthResponse> response = await authService.RegisterAdminAsync(request);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }

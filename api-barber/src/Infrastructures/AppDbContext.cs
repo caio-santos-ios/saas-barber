@@ -1,4 +1,4 @@
-﻿using MongoDB.Driver;
+using MongoDB.Driver;
 using api_barber.Models;
 namespace api_barber.Infrastructures
 {
@@ -7,8 +7,14 @@ namespace api_barber.Infrastructures
         private readonly IMongoDatabase _database;
         public AppDbContext(IConfiguration configuration)
         {
-            var client = new MongoClient(configuration.GetConnectionString("MongoDbConnection"));
-            _database = client.GetDatabase(configuration["DatabaseSettings:DatabaseName"] ?? "SaaSBarbearia");
+            var connectionString = Environment.GetEnvironmentVariable("MONGODB_CONNECTION")
+                ?? configuration.GetConnectionString("MongoDbConnection")
+                ?? "mongodb://localhost:27017";
+            var databaseName = Environment.GetEnvironmentVariable("DATABASE_NAME")
+                ?? configuration["DatabaseSettings:DatabaseName"]
+                ?? "BarberDb";
+            var client = new MongoClient(connectionString);
+            _database = client.GetDatabase(databaseName);
         }
         public IMongoCollection<Barbershop> Barbershops => _database.GetCollection<Barbershop>("barbershops");
         public IMongoCollection<User> Users => _database.GetCollection<User>("users");

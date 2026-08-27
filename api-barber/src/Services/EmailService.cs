@@ -13,12 +13,12 @@ namespace api_barber.Services
     {
         public async Task SendAsync(string toEmail, string toName, string subject, string htmlBody)
         {
-            var host = config["Smtp:Host"] ?? "smtp.gmail.com";
-            var port = int.Parse(config["Smtp:Port"] ?? "587");
-            var username = config["Smtp:Username"] ?? "";
-            var password = config["Smtp:Password"] ?? "";
-            var fromName = config["Smtp:FromName"] ?? "SaaS Barbearia";
-            var fromEmail = config["Smtp:FromEmail"] ?? username;
+            var host = Environment.GetEnvironmentVariable("SMTP_HOST") ?? config["Smtp:Host"] ?? "smtp.gmail.com";
+            var port = int.Parse(Environment.GetEnvironmentVariable("SMTP_PORT") ?? config["Smtp:Port"] ?? "587");
+            var username = Environment.GetEnvironmentVariable("SMTP_USERNAME") ?? config["Smtp:Username"] ?? "";
+            var password = Environment.GetEnvironmentVariable("SMTP_PASSWORD") ?? config["Smtp:Password"] ?? "";
+            var fromName = Environment.GetEnvironmentVariable("SMTP_FROM_NAME") ?? config["Smtp:FromName"] ?? "SaaS Barbearia";
+            var fromEmail = Environment.GetEnvironmentVariable("SMTP_FROM_EMAIL") ?? config["Smtp:FromEmail"] ?? username;
 
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress(fromName, fromEmail));

@@ -16,11 +16,13 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 DotNetEnv.Env.Load();
 builder.Configuration.AddEnvironmentVariables();
 
-if (System.IO.File.Exists("firebase-service-account.json"))
+var firebaseKeyFile = Environment.GetEnvironmentVariable("FIREBASE_CREDENTIALS_PATH") ?? "firebase-service-account.json";
+var firebaseKeyPath = Path.IsPathRooted(firebaseKeyFile) ? firebaseKeyFile : Path.Combine(builder.Environment.ContentRootPath, firebaseKeyFile);
+if (File.Exists(firebaseKeyPath) && FirebaseAdmin.FirebaseApp.DefaultInstance == null)
 {
     FirebaseAdmin.FirebaseApp.Create(new FirebaseAdmin.AppOptions
     {
-        Credential = Google.Apis.Auth.OAuth2.GoogleCredential.FromFile("firebase-service-account.json")
+        Credential = Google.Apis.Auth.OAuth2.GoogleCredential.FromFile(firebaseKeyPath)
     });
 }
 builder.Services.AddHostedService<api_barber.Works.PushNotificationWork>();
@@ -36,7 +38,7 @@ builder.Services.AddCors(options =>
 });
 builder.Services.AddOpenApi();
 
-var secret = builder.Configuration["Jwt:Key"] ?? "MinhaChaveSuperSecretaDePeloMenos32Caracteres!";
+var secret = Environment.GetEnvironmentVariable("JWT_KEY") ?? builder.Configuration["Jwt:Key"] ?? "MinhaChaveSuperSecretaDePeloMenos32Caracteres!";
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -50,10 +52,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 builder.Services.AddAuthorization();
+var mongoConnection = Environment.GetEnvironmentVariable("MONGODB_CONNECTION") ?? builder.Configuration.GetConnectionString("MongoDbConnection") ?? "mongodb://localhost:27017";
+var databaseName = Environment.GetEnvironmentVariable("DATABASE_NAME") ?? builder.Configuration["DatabaseSettings:DatabaseName"] ?? "BarberDb";
 builder.Services.AddSingleton<MongoDB.Driver.IMongoClient>(s =>
-    new MongoDB.Driver.MongoClient(builder.Configuration.GetConnectionString("MongoDbConnection")));
+    new MongoDB.Driver.MongoClient(mongoConnection));
 builder.Services.AddScoped<MongoDB.Driver.IMongoDatabase>(s =>
-    s.GetRequiredService<MongoDB.Driver.IMongoClient>().GetDatabase(builder.Configuration["DatabaseSettings:DatabaseName"] ?? "SaaSBarbearia"));
+    s.GetRequiredService<MongoDB.Driver.IMongoClient>().GetDatabase(databaseName));
 builder.Services.AddSingleton<AppDbContext>();
 builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
 builder.Services.AddScoped<IBarbershopRepository, BarbershopRepository>();
@@ -108,14 +112,6 @@ builder.Services.AddControllers(options => { })
             return new BadRequestObjectResult(new { errors });
         };
     });
-string firebaseKeyPath = Path.Combine(builder.Environment.ContentRootPath, "firebase-service-account.json");
-if (File.Exists(firebaseKeyPath))
-{
-    FirebaseAdmin.FirebaseApp.Create(new FirebaseAdmin.AppOptions()
-    {
-        Credential = Google.Apis.Auth.OAuth2.GoogleCredential.FromFile(firebaseKeyPath)
-    });
-}
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {

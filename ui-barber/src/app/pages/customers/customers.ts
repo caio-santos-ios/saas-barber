@@ -103,16 +103,15 @@ export class Customers implements OnInit {
       }
 
       if (this.isEditing) {
-        await api.put(`/users/${this.formData.id}?barbershopId=${barbershopId}`, payload);
+        await api.put(`/users/${this.formData.id}`, payload);
       } else {
-        await api.post(`/users?barbershopId=${barbershopId}`, payload);
+        await api.post(`/auth/customers/register`, payload);
       }
       
       this.toastr.success('Cliente salvo com sucesso!', 'Sucesso');
       this.closeModal();
       await this.loadCustomers();
     } catch (err) {
-      console.error('Erro ao salvar cliente', err);
       this.toastr.error('Erro ao salvar cliente. Tente novamente.', 'Erro');
     } finally {
       this.cdr.detectChanges();
@@ -133,14 +132,11 @@ export class Customers implements OnInit {
     if (!this.customerToDelete) return;
     
     try {
-      const barbershopId = localStorage.getItem('barbershopId');
-      await api.delete(`/users/${this.customerToDelete.id}?barbershopId=${barbershopId}`);
-      
+      await api.delete(`/users/${this.customerToDelete.id}`);
       this.toastr.success('Cliente excluído com sucesso!', 'Sucesso');
       this.closeDeleteModal();
       await this.loadCustomers();
     } catch (err) {
-      console.error('Erro ao excluir cliente', err);
       this.toastr.error('Erro ao excluir cliente. Tente novamente.', 'Erro');
     } finally {
       this.cdr.detectChanges();

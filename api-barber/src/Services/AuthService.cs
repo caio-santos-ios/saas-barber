@@ -35,7 +35,9 @@ namespace api_barber.Services
         }
         public string GenerateJwtToken(string userId, string role, string barbershopId)
         {
-            var secret = _config["Jwt:Key"] ?? "MinhaChaveSuperSecretaDePeloMenos32Caracteres!";
+            var secret = Environment.GetEnvironmentVariable("JWT_KEY") ?? "";
+            var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "";
+            var audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? "";
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
             var claims = new[]
@@ -46,8 +48,8 @@ namespace api_barber.Services
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
             var token = new JwtSecurityToken(
-                issuer: _config["Jwt:Issuer"],
-                audience: _config["Jwt:Audience"],
+                issuer: issuer,
+                audience: audience,
                 claims: claims,
                 expires: DateTime.Now.AddHours(2),
                 signingCredentials: credentials);
@@ -57,12 +59,15 @@ namespace api_barber.Services
         {
             try
             {
-                var userResponse = await _userService.GetByEmailAsync(request.Email);
-                var user = userResponse.Data;
-                if (user == null || string.IsNullOrEmpty(user.Password) || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password))
-                {
-                    return new(null, 401, "E-mail ou senha inválidos.");
-                }
+                ResponseApi<User> userResponse = await _userService.GetByEmailAsync(request.Email, request.BarbershopId, request.Role);
+                if (userResponse.Data == null) return new(null, 400, "E-mail ou senha inválidos.");
+
+                User user = userResponse.Data;
+                System.Console.WriteLine(request.Password);
+                System.Console.WriteLine(user.Password);
+                System.Console.WriteLine(BCrypt.Net.BCrypt.Verify(request.Password, user.Password));
+
+                if(string.IsNullOrEmpty(user.Password) || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password)) return new(null, 400, "E-mail ou senha inválidos.");
 
                 var barbershopResponse = await _barbershopService.GetByIdAsync(user.BarbershopId);
                 var barbershop = barbershopResponse.Data;
@@ -87,11 +92,8 @@ namespace api_barber.Services
         {
             try
             {
-                var existingUser = await _userService.GetByEmailAsync(request.Email);
-                if (existingUser.Data != null)
-                {
-                    return new(null, 400, "Este e-mail já está cadastrado.");
-                }
+                ResponseApi<User> existingUser = await _userService.GetByEmailAsync(request.Email, request.BarbershopId, RoleUserEnum.Customer);
+                if (existingUser.Data is not null) return new(null, 400, "Este e-mail já está cadastrado.");
 
                 User user = new()
                 {
@@ -104,6 +106,7 @@ namespace api_barber.Services
                     Active = true,
                     CreatedAt = DateTime.UtcNow
                 };
+
                 var createdUserRes = await _userService.CreateAsync(new CreateUserRequest 
                 { 
                     Name = user.Name, 
@@ -142,7 +145,7 @@ namespace api_barber.Services
         {
             try
             {
-                ResponseApi<User> existingUser = await _userService.GetByEmailAsync(request.Email);
+                ResponseApi<User> existingUser = await _userService.GetByEmailAsync(request.Email, "", null);
                 if (existingUser.Data is not null) return new(null, 400, "Este e-mail já está cadastrado.");
 
                 Enum.TryParse<TypePersonEnum>(request.TypePerson, out var typePerson);
@@ -212,28 +215,29 @@ namespace api_barber.Services
         {
             try
             {
-                var userResponse = await _userService.GetByEmailAsync(request.Email);
+                var userResponse = await _userService.GetByEmailAsync(request.Email, "request.", null);
                 if (userResponse.Data == null)
-                    return new(null, 404, "E-mail n�o encontrado.");
+                    return new(null, 404, "E-mail não encontrado.");
 
                 var user = userResponse.Data;
-
-                var secret = _config["Jwt:Key"] ?? "MinhaChaveSuperSecretaDePeloMenos32Caracteres!";
+                var secret = Environment.GetEnvironmentVariable("JWT_KEY") ?? _config["Jwt:Key"] ?? "MinhaChaveSuperSecretaDePeloMenos32Caracteres!";
+                var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? _config["Jwt:Issuer"] ?? "SaasBarbeariaIssuer";
+                var audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? _config["Jwt:Audience"] ?? "SaasBarbeariaAudience";
                 var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
                 var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
                 var claims = new[]
                 {
-                    new Claim("email", user.Email),
-                    new Claim("reset", "true"),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                    new System.Security.Claims.Claim("email", user.Email),
+                    new System.Security.Claims.Claim("reset", "true"),
+                    new System.Security.Claims.Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
                 };
                 var tokenDescriptor = new SecurityTokenDescriptor
                 {
                     Subject = new ClaimsIdentity(claims),
                     Expires = DateTime.UtcNow.AddHours(1),
                     SigningCredentials = credentials,
-                    Issuer = _config["Jwt:Issuer"],
-                    Audience = _config["Jwt:Audience"]
+                    Issuer = issuer,
+                    Audience = audience
                 };
                 var handler = new JwtSecurityTokenHandler();
                 var token = handler.CreateToken(tokenDescriptor);
@@ -244,33 +248,32 @@ namespace api_barber.Services
 
                 var html = $"""
                     <div style="font-family:sans-serif;max-width:480px;margin:0 auto;">
-                      <h2 style="color:#1e293b;">Redefini��o de Senha</h2>
-                      <p>Voc� solicitou a redefini��o da sua senha. Clique no bot�o abaixo para criar uma nova senha:</p>
+                      <h2 style="color:#1e293b;">Redefinição de Senha</h2>
+                      <p>Você solicitou a redefinição da sua senha. Clique no botão abaixo para criar uma nova senha:</p>
                       <a href="{link}" style="display:inline-block;background:#2563eb;color:#ffffff;padding:12px 24px;text-decoration:none;border-radius:4px;font-weight:bold;margin-top:16px;">
                         Redefinir Senha
                       </a>
-                      <p style="color:#64748b;font-size:13px;margin-top:16px;">Se voc� n�o solicitou isso, ignore este e-mail. Este link expira em 1 hora.</p>
+                      <p style="color:#64748b;font-size:13px;margin-top:16px;">Se você não solicitou isso, ignore este e-mail. Este link expira em 1 hora.</p>
                     </div>
                 """;
 
-                await _emailService.SendAsync(user.Email, user.Name, "Redefini��o de Senha - SaaS Barbearia", html);
+                await _emailService.SendAsync(user.Email, user.Name, "Redefinição de Senha - SaaS Barbearia", html);
 
-                return new(null, 200, "Link de redefini��o enviado para o seu e-mail.");
+                return new(null, 200, "Link de redefinição enviado para o seu e-mail.");
             }
             catch (Exception ex)
             {
                 return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde. {ex.Message}");
             }
         }
-
         public async Task<ResponseApi<object>> ConfirmResetPasswordAsync(ConfirmResetPasswordRequest request)
         {
             try
             {
                 if (request.NewPassword.Length < 6)
-                    return new(null, 400, "A nova senha deve ter no m�nimo 6 caracteres.");
+                    return new(null, 400, "A nova senha deve ter no mínimo 6 caracteres.");
 
-                var secret = _config["Jwt:Key"] ?? "MinhaChaveSuperSecretaDePeloMenos32Caracteres!";
+                var secret = Environment.GetEnvironmentVariable("JWT_KEY") ?? _config["Jwt:Key"] ?? "MinhaChaveSuperSecretaDePeloMenos32Caracteres!";
                 var handler = new JwtSecurityTokenHandler();
                 var validationParameters = new TokenValidationParameters
                 {
@@ -288,26 +291,21 @@ namespace api_barber.Services
                 }
                 catch
                 {
-                    return new(null, 400, "O link de redefini��o � inv�lido ou expirou.");
+                    return new(null, 400, "O link de redefinição é inválido ou expirou.");
                 }
 
                 var isReset = principal.FindFirst("reset")?.Value;
                 var email = principal.FindFirst("email")?.Value;
 
                 if (isReset != "true" || string.IsNullOrEmpty(email))
-                    return new(null, 400, "Token inv�lido.");
+                    return new(null, 400, "Token inválido.");
 
-                var userResponse = await _userService.GetByEmailAsync(email);
+                var userResponse = await _userService.GetByEmailAsync(email, "", null);
                 if (userResponse.Data == null)
-                    return new(null, 404, "Usu�rio n�o encontrado.");
+                    return new(null, 404, "Usuário não encontrado.");
 
                 var user = userResponse.Data;
 
-
-
-                // Salva no banco. Como IUserService.UpdateAsync aceita UpdateUserRequest, precisamos apenas chamar.
-                // Mas de acordo com a arquitetura, eu n�o deveria mexer no UserService.
-                // Vou chamar o UserRepository diretamente ou o UpdateAsync.
                 await _userService.UpdatePasswordAsync(user.Id, BCrypt.Net.BCrypt.HashPassword(request.NewPassword));
 
                 return new(null, 200, "Senha redefinida com sucesso.");
@@ -319,8 +317,5 @@ namespace api_barber.Services
         }
     }
 }
-
-
-
 
 
