@@ -1,4 +1,6 @@
+using api_barber.Models;
 using api_barber.src.Requests;
+
 namespace api_barber.Requests.Barbershop
 {
     public class UpdateBarbershopRequest : RequestBase
@@ -7,19 +9,12 @@ namespace api_barber.Requests.Barbershop
         public string Name { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
+        public string WhatsApp { get; set; } = string.Empty;
         public string Document { get; set; } = string.Empty;
         public string Logo { get; set; } = string.Empty;
-        public string Cep { get; set; } = string.Empty;
-        public string Street { get; set; } = string.Empty;
-        public string Number { get; set; } = string.Empty;
-        public string Complement { get; set; } = string.Empty;
-        public string Neighborhood { get; set; } = string.Empty;
-        public string City { get; set; } = string.Empty;
-        public string State { get; set; } = string.Empty;
+        public Address Address { get; set; } = new Address();
+        public string Code { get; set; } = string.Empty;
         public string PlanId { get; set; } = string.Empty;
-        public string StripeCustomerId { get; set; } = string.Empty;
-        public string StripeSubscriptionId { get; set; } = string.Empty;
         public string AsaasCustomerId { get; set; } = string.Empty;
-        public string AsaasSubscriptionId { get; set; } = string.Empty;
     }
 }

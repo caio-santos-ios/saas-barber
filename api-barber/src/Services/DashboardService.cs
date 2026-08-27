@@ -74,6 +74,40 @@ namespace api_barber.Services
                     .Take(5)
                     .ToList();
 
+                metrics.DailyRevenues = periodAppointments
+                    .GroupBy(a => a.Date.Date)
+                    .OrderBy(g => g.Key)
+                    .Select(g => new DailyRevenueItem
+                    {
+                        Date = g.Key.ToString("dd/MM"),
+                        Revenue = g.Where(a => a.Status == AppointmentStatusEnum.Finalizado || (int)a.Status == 2 || (int)a.Status == 3).Sum(a => a.Value),
+                        Count = g.Count()
+                    })
+                    .ToList();
+
+                metrics.HourlyDistribution = periodAppointments
+                    .Where(a => !string.IsNullOrEmpty(a.Hour))
+                    .GroupBy(a => a.Hour.Length >= 5 ? a.Hour.Substring(0, 5) : a.Hour)
+                    .OrderBy(g => g.Key)
+                    .Select(g => new HourlyItem
+                    {
+                        Hour = g.Key,
+                        Count = g.Count()
+                    })
+                    .ToList();
+
+                metrics.BarberRevenues = periodAppointments
+                    .Where(a => !string.IsNullOrEmpty(a.BarberId))
+                    .GroupBy(a => a.BarberId)
+                    .Select(g => new BarberRevenueItem
+                    {
+                        Name = userMap.GetValueOrDefault(g.Key) ?? "Profissional",
+                        Revenue = g.Where(a => a.Status == AppointmentStatusEnum.Finalizado || (int)a.Status == 2 || (int)a.Status == 3).Sum(a => a.Value),
+                        Count = g.Count()
+                    })
+                    .OrderByDescending(b => b.Revenue)
+                    .ToList();
+
                 return new(metrics, 200, "Métricas obtidas com sucesso");
             }
             catch
@@ -83,4 +117,3 @@ namespace api_barber.Services
         }
     }
 }
-

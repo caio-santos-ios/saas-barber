@@ -101,9 +101,8 @@ export class Settings implements OnInit {
     this.cdr.detectChanges();
     
     try {
-      const barbershopId = localStorage.getItem('barbershopId');
-
       const payload = {
+        id: this.formData.id,
         name: this.formData.name,
         document: this.formData.document,
         phone: this.formData.phone,
@@ -119,7 +118,7 @@ export class Settings implements OnInit {
         }
       };
 
-      await api.put(`/barbershops/${this.formData.id}?barbershopId=${barbershopId}`, payload);
+      await api.put(`/barbershops`, payload);
       this.toastr.success('Configurações atualizadas com sucesso!', 'Sucesso');
     } catch (err) {
       console.error('Erro ao salvar configurações', err);

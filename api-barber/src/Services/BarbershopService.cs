@@ -101,17 +101,27 @@ namespace api_barber.Services
         }
         #endregion
 
-        #region UPDATE
         public async Task<ResponseApi<Barbershop>> UpdateAsync(UpdateBarbershopRequest request)
         {
             try
             {
-                var existed = await repository.GetByIdAsync(request.Id);
+                var id = !string.IsNullOrEmpty(request.Id) ? request.Id : request.BarbershopId;
+                var existed = await repository.GetByIdAsync(id);
                 if (existed is null) return new(null, 404, "Não encontrado");
-                Barbershop entity = ObjectMapper.Map<UpdateBarbershopRequest, Barbershop>(request);
-                entity.CreatedAt = existed.CreatedAt;
-                entity.CreatedBy = existed.CreatedBy;
-                var updated = await repository.UpdateAsync(entity);
+
+                if (!string.IsNullOrEmpty(request.Name)) existed.Name = request.Name;
+                if (!string.IsNullOrEmpty(request.Document)) existed.Document = request.Document;
+                if (!string.IsNullOrEmpty(request.Phone)) existed.Phone = request.Phone;
+                if (!string.IsNullOrEmpty(request.WhatsApp)) existed.WhatsApp = request.WhatsApp;
+                if (!string.IsNullOrEmpty(request.Email)) existed.Email = request.Email;
+                if (!string.IsNullOrEmpty(request.Logo)) existed.Logo = request.Logo;
+                if (!string.IsNullOrEmpty(request.Code)) existed.Code = request.Code;
+                if (request.Address != null) existed.Address = request.Address;
+
+                existed.UpdatedAt = DateTime.Now;
+                existed.UpdatedBy = request.UpdatedBy;
+
+                var updated = await repository.UpdateAsync(existed);
                 return new(updated, 200, "Atualizado com sucesso");
             }
             catch (Exception ex)
@@ -119,7 +129,6 @@ namespace api_barber.Services
                 return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
             }
         }
-        #endregion
 
         #region DELETE
         public async Task<ResponseApi<Barbershop>> DeleteAsync(DeleteRequest request)

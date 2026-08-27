@@ -31,39 +31,81 @@
     <span style="font-size: 1.25rem;">ℹ️</span> Não há dados consolidados para o período selecionado. Os valores exibidos estão zerados.
   </div>
 
-  <div class="metrics-grid" *ngIf="metrics && !loading" style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+  <div class="metrics-grid" *ngIf="metrics && !loading">
     <div class="card primary" style="background: #1e293b; color: white; border: none;">
-      <div style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem;">Faturamento</div>
-      <div style="font-size: 1.85rem; font-weight: 700; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ (metrics.totalRevenue || 0) | currency:'BRL' }}</div>
-      <div style="font-size: 0.8rem; opacity: 0.8;">no período</div>
+      <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem;">Faturamento</div>
+      <div class="metric-val">{{ (metrics.totalRevenue || 0) | currency:'BRL' }}</div>
+      <div style="font-size: 0.75rem; opacity: 0.8;">no período</div>
     </div>
     
     <div class="card">
-      <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem;">Agendamentos</div>
-      <div style="font-size: 1.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.25rem;">{{ metrics.totalAppointments }}</div>
-      <div style="font-size: 0.8rem; color: var(--text-muted);">totais no período</div>
+      <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">Agendamentos</div>
+      <div class="metric-val" style="color: var(--text-main);">{{ metrics.totalAppointments }}</div>
+      <div style="font-size: 0.75rem; color: var(--text-muted);">totais no período</div>
     </div>
 
     <div class="card">
-      <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem;">Agendados</div>
-      <div style="font-size: 1.85rem; font-weight: 700; color: #3b82f6; margin-bottom: 0.25rem;">{{ metrics.scheduledAppointments ?? metrics.confirmedAppointments ?? 0 }}</div>
-      <div style="font-size: 0.8rem; color: var(--text-muted);">pendentes</div>
+      <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">Agendados</div>
+      <div class="metric-val" style="color: #3b82f6;">{{ metrics.scheduledAppointments ?? metrics.confirmedAppointments ?? 0 }}</div>
+      <div style="font-size: 0.75rem; color: var(--text-muted);">pendentes</div>
     </div>
     
     <div class="card">
-      <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem;">Finalizados</div>
-      <div style="font-size: 1.85rem; font-weight: 700; color: #10b981; margin-bottom: 0.25rem;">{{ metrics.completedAppointments }}</div>
-      <div style="font-size: 0.8rem; color: var(--text-muted);">serviços concluídos</div>
+      <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">Finalizados</div>
+      <div class="metric-val" style="color: #10b981;">{{ metrics.completedAppointments }}</div>
+      <div style="font-size: 0.75rem; color: var(--text-muted);">concluídos</div>
     </div>
     
     <div class="card">
-      <div style="font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem;">Cancelados</div>
-      <div style="font-size: 1.85rem; font-weight: 700; color: #ef4444; margin-bottom: 0.25rem;">{{ metrics.canceledAppointments }}</div>
-      <div style="font-size: 0.8rem; color: var(--text-muted);">desistências</div>
+      <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">Cancelados</div>
+      <div class="metric-val" style="color: #ef4444;">{{ metrics.canceledAppointments }}</div>
+      <div style="font-size: 0.75rem; color: var(--text-muted);">desistências</div>
     </div>
   </div>
 
-  <div class="dashboard-content" *ngIf="metrics && !loading" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+  <div class="charts-grid" *ngIf="metrics && !loading">
+    <div class="card">
+      <h3 style="margin: 0 0 0.75rem 0; font-size: 1rem; color: var(--text-main); display: flex; align-items: center; justify-content: space-between;">
+        <span>📈 Evolução do Faturamento</span>
+        <span style="font-size: 0.75rem; font-weight: 500; color: var(--text-muted);">Diário</span>
+      </h3>
+      <div class="chart-wrapper">
+        <canvas id="revenueChart"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin: 0 0 0.75rem 0; font-size: 1rem; color: var(--text-main); display: flex; align-items: center; justify-content: space-between;">
+        <span>📊 Picos de Horário</span>
+        <span style="font-size: 0.75rem; font-weight: 500; color: var(--text-muted);">Agendamentos</span>
+      </h3>
+      <div class="chart-wrapper">
+        <canvas id="hourlyChart"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin: 0 0 0.75rem 0; font-size: 1rem; color: var(--text-main); display: flex; align-items: center; justify-content: space-between;">
+        <span>🍩 Status dos Agendamentos</span>
+        <span style="font-size: 0.75rem; font-weight: 500; color: var(--text-muted);">Proporção</span>
+      </h3>
+      <div class="chart-wrapper">
+        <canvas id="statusChart"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin: 0 0 0.75rem 0; font-size: 1rem; color: var(--text-main); display: flex; align-items: center; justify-content: space-between;">
+        <span>💈 Faturamento por Profissional</span>
+        <span style="font-size: 0.75rem; font-weight: 500; color: var(--text-muted);">Receita (R$)</span>
+      </h3>
+      <div class="chart-wrapper">
+        <canvas id="barberChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-content" *ngIf="metrics && !loading" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 2rem;">
     <div class="card">
       <h3 style="margin: 0 0 1rem 0; font-size: 1.1rem; color: var(--text-main);">Top Serviços</h3>
       <ul style="list-style: none; padding: 0; margin: 0;">
