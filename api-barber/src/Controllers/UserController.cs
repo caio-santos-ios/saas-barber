@@ -64,5 +64,11 @@ namespace api_barber.Controllers
             ResponseApi<User> response = await service.DeleteAsync(request);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
+        [HttpPatch("{id}/password")]
+        public async Task<IActionResult> UpdatePassword(string id, [FromBody] ChangeUserPasswordRequest request)
+        {
+            ResponseApi<User> response = await service.UpdatePasswordAsync(id, request.Password);
+            return StatusCode(response.Status, new { response.Data, response.Message });
+        }
     }
 }

@@ -42,17 +42,16 @@ namespace api_barber.Services
                 var completedApps = periodAppointments.Where(a => a.Status == AppointmentStatusEnum.Finalizado || (int)a.Status == 3);
                 metrics.TotalRevenue = completedApps.Sum(a => a.Value);
 
+                var serviceTypeMap = allServiceTypes.ToDictionary(st => st.Id, st => st.Name);
+                var userMap = allUsers.ToDictionary(u => u.Id, u => u.Name);
+
                 metrics.TopServices = periodAppointments
                     .Where(a => !string.IsNullOrEmpty(a.ServiceTypeId))
                     .GroupBy(a => a.ServiceTypeId)
-                    .Select(g =>
+                    .Select(g => new RankingItem
                     {
-                        var serviceType = allServiceTypes.FirstOrDefault(st => st.Id == g.Key);
-                        return new RankingItem
-                        {
-                            Name = serviceType?.Name ?? "Serviço",
-                            Count = g.Count()
-                        };
+                        Name = serviceTypeMap.GetValueOrDefault(g.Key) ?? "Serviço",
+                        Count = g.Count()
                     })
                     .OrderByDescending(r => r.Count)
                     .Take(5)
@@ -61,14 +60,10 @@ namespace api_barber.Services
                 metrics.TopBarbers = periodAppointments
                     .Where(a => !string.IsNullOrEmpty(a.BarberId))
                     .GroupBy(a => a.BarberId)
-                    .Select(g =>
+                    .Select(g => new RankingItem
                     {
-                        var barber = allUsers.FirstOrDefault(u => u.Id == g.Key);
-                        return new RankingItem
-                        {
-                            Name = barber?.Name ?? "Profissional",
-                            Count = g.Count()
-                        };
+                        Name = userMap.GetValueOrDefault(g.Key) ?? "Profissional",
+                        Count = g.Count()
                     })
                     .OrderByDescending(r => r.Count)
                     .Take(5)
