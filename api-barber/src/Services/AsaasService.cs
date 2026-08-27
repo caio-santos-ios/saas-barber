@@ -39,7 +39,6 @@ namespace api_barber.Services
             else
             {
                 var errorBody = await response.Content.ReadAsStringAsync();
-                Console.WriteLine("ASAAS ERROR (Customer): " + errorBody);
                 try
                 {
                     var json = JsonSerializer.Deserialize<JsonElement>(errorBody);
@@ -99,7 +98,6 @@ namespace api_barber.Services
             if (!response.IsSuccessStatusCode)
             {
                 var errorBody = await response.Content.ReadAsStringAsync();
-                Console.WriteLine("ASAAS ERROR: " + errorBody);
                 try
                 {
                     var errJson = JsonSerializer.Deserialize<JsonElement>(errorBody);

@@ -49,6 +49,14 @@ class Appointment {
   }
 
   factory Appointment.fromJson(Map<String, dynamic> json) {
+    final valRaw = json['value'] ?? json['price'] ?? 0;
+    double val = 0.0;
+    if (valRaw is num) {
+      val = valRaw.toDouble();
+    } else if (valRaw is String) {
+      val = double.tryParse(valRaw.replaceAll(RegExp(r'[^0-9\.]'), '')) ?? 0.0;
+    }
+
     return Appointment(
       id: json['id'] ?? '',
       date: json['date'] != null ? DateTime.parse(json['date']) : DateTime.now(),
@@ -62,9 +70,9 @@ class Appointment {
       customerName: json['customerName'] ?? json['customer_name'] ?? '',
       serviceId: json['serviceId'] ?? json['service_id'] ?? '',
       serviceTypeId: json['serviceTypeId'] ?? json['service_type_id'] ?? '',
-      serviceTypeName: json['serviceTypeName'] ?? json['service_type_name'] ?? '',
+      serviceTypeName: json['serviceTypeName'] ?? json['service_type_name'] ?? json['serviceName'] ?? json['service_name'] ?? '',
       barbershopId: json['barbershopId'] ?? json['barbershop_id'] ?? '',
-      value: (json['value'] ?? 0).toDouble(),
+      value: val,
       paymentStatus: json['paymentStatus'] ?? json['payment_status'] ?? '',
     );
   }
@@ -75,6 +83,7 @@ class CreateAppointmentRequest {
   final String hour;
   final String notes;
   final String barberId;
+  final String barberName;
   final String customerId;
   final String serviceId;
   final String serviceTypeId;
@@ -87,6 +96,7 @@ class CreateAppointmentRequest {
     required this.hour,
     required this.notes,
     required this.barberId,
+    required this.barberName,
     required this.customerId,
     required this.serviceId,
     required this.serviceTypeId,
@@ -101,6 +111,7 @@ class CreateAppointmentRequest {
       'hour': hour,
       'notes': notes,
       'barberId': barberId,
+      'barberName': barberName,
       'customerId': customerId,
       'serviceId': serviceId,
       'serviceTypeId': serviceTypeId,

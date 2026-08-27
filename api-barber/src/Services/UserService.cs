@@ -86,6 +86,11 @@ namespace api_barber.Services
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(barbershopId))
+                {
+                    return new(new List<dynamic>(), 200, "Barbeiros listados com sucesso");
+                }
+                
                 List<BsonDocument> pipeline =
                 [
                     new("$match", new BsonDocument
@@ -102,6 +107,9 @@ namespace api_barber.Services
                         {"email", 1},
                         {"whatsapp", 1},
                         {"document", 1},
+                        {"photo", new BsonDocument("$ifNull", new BsonArray { "$photo", "" })},
+                        {"active", new BsonDocument("$ifNull", new BsonArray { "$active", true })},
+                        {"createdAt", 1}
                     }),
                     new("$sort", new BsonDocument { { "createdAt", 1 } } )
                 ];
@@ -119,6 +127,11 @@ namespace api_barber.Services
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(barbershopId))
+                {
+                    return new(new List<dynamic>(), 200, "Clientes listados com sucesso");
+                }
+
                 List<BsonDocument> pipeline =
                 [
                     new("$match", new BsonDocument
@@ -134,15 +147,15 @@ namespace api_barber.Services
                         {"name", 1},
                         {"email", 1},
                         {"whatsapp", 1},
-                        {"active", 1},
+                        {"active", new BsonDocument("$ifNull", new BsonArray { "$active", true })},
                         {"createdAt", 1},
                     }),
                     new("$sort", new BsonDocument { { "createdAt", 1 } } )
                 ];
 
-                List<dynamic> barbers = await repository.GetBarbersAsync(pipeline);
+                List<dynamic> customers = await repository.GetCustomersAsync(pipeline);
 
-                return new(barbers, 200, "Barbeiros listados com sucesso");
+                return new(customers, 200, "Clientes listados com sucesso");
             }
             catch (Exception ex)
             {
@@ -157,6 +170,11 @@ namespace api_barber.Services
             try
             {
                 User entity = ObjectMapper.Map<CreateUserRequest, User>(request);
+                if (!string.IsNullOrEmpty(entity.Password) && !entity.Password.StartsWith("$2a$") && !entity.Password.StartsWith("$2b$"))
+                {
+                    entity.Password = BCrypt.Net.BCrypt.HashPassword(entity.Password);
+                }
+
                 User user = await repository.CreateAsync(entity);
                 if (user is null) return new(null, 400, "Falha ao criar usuário");
 
@@ -196,7 +214,14 @@ namespace api_barber.Services
                 User existedUser = await repository.GetByIdAsync(userId);
                 if (existedUser is null) return new(null, 404, "Usuário não encontrado");
 
-                existedUser.Password = newPassword;
+                if (!string.IsNullOrEmpty(newPassword) && !newPassword.StartsWith("$2a$") && !newPassword.StartsWith("$2b$"))
+                {
+                    existedUser.Password = BCrypt.Net.BCrypt.HashPassword(newPassword);
+                }
+                else
+                {
+                    existedUser.Password = newPassword;
+                }
                 existedUser.PasswordResetRequired = false;
 
                 User user = await repository.UpdateAsync(existedUser);

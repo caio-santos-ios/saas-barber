@@ -9,10 +9,12 @@ namespace api_barber.Controllers
     public class ServiceTypeController(IServiceTypeService service) : ControllerBase
     {
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] string? barbershopId)
         {
-            string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
-            var response = await service.GetAllAsync(barbershopId);
+            string effectiveBarbershopId = !string.IsNullOrEmpty(barbershopId)
+                ? barbershopId
+                : (User.FindFirst("barbershopId")?.Value ?? "");
+            var response = await service.GetAllAsync(effectiveBarbershopId);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
         [HttpGet("{id}")]
@@ -22,18 +24,22 @@ namespace api_barber.Controllers
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateServiceTypeRequest request)
+        public async Task<IActionResult> Create([FromBody] CreateServiceTypeRequest request, [FromQuery] string? barbershopId)
         {
-            request.BarbershopId = User.FindFirst("barbershopId")?.Value ?? "";
+            request.BarbershopId = !string.IsNullOrEmpty(request.BarbershopId)
+                ? request.BarbershopId
+                : (!string.IsNullOrEmpty(barbershopId) ? barbershopId : (User.FindFirst("barbershopId")?.Value ?? ""));
             request.CreatedBy = User.FindFirst("userId")?.Value ?? "";
             var response = await service.CreateAsync(request);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(string id, [FromBody] UpdateServiceTypeRequest request)
+        public async Task<IActionResult> Update(string id, [FromBody] UpdateServiceTypeRequest request, [FromQuery] string? barbershopId)
         {
             request.Id = id;
-            request.BarbershopId = User.FindFirst("barbershopId")?.Value ?? "";
+            request.BarbershopId = !string.IsNullOrEmpty(request.BarbershopId)
+                ? request.BarbershopId
+                : (!string.IsNullOrEmpty(barbershopId) ? barbershopId : (User.FindFirst("barbershopId")?.Value ?? ""));
             request.UpdatedBy = User.FindFirst("userId")?.Value ?? "";
             var response = await service.UpdateAsync(request);
             return StatusCode(response.Status, new { response.Data, response.Message });

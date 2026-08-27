@@ -1,5 +1,6 @@
 class Barbershop {
   final String id;
+  final String code;
   final String name;
   final String document;
   final String email;
@@ -9,6 +10,7 @@ class Barbershop {
 
   Barbershop({
     required this.id,
+    this.code = '',
     required this.name,
     required this.document,
     required this.email,
@@ -20,6 +22,7 @@ class Barbershop {
   factory Barbershop.fromJson(Map<String, dynamic> json) {
     return Barbershop(
       id: json['id'] ?? '',
+      code: json['code'] ?? '',
       name: json['name'] ?? '',
       document: json['document'] ?? '',
       email: json['email'] ?? '',

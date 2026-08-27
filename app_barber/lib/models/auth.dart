@@ -42,7 +42,7 @@ class RegisterRequest {
       'whatsapp': whatsapp.replaceAll(RegExp(r'[^0-9]'), ''),
       'password': password,
       'passwordConfirm': passwordConfirm,
-      if (barbershopId != null && barbershopId!.isNotEmpty) 'barbershopId': barbershopId,
+      'barbershopId': barbershopId ?? '',
     };
   }
 }

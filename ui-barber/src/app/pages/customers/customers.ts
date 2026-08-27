@@ -91,11 +91,9 @@ export class Customers implements OnInit {
       return;
     }
     try {
-      const barbershopId = localStorage.getItem('barbershopId');
       const payload: any = {
         ...this.formData,
-        role: 2,
-        barbershopId: barbershopId
+        role: 2
       };
 
       if (!payload.id) {

@@ -47,9 +47,23 @@ class _CustomerBookingPageState extends State<CustomerBookingPage> {
   Future<void> _loadInitialData() async {
     setState(() => _isLoading = true);
 
+    final authBox = Hive.box('auth');
+    final barbershopId = (authBox.get('barbershopId', defaultValue: '') as String).trim();
+
+    if (barbershopId.isEmpty) {
+      if (mounted) {
+        setState(() {
+          _barbers = [];
+          _services = [];
+          _isLoading = false;
+        });
+      }
+      return;
+    }
+
     final futures = await Future.wait([
-      _barbershopRepo.getBarbershopTeam(),
-      _barbershopRepo.getBarbershopServices(),
+      _barbershopRepo.getBarbershopTeam(barbershopId),
+      _barbershopRepo.getBarbershopServices(barbershopId),
     ]);
 
     if (mounted) {
@@ -132,6 +146,7 @@ class _CustomerBookingPageState extends State<CustomerBookingPage> {
       hour: _selectedHour!,
       notes: _notesController.text,
       barberId: _selectedBarber!.id,
+      barberName: _selectedBarber!.name,
       customerId: customerId,
       serviceId: _selectedService!.id,
       serviceTypeId: _selectedService!.id,

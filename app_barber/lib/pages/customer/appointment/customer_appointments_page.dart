@@ -27,7 +27,9 @@ class _CustomerAppointmentsPageState extends State<CustomerAppointmentsPage> {
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     try {
-      final list = await _appointmentRepo.getCustomerAppointments();
+      final authBox = Hive.box('auth');
+      final barbershopId = (authBox.get('barbershopId', defaultValue: '') as String).trim();
+      final list = await _appointmentRepo.getCustomerAppointments(barbershopId);
       if (mounted) setState(() { _appointments = list..sort((a, b) => b.date.compareTo(a.date)); _isLoading = false; });
     } catch (e) {
       if (mounted) setState(() => _isLoading = false);

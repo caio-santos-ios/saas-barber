@@ -38,8 +38,9 @@ class AuthRepository {
       await authBox.put('token', token);
       await authBox.put('refreshToken', refreshToken);
       await authBox.put('photo', photo);
-      await authBox.put('role', role);
-      await authBox.put('barbershopId', barbershopId);
+      if (barbershopId.isNotEmpty) {
+        await authBox.put('barbershopId', barbershopId);
+      }
 
       return session;
     }

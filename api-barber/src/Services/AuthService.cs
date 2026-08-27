@@ -73,11 +73,26 @@ namespace api_barber.Services
                     user = userResponse.Data;
                 }
 
-                System.Console.WriteLine(request.Password);
-                System.Console.WriteLine(user.Password);
-                System.Console.WriteLine(BCrypt.Net.BCrypt.Verify(request.Password, user.Password));
+                bool passwordValid = false;
+                try
+                {
+                    passwordValid = BCrypt.Net.BCrypt.Verify(request.Password, user.Password);
+                }
+                catch
+                {
+                    passwordValid = false;
+                }
 
-                if (string.IsNullOrEmpty(user.Password) || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password)) return new(null, 400, "E-mail ou senha inválidos.");
+                if (!passwordValid && user.Password == request.Password)
+                {
+                    passwordValid = true;
+                    await _userService.UpdatePasswordAsync(user.Id, BCrypt.Net.BCrypt.HashPassword(request.Password));
+                }
+
+                if (string.IsNullOrEmpty(user.Password) || !passwordValid)
+                {
+                    return new(null, 400, "E-mail ou senha inválidos.");
+                }
 
                 var barbershopResponse = await _barbershopService.GetByIdAsync(user.BarbershopId);
                 var barbershop = barbershopResponse.Data;
@@ -161,6 +176,22 @@ namespace api_barber.Services
                 Enum.TryParse<TypePersonEnum>(request.TypePerson, out var typePerson);
 
                 string asaasCustomerId = await _asaasService.CreateCustomerAsync(request.BarbershopName, request.Document, request.Email);
+                string code = "";
+                for (int i = 0; i < 10; i++)
+                {
+                    string candidate = Random.Shared.Next(100000, 999999).ToString();
+                    var existingShop = await _barbershopService.GetByCodeAsync(candidate);
+                    if (existingShop.Data == null)
+                    {
+                        code = candidate;
+                        break;
+                    }
+                }
+                if (string.IsNullOrEmpty(code))
+                {
+                    code = Random.Shared.Next(100000, 999999).ToString();
+                }
+
                 Barbershop barbershop = new()
                 {
                     Name = request.BarbershopName,
@@ -169,6 +200,7 @@ namespace api_barber.Services
                     TypePerson = typePerson,
                     SubscriptionStatus = SubscriptionStatusEnum.Bloqueada,
                     Active = true,
+                    Code = code,
                     AsaasCustomerId = asaasCustomerId,
                     WhatsApp = request.WhatsApp,
                     CreatedAt = DateTime.UtcNow

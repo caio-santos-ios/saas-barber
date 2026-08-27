@@ -21,6 +21,12 @@ namespace api_barber.Controllers
             var response = await service.GetByIdAsync(id);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
+        [HttpGet("by-code/{code}")]
+        public async Task<IActionResult> GetByCode(string code)
+        {
+            var response = await service.GetByCodeAsync(code);
+            return StatusCode(response.Status, new { response.Data, response.Message });
+        }
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateBarbershopRequest request)
         {

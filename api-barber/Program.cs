@@ -34,7 +34,7 @@ if (!string.IsNullOrEmpty(port))
 builder.Services.AddHostedService<api_barber.Works.PushNotificationWork>();
 
 var allowedOriginsEnv = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS") ?? "";
-var defaultOrigins = new List<string> { "http://localhost:4200", "http://localhost:50364", "https://saas-barber-k7nn.vercel.app" };
+var defaultOrigins = new List<string> { "http://localhost:4200", "http://localhost:60557", "https://saas-barber-k7nn.vercel.app" };
 if (!string.IsNullOrWhiteSpace(allowedOriginsEnv))
 {
     var extraOrigins = allowedOriginsEnv.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);

@@ -5,6 +5,7 @@ import 'package:app_barber/widgets/custom_text_field.dart';
 import 'package:brasil_fields/brasil_fields.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 class RegisterPage extends StatefulWidget {
   final String? barbershopId;
@@ -63,13 +64,28 @@ class _RegisterPageState extends State<RegisterPage> {
       });
 
       try {
+        final authBox = Hive.box('auth');
+        final currentBarbershopId = (widget.barbershopId != null && widget.barbershopId!.isNotEmpty)
+            ? widget.barbershopId!
+            : (authBox.get('barbershopId', defaultValue: '') as String);
+
+        if (currentBarbershopId.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Selecione uma barbearia antes de criar sua conta.'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+
         final request = RegisterRequest(
           name: _nameController.text.trim(),
           email: _emailController.text.trim(),
           whatsapp: _whatsappController.text,
           password: _passwordController.text,
           passwordConfirm: _passwordConfirmController.text,
-          barbershopId: widget.barbershopId,
+          barbershopId: currentBarbershopId,
         );
         
         final success = await _authRepository.registerCustomer(request);
@@ -106,6 +122,9 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final authBox = Hive.box('auth');
+    final barbershopName = authBox.get('barbershopName', defaultValue: '') as String;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Criar Conta'),
@@ -119,6 +138,40 @@ class _RegisterPageState extends State<RegisterPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                if (barbershopName.isNotEmpty) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.storefront_rounded,
+                          color: Theme.of(context).colorScheme.primary,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            barbershopName,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Theme.of(context).colorScheme.primary,
+                              fontSize: 14,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 Text(
                   'Cadastre-se',
                   style: Theme.of(context).textTheme.titleLarge,

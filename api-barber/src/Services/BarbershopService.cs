@@ -64,6 +64,19 @@ namespace api_barber.Services
                 return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
             }
         }
+        public async Task<ResponseApi<Barbershop>> GetByCodeAsync(string code)
+        {
+            try
+            {
+                var entity = await repository.GetByCodeAsync(code);
+                if (entity is null) return new(null, 404, "Barbearia não encontrada para este código.");
+                return new(entity, 200, "Barbearia encontrada com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
+            }
+        }
         public async Task<ResponseApi<Barbershop>> CreateEntityAsync(Barbershop entity) { await repository.CreateAsync(entity); return new(entity, 201, "Criado"); }
         #endregion
 

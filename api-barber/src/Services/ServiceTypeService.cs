@@ -15,6 +15,11 @@ namespace api_barber.Services
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(barbershopId))
+                {
+                    return new(new List<dynamic>(), 200, "Listado com sucesso");
+                }
+
                 List<BsonDocument> pipeline =
                 [
                     new("$match", new BsonDocument
@@ -28,11 +33,11 @@ namespace api_barber.Services
                         {"id", new BsonDocument("$toString", "$_id")},
                         {"name", 1},
                         {"description", 1},
-                        {"duration", 1},
-                        {"value", 1},
+                        {"duration", new BsonDocument("$ifNull", new BsonArray { "$duration", "$duration_minutes" })},
+                        {"durationMinutes", new BsonDocument("$ifNull", new BsonArray { "$duration_minutes", "$duration" })},
+                        {"price", new BsonDocument("$toDouble", "$price")},
                         {"category", 1},
                         {"active", 1},
-                        {"durationMinutes", "$duration_minutes"},
                         {"createdAt", 1}
                     }),
                     new("$sort", new BsonDocument { { "createdAt", -1 } } )
@@ -51,6 +56,8 @@ namespace api_barber.Services
             {
                 var entity = await repository.GetByIdAsync(id);
                 if (entity is null) return new(null, 404, "Não encontrado");
+                if (entity.Duration == 0 && entity.DurationMinutes.HasValue) entity.Duration = entity.DurationMinutes.Value;
+                if (!entity.DurationMinutes.HasValue || entity.DurationMinutes == 0) entity.DurationMinutes = entity.Duration;
                 return new(entity, 200, "Buscado com sucesso");
             }
             catch (Exception ex)
@@ -67,6 +74,9 @@ namespace api_barber.Services
             try
             {
                 ServiceType entity = ObjectMapper.Map<CreateServiceTypeRequest, ServiceType>(request);
+                if (entity.Duration == 0 && request.DurationMinutes.HasValue) entity.Duration = request.DurationMinutes.Value;
+                if (!entity.DurationMinutes.HasValue || entity.DurationMinutes == 0) entity.DurationMinutes = entity.Duration;
+
                 var created = await repository.CreateAsync(entity);
                 return new(created, 201, "Criado com sucesso");
             }
@@ -85,6 +95,9 @@ namespace api_barber.Services
                 var existed = await repository.GetByIdAsync(request.Id);
                 if (existed is null) return new(null, 404, "Não encontrado");
                 ServiceType entity = ObjectMapper.Map<UpdateServiceTypeRequest, ServiceType>(request);
+                if (entity.Duration == 0 && request.DurationMinutes.HasValue) entity.Duration = request.DurationMinutes.Value;
+                if (!entity.DurationMinutes.HasValue || entity.DurationMinutes == 0) entity.DurationMinutes = entity.Duration;
+
                 entity.CreatedAt = existed.CreatedAt;
                 entity.CreatedBy = existed.CreatedBy;
                 var updated = await repository.UpdateAsync(entity);

@@ -19,8 +19,6 @@ namespace api_barber.Controllers
         [HttpPost("customers/register")]
         public async Task<IActionResult> RegisterCustomer([FromBody] CreateCustomerRequest request)
         {
-            System.Console.WriteLine(request.BarbershopId);
-
             ResponseApi<AuthResponse> response = await authService.RegisterCustomerAsync(request);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }

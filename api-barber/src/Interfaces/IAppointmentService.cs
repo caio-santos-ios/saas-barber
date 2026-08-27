@@ -6,7 +6,7 @@ namespace api_barber.Interfaces
 {
     public interface IAppointmentService
     {
-        Task<ResponseApi<List<dynamic>>> GetAllAsync(string barbershopId);
+        Task<ResponseApi<List<dynamic>>> GetAllAsync(string barbershopId, string? customerId = null, string? barberId = null);
         Task<ResponseApi<Appointment>> GetByIdAsync(string id);
         Task<ResponseApi<List<string>>> GetAvailableSlotsAsync(string barberId, DateTime date, string barbershopId);
         Task<ResponseApi<Appointment>> CreateAsync(CreateAppointmentRequest request);

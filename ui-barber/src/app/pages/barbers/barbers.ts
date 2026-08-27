@@ -47,7 +47,7 @@ export class Barbers implements OnInit {
     this.loading = true;
     this.cdr.detectChanges();
     try {
-      const response = await api.get(`/users/barbers`);
+      const response = await api.get(`/users/barbers?deleted=false`);
       this.barbers = response.data.data || [];
     } catch (err) {
       console.error('Erro ao carregar profissionais', err);
@@ -99,11 +99,9 @@ export class Barbers implements OnInit {
       return;
     }
     try {
-      const barbershopId = localStorage.getItem('barbershopId');
       const payload: any = {
         ...this.formData,
-        role: 'Barber',
-        barbershopId: barbershopId
+        role: 'Barber'
       };
 
       if (!payload.id) {
@@ -112,12 +110,9 @@ export class Barbers implements OnInit {
 
       if (this.isEditing) {
         delete payload.password;
-        await api.put(`/users/${this.formData.id}?barbershopId=${barbershopId}`, payload);
+        await api.put(`/users`, payload);
       } else {
-        if (payload.password) {
-          payload.password = payload.password;
-        }
-        await api.post(`/users?barbershopId=${barbershopId}`, payload);
+        await api.post(`/users`, payload);
       }
       
       this.toastr.success('Profissional salvo com sucesso!', 'Sucesso');
@@ -145,8 +140,7 @@ export class Barbers implements OnInit {
     if (!this.barberToDelete) return;
     
     try {
-      const barbershopId = localStorage.getItem('barbershopId');
-      await api.delete(`/users/${this.barberToDelete.id}?barbershopId=${barbershopId}`);
+      await api.delete(`/users/${this.barberToDelete.id}`);
       
       this.toastr.success('Profissional excluído com sucesso!', 'Sucesso');
       this.closeDeleteModal();
@@ -177,8 +171,7 @@ export class Barbers implements OnInit {
       return;
     }
     try {
-      const barbershopId = localStorage.getItem('barbershopId');
-      await api.patch(`/users/${this.barberToChangePassword.id}/password?barbershopId=${barbershopId}`, { password: this.newPassword });
+      await api.patch(`/users/${this.barberToChangePassword.id}/password`, { password: this.newPassword });
       this.toastr.success('Senha alterada com sucesso!', 'Sucesso');
       this.closePasswordModal();
     } catch (err) {

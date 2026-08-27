@@ -18,10 +18,6 @@ namespace api_barber.Models
         [BsonElement("barber_id")]
         public string BarberId { get; set; } = string.Empty;
 
-        [BsonElement("barber_name")]
-        [BsonIgnoreIfNull]
-        public string BarberName { get; set; } = string.Empty;
-
         [BsonElement("customer_id")]
         public string CustomerId { get; set; } = string.Empty;
         [BsonElement("service_id")]
@@ -33,10 +29,6 @@ namespace api_barber.Models
         [BsonElement("value")]
         [BsonRepresentation(BsonType.Decimal128)]
         public decimal Value { get; set; }
-        [BsonElement("customer_name")]
-        public string CustomerName { get; set; } = string.Empty;
-        [BsonElement("service_type_name")]
-        public string ServiceTypeName { get; set; } = string.Empty;
         [BsonElement("payment_status")]
         public string PaymentStatus { get; set; } = string.Empty;
         [BsonElement("asaas_payment_id")]

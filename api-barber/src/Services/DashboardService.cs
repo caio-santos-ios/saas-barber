@@ -4,69 +4,75 @@ using api_barber.Interfaces;
 using api_barber.Requests.Dashboard;
 using api_barber.src.Requests;
 using api_barber.Models.Enums;
+using api_barber.Infrastructures;
 
 namespace api_barber.Services
 {
-    public class DashboardService(
-
-
-
-        api_barber.Infrastructures.AppDbContext appDbContext) : IDashboardService
+    public class DashboardService(AppDbContext appDbContext) : IDashboardService
     {
         public async Task<ResponseApi<DashboardMetricsResponse>> GetMetricsAsync(string barbershopId, DashboardQueryRequest query)
         {
             try
             {
-                var appointmentsResponse = await MongoDB.Driver.IAsyncCursorSourceExtensions.ToListAsync(appDbContext.Appointments.Find(x => !x.Deleted && x.BarbershopId == barbershopId));
-                var servicesResponse = await MongoDB.Driver.IAsyncCursorSourceExtensions.ToListAsync(appDbContext.Services.Find(x => !x.Deleted && x.BarbershopId == barbershopId));
-                var serviceTypesResponse = await MongoDB.Driver.IAsyncCursorSourceExtensions.ToListAsync(appDbContext.ServiceTypes.Find(x => !x.Deleted && x.BarbershopId == barbershopId));
-                var usersResponse = await MongoDB.Driver.IAsyncCursorSourceExtensions.ToListAsync(appDbContext.Users.Find(x => !x.Deleted && x.BarbershopId == barbershopId));
+                var cleanBarbershopId = (barbershopId ?? "").Trim();
+                var appointmentsResponse = await appDbContext.Appointments.Find(x => x.Deleted != true && x.BarbershopId == cleanBarbershopId).ToListAsync();
+                var servicesResponse = await appDbContext.Services.Find(x => x.Deleted != true && x.BarbershopId == cleanBarbershopId).ToListAsync();
+                var serviceTypesResponse = await appDbContext.ServiceTypes.Find(x => x.Deleted != true && x.BarbershopId == cleanBarbershopId).ToListAsync();
+                var usersResponse = await appDbContext.Users.Find(x => x.Deleted != true && x.BarbershopId == cleanBarbershopId).ToListAsync();
 
                 var allAppointments = appointmentsResponse ?? new List<Appointment>();
                 var allServices = servicesResponse ?? new List<Service>();
                 var allServiceTypes = serviceTypesResponse ?? new List<ServiceType>();
                 var allUsers = usersResponse ?? new List<User>();
 
-                var periodAppointments = allAppointments.Where(a => a.Date >= query.StartDate && a.Date <= query.EndDate).ToList();
+                var startOfPeriod = query.StartDate == default ? DateTime.MinValue : query.StartDate.Date;
+                var endOfPeriod = query.EndDate == default ? DateTime.MaxValue : query.EndDate.Date.AddDays(1).AddTicks(-1);
+
+                var periodAppointments = allAppointments.Where(a => a.Date.Date >= startOfPeriod.Date && a.Date.Date <= endOfPeriod.Date).ToList();
 
                 var metrics = new DashboardMetricsResponse
                 {
                     TotalAppointments = periodAppointments.Count,
-                    CompletedAppointments = periodAppointments.Count(a => a.Status == AppointmentStatusEnum.Finalizado),
-                    CanceledAppointments = periodAppointments.Count(a => a.Status == AppointmentStatusEnum.Cancelado),
+                    CompletedAppointments = periodAppointments.Count(a => a.Status == AppointmentStatusEnum.Finalizado || (int)a.Status == 3),
+                    CanceledAppointments = periodAppointments.Count(a => a.Status == AppointmentStatusEnum.Cancelado || (int)a.Status == 2),
                     InProgressAppointments = 0,
-                    ConfirmedAppointments = periodAppointments.Count(a => a.Status == AppointmentStatusEnum.Marcado)
+                    ConfirmedAppointments = periodAppointments.Count(a => a.Status == AppointmentStatusEnum.Marcado || (int)a.Status == 1 || (int)a.Status == 0)
                 };
 
-                var completedApps = periodAppointments.Where(a => a.Status == AppointmentStatusEnum.Finalizado);
+                var completedApps = periodAppointments.Where(a => a.Status == AppointmentStatusEnum.Finalizado || (int)a.Status == 3);
                 metrics.TotalRevenue = completedApps.Sum(a => a.Value);
 
-                metrics.TopServices = periodAppointments
-                    .GroupBy(a => a.ServiceId)
-                    .Select(g =>
-                    {
-                        var serviceType = allServiceTypes.FirstOrDefault(st => st.Id == g.Key);
-                        var fallbackName = g.FirstOrDefault()?.ServiceTypeName;
-                        return new RankingItem
-                        {
-                            Name = serviceType?.Name ?? (!string.IsNullOrEmpty(fallbackName) ? fallbackName : "Desconhecido"),
-                            Count = g.Count()
-                        };
-                    })
-                    .OrderByDescending(r => r.Count)
-                    .Take(5)
-                    .ToList();
+                // metrics.TopServices = periodAppointments
+                //     .GroupBy(a => a.ServiceTypeId)
+                //     .Select(g =>
+                //     {
+                //         var serviceType = allServiceTypes.FirstOrDefault(st => st.Id == g.Key);
+                //         var fallbackName = g.FirstOrDefault()?.ServiceTypeName;
+                //         return new RankingItem
+                //         {
+                //             Name = serviceType?.Name ?? (!string.IsNullOrEmpty(fallbackName) ? fallbackName : "Desconhecido"),
+                //             Count = g.Count()
+                //         };
+                //     })
+                //     .OrderByDescending(r => r.Count)
+                //     .Take(5)
+                //     .ToList();
 
-                metrics.TopBarbers = periodAppointments
-                    .GroupBy(a => a.BarberId)
-                    .Select(g => new RankingItem
-                    {
-                        Name = allUsers.FirstOrDefault(u => u.Id == g.Key)?.Name ?? "Desconhecido",
-                        Count = g.Count()
-                    })
-                    .OrderByDescending(r => r.Count)
-                    .Take(5)
-                    .ToList();
+                // metrics.TopBarbers = periodAppointments
+                //     .GroupBy(a => a.BarberId)
+                //     .Select(g =>
+                //     {
+                //         var barber = allUsers.FirstOrDefault(u => u.Id == g.Key);
+                //         var fallbackName = g.FirstOrDefault()?.BarberName;
+                //         return new RankingItem
+                //         {
+                //             Name = barber?.Name ?? (!string.IsNullOrEmpty(fallbackName) ? fallbackName : "Desconhecido"),
+                //             Count = g.Count()
+                //         };
+                //     })
+                //     .OrderByDescending(r => r.Count)
+                //     .Take(5)
+                //     .ToList();
 
                 return new(metrics, 200, "Métricas obtidas com sucesso");
             }
@@ -77,9 +83,4 @@ namespace api_barber.Services
         }
     }
 }
-
-
-
-
-
 

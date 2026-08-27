@@ -6,6 +6,7 @@ import 'package:app_barber/pages/homes/admin_home.dart';
 import 'package:app_barber/pages/homes/barber_home.dart';
 import 'package:app_barber/pages/homes/customer_home.dart';
 import 'package:app_barber/pages/auth/register_page.dart';
+import 'package:app_barber/pages/auth/select_barbershop_page.dart';
 import 'package:app_barber/pages/auth/forgot_password_page.dart';
 import 'package:app_barber/pages/auth/update_password_page.dart';
 import 'package:dio/dio.dart';
@@ -135,15 +136,17 @@ class _LoginPageState extends State<LoginPage> {
           debugPrint('Failed to get FCM token: $e');
         }
 
+        final authBox = Hive.box('auth');
+        final currentBarbershopId = authBox.get('barbershopId', defaultValue: '') as String;
+
         final request = LoginRequest(
           email: _emailController.text.trim(),
           password: _passwordController.text,
           tokenFCM: fcmToken,
           role: "Customer",
-          barbershopId: "6a8ecd8ea844afd4ad463d4c"
+          barbershopId: currentBarbershopId,
         );
 
-        
         final session = await _authRepository.login(request);
 
         if (!mounted) return;
@@ -175,6 +178,9 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final authBox = Hive.box('auth');
+    final barbershopName = authBox.get('barbershopName', defaultValue: '') as String;
+
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -192,13 +198,69 @@ class _LoginPageState extends State<LoginPage> {
                     height: 120,
                     fit: BoxFit.contain,
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 24),
+                  if (barbershopName.isNotEmpty) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.25),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.storefront_rounded,
+                            color: Theme.of(context).colorScheme.primary,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              barbershopName,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.primary,
+                                fontSize: 14,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              authBox.delete('barbershopId');
+                              authBox.delete('barbershopName');
+                              authBox.delete('barbershopLogo');
+                              authBox.delete('barbershopCode');
+                              Navigator.of(context).pushReplacement(
+                                MaterialPageRoute(
+                                  builder: (_) => const SelectBarbershopPage(),
+                                ),
+                              );
+                            },
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 8),
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            child: const Text(
+                              'Trocar',
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                   Text(
                     'Entrar',
                     style: Theme.of(context).textTheme.titleLarge,
                     textAlign: TextAlign.center,
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 24),
                   CustomTextField(
                     controller: _emailController,
                     labelText: 'E-mail',
@@ -283,8 +345,10 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       TextButton(
                         onPressed: () {
+                          final authBox = Hive.box('auth');
+                          final currentBarbershopId = authBox.get('barbershopId', defaultValue: '') as String;
                           Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const RegisterPage()),
+                            MaterialPageRoute(builder: (_) => RegisterPage(barbershopId: currentBarbershopId)),
                           );
                         },
                         child: Text(

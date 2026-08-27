@@ -1,24 +1,33 @@
 import 'package:app_barber/api/api_client.dart';
 import 'package:app_barber/models/appointment.dart';
+import 'package:hive/hive.dart';
 
 class AppointmentRepository {
   final ApiClient apiClient;
 
   AppointmentRepository(this.apiClient);
 
-  Future<List<Appointment>> getCustomerAppointments() async {
-    final response = await apiClient.dio.get('/appointments');
+  Future<List<Appointment>> getCustomerAppointments([String? barbershopId]) async {
+    try {
+      final authBox = Hive.box('auth');
+      final bId = barbershopId ?? (authBox.get('barbershopId', defaultValue: '') as String);
+      final response = await apiClient.dio.get('/appointments?barbershopId=$bId');
 
-    if (response.statusCode == 200 && response.data['data'] != null) {
-      final List data = response.data['data'];
-      return data.map((json) => Appointment.fromJson(json)).toList();
+      if (response.statusCode == 200 && response.data['data'] != null) {
+        final List data = response.data['data'];
+        return data.map((json) => Appointment.fromJson(json)).toList();
+      }
+      return [];
+    } catch (e) {
+      return [];
     }
-    return [];
   }
 
-  Future<List<Appointment>> getBarberAppointments() async {
+  Future<List<Appointment>> getBarberAppointments([String? barbershopId]) async {
     try {
-      final response = await apiClient.dio.get('/appointments');
+      final authBox = Hive.box('auth');
+      final bId = barbershopId ?? (authBox.get('barbershopId', defaultValue: '') as String);
+      final response = await apiClient.dio.get('/appointments?barbershopId=$bId');
       if (response.statusCode == 200 && response.data['data'] != null) {
         final List data = response.data['data'];
         return data.map((json) => Appointment.fromJson(json)).toList();

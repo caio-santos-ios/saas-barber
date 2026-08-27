@@ -11,10 +11,22 @@ namespace api_barber.Controllers
     public class AppointmentController(IAppointmentService service) : ControllerBase
     {
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] string? barbershopId, [FromQuery] string? customerId, [FromQuery] string? barberId)
         {
-            string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
-            ResponseApi<List<dynamic>> response = await service.GetAllAsync(barbershopId);
+            string effectiveBarbershopId = !string.IsNullOrEmpty(barbershopId)
+                ? barbershopId
+                : (User.FindFirst("barbershopId")?.Value ?? "");
+
+            string role = User.FindFirst("role")?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
+            string userId = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value 
+                ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
+                ?? User.FindFirst("userId")?.Value 
+                ?? "";
+
+            string effectiveCustomerId = !string.IsNullOrEmpty(customerId) ? customerId : (role == "Customer" ? userId : "");
+            string effectiveBarberId = !string.IsNullOrEmpty(barberId) ? barberId : (role == "Barber" ? userId : "");
+
+            ResponseApi<List<dynamic>> response = await service.GetAllAsync(effectiveBarbershopId, effectiveCustomerId, effectiveBarberId);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
 
@@ -26,26 +38,32 @@ namespace api_barber.Controllers
         }
 
         [HttpGet("availability")]
-        public async Task<IActionResult> GetAvailability([FromQuery] string barberId, [FromQuery] System.DateTime date)
+        public async Task<IActionResult> GetAvailability([FromQuery] string barberId, [FromQuery] System.DateTime date, [FromQuery] string? barbershopId)
         {
-            string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
-            ResponseApi<List<string>> response = await service.GetAvailableSlotsAsync(barberId, date, barbershopId);
+            string effectiveBarbershopId = !string.IsNullOrEmpty(barbershopId)
+                ? barbershopId
+                : (User.FindFirst("barbershopId")?.Value ?? "");
+            ResponseApi<List<string>> response = await service.GetAvailableSlotsAsync(barberId, date, effectiveBarbershopId);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateAppointmentRequest request)
+        public async Task<IActionResult> Create([FromBody] CreateAppointmentRequest request, [FromQuery] string? barbershopId)
         {
-            request.BarbershopId = User.FindFirst("barbershopId")?.Value ?? "";
+            request.BarbershopId = !string.IsNullOrEmpty(request.BarbershopId)
+                ? request.BarbershopId
+                : (!string.IsNullOrEmpty(barbershopId) ? barbershopId : (User.FindFirst("barbershopId")?.Value ?? ""));
             request.CreatedBy = User.FindFirst("userId")?.Value ?? "";
             ResponseApi<Appointment> response = await service.CreateAsync(request);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
 
         [HttpPut]
-        public async Task<IActionResult> Update([FromBody] UpdateAppointmentRequest request)
+        public async Task<IActionResult> Update([FromBody] UpdateAppointmentRequest request, [FromQuery] string? barbershopId)
         {
-            request.BarbershopId = User.FindFirst("barbershopId")?.Value ?? "";
+            request.BarbershopId = !string.IsNullOrEmpty(request.BarbershopId)
+                ? request.BarbershopId
+                : (!string.IsNullOrEmpty(barbershopId) ? barbershopId : (User.FindFirst("barbershopId")?.Value ?? ""));
             request.UpdatedBy = User.FindFirst("userId")?.Value ?? "";
             ResponseApi<Appointment> response = await service.UpdateAsync(request);
             return StatusCode(response.Status, new { response.Data, response.Message });

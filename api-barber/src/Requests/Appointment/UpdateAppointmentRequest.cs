@@ -10,6 +10,7 @@ namespace api_barber.Requests.Appointment
         public string Hour { get; set; } = string.Empty;
         public string Notes { get; set; } = string.Empty;
         public string BarberId { get; set; } = string.Empty;
+        public string BarberName { get; set; } = string.Empty;
         public string CustomerId { get; set; } = string.Empty;
         public string ServiceId { get; set; } = string.Empty;
         public string ServiceTypeId { get; set; } = string.Empty;

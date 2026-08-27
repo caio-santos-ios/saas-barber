@@ -18,6 +18,7 @@ export class Settings implements OnInit {
   
   formData = {
     id: '',
+    code: '',
     name: '',
     document: '',
     phone: '',
@@ -52,6 +53,7 @@ export class Settings implements OnInit {
       if (shop) {
         this.formData = {
           id: shop.id || shop.Id || barbershopId || '',
+          code: shop.code || shop.Code || '',
           name: shop.name || shop.Name || '',
           document: shop.document || shop.Document || '',
           phone: shop.phone || shop.Phone || shop.whatsApp || shop.WhatsApp || '',

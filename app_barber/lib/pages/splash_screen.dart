@@ -1,4 +1,5 @@
 import 'package:app_barber/pages/auth/login_page.dart';
+import 'package:app_barber/pages/auth/select_barbershop_page.dart';
 import 'package:app_barber/pages/homes/admin_home.dart';
 import 'package:app_barber/pages/homes/barber_home.dart';
 import 'package:app_barber/pages/homes/customer_home.dart';
@@ -25,6 +26,7 @@ class _SplashScreenState extends State<SplashScreen> {
     final authBox = Hive.box('auth');
     final String token = authBox.get('token') ?? "";
     final String role = authBox.get('role') ?? "";
+    final String barbershopId = authBox.get('barbershopId') ?? "";
 
     if (!mounted) return;
 
@@ -40,8 +42,13 @@ class _SplashScreenState extends State<SplashScreen> {
             MaterialPageRoute(builder: (_) => const CustomerHomePage()));
       }
     } else {
-      Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const LoginPage()));
+      if (barbershopId.isNotEmpty) {
+        Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const LoginPage()));
+      } else {
+        Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const SelectBarbershopPage()));
+      }
     }
   }
 

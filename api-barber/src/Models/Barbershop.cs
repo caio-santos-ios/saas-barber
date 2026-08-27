@@ -1,4 +1,4 @@
-﻿using MongoDB.Bson;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using api_barber.Models.Enums;
 namespace api_barber.Models
@@ -29,6 +29,8 @@ namespace api_barber.Models
         [BsonElement("subscription_status")]
         [BsonRepresentation(BsonType.String)]
         public SubscriptionStatusEnum SubscriptionStatus { get; set; }
+        [BsonElement("code")]
+        public string Code { get; set; } = string.Empty;
         [BsonElement("active")]
         public bool Active { get; set; } = true;
     }

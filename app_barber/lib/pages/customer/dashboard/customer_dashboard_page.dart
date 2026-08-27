@@ -54,7 +54,7 @@ class _CustomerDashboardPageState extends State<CustomerDashboardPage> {
         if (barbershopId.isNotEmpty) {
           final futures = await Future.wait([
             _barbershopRepo.getBarbershop(barbershopId),
-            _appointmentRepo.getCustomerAppointments(),
+            _appointmentRepo.getCustomerAppointments(barbershopId),
           ]);
 
           if (mounted) {

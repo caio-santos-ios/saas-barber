@@ -4,6 +4,10 @@
       <h1 class="page-title">Configurações</h1>
       <p class="page-subtitle">Dados da sua barbearia e negócio</p>
     </div>
+    <div *ngIf="formData.code" style="display: flex; align-items: center; gap: 8px; background: var(--bg-card); border: 2px dashed var(--primary-color); padding: 8px 16px; border-radius: 10px;">
+      <span style="font-size: 13px; font-weight: 600; color: var(--text-muted);">CÓDIGO DA BARBEARIA:</span>
+      <strong style="font-family: monospace; font-size: 20px; letter-spacing: 3px; color: var(--primary-color);">{{ formData.code }}</strong>
+    </div>
   </div>
 
   <div class="card" style="width: 100%; margin: 0 auto;">

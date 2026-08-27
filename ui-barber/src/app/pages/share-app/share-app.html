@@ -1,8 +1,8 @@
 <div class="page-container no-print">
   <div class="page-header">
     <div>
-      <h1 class="page-title">Divulgar Aplicativo</h1>
-      <p class="page-subtitle">Compartilhe o link do seu app com seus clientes ou imprima o cartaz com QR Code para seu estabelecimento</p>
+      <h1 class="page-title">Cartaz e Código da Barbearia</h1>
+      <p class="page-subtitle">Divulgue seu código exclusivo ou imprima o cartaz para seus clientes se conectarem pelo aplicativo</p>
     </div>
     <div class="header-actions">
       <button class="btn-secondary" (click)="downloadQrCode()">
@@ -17,25 +17,27 @@
   <div class="share-grid">
     <!-- Left Column: Share Options -->
     <div class="share-controls">
-      <!-- Link Card -->
+      <!-- Code Card -->
       <div class="card mb-4">
         <h3 class="card-title">
-          <span>🔗</span> Link Exclusivo da Barbearia
+          <span>🔢</span> Código Exclusivo da Barbearia
         </h3>
         <p class="card-desc">
-          Este link direciona seus clientes diretamente para a página de download e agendamento da sua barbearia.
+          Seus clientes precisam deste código de 6 dígitos no primeiro acesso ao aplicativo para se vincularem à sua barbearia.
         </p>
 
-        <div class="link-box">
-          <input type="text" [value]="appUrl" readonly class="form-input link-input" />
-          <button class="btn-primary copy-btn" (click)="copyLink()">
-            Copiar
+        <div class="code-display-card">
+          <div class="code-number-display">
+            {{ barbershopCode || '------' }}
+          </div>
+          <button class="btn-primary copy-btn" (click)="copyCode()">
+            Copiar Código
           </button>
         </div>
 
         <div class="actions-row mt-3">
           <button class="btn-whatsapp" (click)="shareWhatsApp()">
-            <span style="font-size: 18px;">💬</span> Compartilhar no WhatsApp
+            <span style="font-size: 18px;">💬</span> Compartilhar Código no WhatsApp
           </button>
         </div>
       </div>
@@ -50,10 +52,10 @@
             <strong>No Balcão e Espelhos:</strong> Imprima o cartaz ao lado em folha A4 e coloque em um display de acrílico ou fixe perto dos espelhos.
           </li>
           <li>
-            <strong>No WhatsApp e Instagram:</strong> Envie o link ou adicione na biografia do perfil da sua barbearia.
+            <strong>Conexão Instantânea:</strong> Ao abrir o app pela primeira vez, o cliente pode escanear o QR Code da câmera ou digitar o código <strong>{{ barbershopCode }}</strong>.
           </li>
           <li>
-            <strong>Vinculação Automática:</strong> Todos os clientes que baixarem pelo seu QR Code/Link já iniciam vinculados à sua barbearia no cadastro!
+            <strong>Vinculação Automática:</strong> O cliente já inicia conectado à sua barbearia e faz o agendamento em poucos segundos!
           </li>
         </ul>
       </div>
@@ -76,18 +78,23 @@
           <div *ngIf="!qrCodeDataUrl" class="qr-loading">Gerando QR Code...</div>
         </div>
 
+        <div class="poster-code-box">
+          <div class="poster-code-title">CÓDIGO DA BARBEARIA</div>
+          <div class="poster-code-value">{{ barbershopCode || '------' }}</div>
+        </div>
+
         <div class="poster-instructions">
           <div class="instruction-item">
             <span class="step-num">1</span>
-            <span>Aponte a câmera do seu celular</span>
+            <span>Abra o app da barbearia</span>
           </div>
           <div class="instruction-item">
             <span class="step-num">2</span>
-            <span>Baixe o aplicativo</span>
+            <span>Aponte a câmera pro QR Code ou digite o código <strong>{{ barbershopCode }}</strong></span>
           </div>
           <div class="instruction-item">
             <span class="step-num">3</span>
-            <span>Escolha o serviço e horário</span>
+            <span>Escolha o serviço, profissional e horário</span>
           </div>
         </div>
 
@@ -104,7 +111,7 @@
 <div class="print-poster-container print-only">
   <div class="print-poster-inner">
     <div class="print-header">
-      <div class="print-sub">AGENDE PELO CELULAR</div>
+      <div class="print-sub">AGENDE SEU HORÁRIO PELO APLICATIVO</div>
       <h1 class="print-title">{{ barbershopName }}</h1>
       <p class="print-desc">Baixe nosso aplicativo e agende seu horário com os nossos melhores profissionais!</p>
     </div>
@@ -115,30 +122,35 @@
       </div>
       <div class="print-scan-text">
         <span class="camera-icon">📷</span>
-        <span>Aponte a câmera do seu celular para escanear</span>
+        <span>Escaneie o QR Code com a câmera do app</span>
       </div>
+    </div>
+
+    <div class="print-code-box">
+      <div class="print-code-label">OU DIGITE O CÓDIGO DA BARBEARIA NO APP</div>
+      <div class="print-code-value">{{ barbershopCode || '------' }}</div>
     </div>
 
     <div class="print-steps">
       <div class="print-step">
         <div class="step-circle">1</div>
         <div class="step-info">
-          <strong>Escaneie o QR Code</strong>
-          <small>Acesse o link direto do app</small>
+          <strong>Baixe o App</strong>
+          <small>Disponível para celular</small>
         </div>
       </div>
       <div class="print-step">
         <div class="step-circle">2</div>
         <div class="step-info">
-          <strong>Crie sua Conta</strong>
-          <small>Leva menos de 1 minuto</small>
+          <strong>Conecte com o Código</strong>
+          <small>Escaneie ou digite o código</small>
         </div>
       </div>
       <div class="print-step">
         <div class="step-circle">3</div>
         <div class="step-info">
-          <strong>Escolha seu Horário</strong>
-          <small>Agendamento confirmado na hora</small>
+          <strong>Agende seu Corte</strong>
+          <small>Horário confirmado na hora</small>
         </div>
       </div>
     </div>

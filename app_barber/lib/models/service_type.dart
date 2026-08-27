@@ -16,13 +16,24 @@ class ServiceType {
   });
 
   factory ServiceType.fromJson(Map<String, dynamic> json) {
+    final valRaw = json['value'] ?? json['price'] ?? 0;
+    double val = 0.0;
+    if (valRaw is num) {
+      val = valRaw.toDouble();
+    } else if (valRaw is String) {
+      val = double.tryParse(valRaw.replaceAll(RegExp(r'[^0-9\.]'), '')) ?? 0.0;
+    }
+
+    final dur = json['duration'] ?? json['durationMinutes'] ?? json['duration_minutes'] ?? 0;
+    final durInt = dur is int ? dur : (int.tryParse(dur.toString()) ?? 0);
+
     return ServiceType(
       id: json['id'] ?? '',
       name: json['name'] ?? '',
       description: json['description'] ?? '',
-      duration: json['duration'] ?? 0,
-      durationMinutes: json['durationMinutes'] ?? json['duration_minutes'] ?? 0,
-      value: (json['value'] ?? 0).toDouble(),
+      duration: durInt,
+      durationMinutes: durInt,
+      value: val,
     );
   }
 }

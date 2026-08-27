@@ -23,7 +23,7 @@
     Carregando métricas...
   </div>
 
-  <div *ngIf="error" class="empty-state text-center py-4" style="color: #ef4444;">
+  <div *ngIf="error && !metrics" class="empty-state text-center py-4" style="color: #ef4444;">
     {{ error }}
   </div>
 
@@ -34,7 +34,7 @@
   <div class="metrics-grid" *ngIf="metrics && !loading" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
     <div class="card primary" style="background: #1e293b; color: white; border: none;">
       <div style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.5rem;">Faturamento</div>
-      <div style="font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem;">{{ metrics.totalRevenue | currency:'BRL':'symbol':'1.2-2':'pt-BR' }}</div>
+      <div style="font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem;">{{ (metrics.totalRevenue || 0) | currency:'BRL' }}</div>
       <div style="font-size: 0.8rem; opacity: 0.8;">no período</div>
     </div>
     
@@ -92,6 +92,8 @@
             <th>Data/Hora</th>
             <th>Cliente</th>
             <th>Profissional</th>
+            <th>Serviço</th>
+            <th>Valor</th>
             <th>Status</th>
           </tr>
         </thead>
@@ -109,6 +111,12 @@
                 <span style="color: var(--text-main); font-weight: 500;">{{ apt.barberName }}</span>
               </div>
             </td>
+            <td style="vertical-align: middle; color: var(--text-muted);">
+              {{ apt.serviceName }}
+            </td>
+            <td style="vertical-align: middle; font-weight: 600; color: var(--text-main);">
+              {{ (apt.price || apt.value || 0) | currency:'BRL' }}
+            </td>
             <td style="vertical-align: middle;">
               <span class="status-badge"
                 [class.active]="apt.statusRaw === 0 || apt.statusRaw === 1"
@@ -117,7 +125,7 @@
             </td>
           </tr>
           <tr *ngIf="appointments.length === 0">
-            <td colspan="4" class="text-center py-4 text-muted">Nenhum agendamento encontrado no período.</td>
+            <td colspan="6" class="text-center py-4 text-muted">Nenhum agendamento encontrado no período.</td>
           </tr>
         </tbody>
       </table>

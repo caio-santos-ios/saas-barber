@@ -23,10 +23,10 @@ export class Dashboard implements OnInit {
   constructor(private cdr: ChangeDetectorRef, private ngZone: NgZone) {}
 
   ngOnInit() {
-
-    const end = new Date();
     const start = new Date();
-    start.setDate(end.getDate() - 30);
+    start.setDate(start.getDate() - 30);
+    const end = new Date();
+    end.setDate(end.getDate() + 30);
     
     this.startDate = start.toISOString().split('T')[0];
     this.endDate = end.toISOString().split('T')[0];
@@ -37,8 +37,6 @@ export class Dashboard implements OnInit {
   fetchData() {
     this.loading = true;
     this.error = '';
-    this.cdr.detectChanges();
-
     Promise.all([
       api.get(`/appointments`),
       api.get(`/web/dashboard?startDate=${this.startDate}&endDate=${this.endDate}`),
@@ -63,14 +61,17 @@ export class Dashboard implements OnInit {
           })
           .map((apt: any) => ({
             ...apt,
-            barberName: userMap[apt.barberId] || apt.barberName || '-',
-            customerName: userMap[apt.customerId] || apt.customerName || '-',
+            barberName: apt.barberName || userMap[apt.barberId] || '-',
+            customerName: apt.customerName || userMap[apt.customerId] || '-',
+            serviceName: apt.serviceTypeName || apt.serviceName || '-',
+            price: apt.value ?? apt.price ?? 0,
             statusLabel: statusMap[apt.status] ?? apt.status,
             statusRaw: apt.status
           }))
           .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
         this.metrics = metricsRes.data?.data || null;
+        this.error = '';
         this.loading = false;
 
         if (this.metrics && this.metrics.totalAppointments === 0) {

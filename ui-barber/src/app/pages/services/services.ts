@@ -62,7 +62,7 @@ export class Services implements OnInit {
         name: srv.name,
         description: srv.description || '',
         durationMinutes: srv.durationMinutes || srv.duration || 30,
-        value: srv.value || 0,
+        value: srv.value || srv.price || 0,
         category: srv.category || 'Cabelo'
       };
     } else {
@@ -118,6 +118,7 @@ export class Services implements OnInit {
         duration: durationMinutes,
         durationMinutes: durationMinutes,
         value: numericValue,
+        price: numericValue,
         category: this.formData.category || 'Cabelo',
         active: true,
         barbershopId 

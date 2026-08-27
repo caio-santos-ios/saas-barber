@@ -18,7 +18,14 @@ namespace api_barber.src.Repositories
         {
             return await appDbContext.Barbershops.Find(x => !x.Deleted && x.Id.Equals(id)).FirstOrDefaultAsync();
         }
-        public async Task<List<Barbershop>> GetAllEntitiesAsync(string barbershopId) { return await appDbContext.Barbershops.Find(x => !x.Deleted).ToListAsync(); }
+        public async Task<Barbershop?> GetByCodeAsync(string code)
+        {
+            return await appDbContext.Barbershops.Find(x => !x.Deleted && x.Code.Equals(code)).FirstOrDefaultAsync();
+        }
+        public async Task<List<Barbershop>> GetAllEntitiesAsync(string barbershopId) 
+        { 
+            return await appDbContext.Barbershops.Find(x => !x.Deleted).ToListAsync(); 
+        }
         public async Task<Barbershop> CreateAsync(Barbershop entity)
         {
             await appDbContext.Barbershops.InsertOneAsync(entity);
@@ -36,5 +43,3 @@ namespace api_barber.src.Repositories
         }
     }
 }
-
-

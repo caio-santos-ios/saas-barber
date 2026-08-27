@@ -14,6 +14,7 @@ import QRCode from 'qrcode';
 })
 export class ShareApp implements OnInit {
   barbershopId = '';
+  barbershopCode = '';
   barbershopName = 'Nossa Barbearia';
   barbershopPhone = '';
   barbershopAddress = '';
@@ -29,8 +30,6 @@ export class ShareApp implements OnInit {
 
   async ngOnInit() {
     this.barbershopId = localStorage.getItem('barbershopId') || '';
-    
-    // Generate public customer app link
     const origin = window.location.origin;
     this.appUrl = `${origin}/app/${this.barbershopId}`;
 
@@ -47,6 +46,7 @@ export class ShareApp implements OnInit {
         const shop = response.data?.data;
         if (shop) {
           this.barbershopName = shop.name || this.barbershopName;
+          this.barbershopCode = shop.code || '';
           this.barbershopPhone = shop.phone || '';
           if (shop.address) {
             const parts = [
@@ -68,7 +68,8 @@ export class ShareApp implements OnInit {
 
   async generateQrCode() {
     try {
-      this.qrCodeDataUrl = await QRCode.toDataURL(this.appUrl, {
+      const qrContent = this.barbershopCode || this.barbershopId;
+      this.qrCodeDataUrl = await QRCode.toDataURL(qrContent, {
         width: 320,
         margin: 2,
         color: {
@@ -83,6 +84,15 @@ export class ShareApp implements OnInit {
     }
   }
 
+  copyCode() {
+    if (!this.barbershopCode) return;
+    navigator.clipboard.writeText(this.barbershopCode).then(() => {
+      this.toastr.success('Código da barbearia copiado!', 'Sucesso');
+    }).catch(() => {
+      this.toastr.error('Não foi possível copiar o código.', 'Erro');
+    });
+  }
+
   copyLink() {
     navigator.clipboard.writeText(this.appUrl).then(() => {
       this.toastr.success('Link copiado para a área de transferência!', 'Sucesso');
@@ -94,8 +104,8 @@ export class ShareApp implements OnInit {
   shareWhatsApp() {
     const text = encodeURIComponent(
       `Olá! Agora você pode agendar seu horário na *${this.barbershopName}* direto pelo nosso aplicativo!\n\n` +
-      `Acesse o link para baixar o app e agendar em poucos segundos:\n${this.appUrl}\n\n` +
-      `Esperamos você!`
+      `Baixe o app e conecte-se usando o nosso código exclusivo: *${this.barbershopCode}*\n\n` +
+      `Esperamos por você!`
     );
     window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank');
   }
@@ -108,7 +118,7 @@ export class ShareApp implements OnInit {
     if (!this.qrCodeDataUrl) return;
     const a = document.createElement('a');
     a.href = this.qrCodeDataUrl;
-    a.download = `qrcode-${this.barbershopName.toLowerCase().replace(/\s+/g, '-')}.png`;
+    a.download = `qrcode-${(this.barbershopCode || this.barbershopName).toLowerCase().replace(/\s+/g, '-')}.png`;
     a.click();
     this.toastr.info('Download do QR Code iniciado!', 'Download');
   }

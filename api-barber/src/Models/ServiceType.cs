@@ -1,4 +1,4 @@
-﻿using MongoDB.Bson;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 namespace api_barber.Models
 {
@@ -10,9 +10,11 @@ namespace api_barber.Models
         public string Description { get; set; } = string.Empty;
         [BsonElement("duration")]
         public int Duration { get; set; }
-        [BsonElement("value")]
+
+        [BsonElement("price")]
         [BsonRepresentation(BsonType.Decimal128)]
-        public decimal Value { get; set; }
+        public decimal Price { get; set; }
+        
         [BsonElement("barbershop_id")]
         public string BarbershopId { get; set; } = string.Empty;
         [BsonElement("category")]

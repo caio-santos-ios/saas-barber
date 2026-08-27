@@ -24,7 +24,7 @@
               <div style="font-weight: 600; color: var(--text-main);">{{ s.name }}</div>
             </td>
             <td style="vertical-align: middle; color: var(--text-muted);">{{ s.durationMinutes || s.duration }} min</td>
-            <td style="vertical-align: middle; font-weight: 500;">{{ s.value | currency:'BRL' }}</td>
+            <td style="vertical-align: middle; font-weight: 500;">{{ (s.value || s.price || 0) | currency:'BRL' }}</td>
             <td style="vertical-align: middle;">
               <button class="btn-icon" (click)="openModal(s)" style="color: var(--text-muted); font-size: 18px;" title="Editar">✏️</button>
               <button class="btn-icon" (click)="openDeleteModal(s)" style="color: #c62828; font-size: 18px;" title="Excluir">🗑️</button>
