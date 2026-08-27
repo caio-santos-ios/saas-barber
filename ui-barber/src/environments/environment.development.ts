@@ -1,6 +1,6 @@
 export const environment = {
-  production: true,
-  apiUrl: 'https://saas-barber-y69y.onrender.com',
+  production: false,
+  apiUrl: 'http://localhost:5056',
   firebaseConfig: {
     apiKey: "AIzaSyBRDk9Mhl6NM-8BBLL6ZfFzQsLq12sLiJk",
     authDomain: "saas-barbearia-e897e.firebaseapp.com",
