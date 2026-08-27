@@ -50,7 +50,7 @@ export class Login {
     }
     this.resetLoading = true;
     try {
-      await api.post('/auth/reset-password', { email: this.resetEmail, originUrl: window.location.origin });
+      await api.post('/auth/reset-password', { email: this.resetEmail, originUrl: window.location.origin, role: "Admin" });
       this.closeResetModal();
       this.toastr.success(
         'Uma nova senha temporária foi enviada para o seu e-mail.',
