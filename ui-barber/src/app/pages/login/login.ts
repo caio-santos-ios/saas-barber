@@ -74,7 +74,7 @@ export class Login {
 
     this.loading = true;
     try {
-      const response = await api.post('/auth/login', { email: this.email, password: this.password });
+      const response = await api.post('/auth/login', { email: this.email, password: this.password, role: "Admin" });
       const payload = response.data.data;
       this.auth.setToken(payload.token);
       this.auth.setSubscriptionStatus(payload.subscriptionStatus);
