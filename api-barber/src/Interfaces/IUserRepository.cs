@@ -10,6 +10,7 @@ namespace api_barber.src.Interfaces
         Task<List<dynamic>> GetCustomersAsync(List<BsonDocument> pipeline);
         Task<User> GetByIdAsync(string id);
         Task<User> GetByEmailAsync(string email, string barbershopId, RoleUserEnum? role);
+        Task<User> GetByEmailAdminAsync(string email);
         Task<User> CreateAsync(User entity);
         Task<User> UpdateAsync(User entity);
         Task<User> DeleteAsync(User entity);

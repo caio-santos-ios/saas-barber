@@ -68,6 +68,20 @@ namespace api_barber.Services
                 return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
             }
         }
+        public async Task<ResponseApi<User>> GetByEmailAdminAsync(string email)
+        {
+            try
+            {
+                User user = await repository.GetByEmailAdminAsync(email);
+                if (user is null) return new(null, 404, "Usuário não encontrado");
+
+                return new(user, 200, "Usuários buscado com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
+            }
+        }
         public async Task<ResponseApi<List<dynamic>>> GetBarbersAsync(string barbershopId)
         {
             try

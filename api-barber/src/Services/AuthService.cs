@@ -59,15 +59,25 @@ namespace api_barber.Services
         {
             try
             {
-                ResponseApi<User> userResponse = await _userService.GetByEmailAsync(request.Email, request.BarbershopId, request.Role);
-                if (userResponse.Data == null) return new(null, 400, "E-mail ou senha inválidos.");
+                User user = new();
+                if (request.Role == RoleUserEnum.Admin)
+                {
+                    ResponseApi<User> userResponse = await _userService.GetByEmailAdminAsync(request.Email);
+                    if (userResponse.Data == null) return new(null, 400, "E-mail ou senha inválidos.");
+                    user = userResponse.Data;
+                }
+                else
+                {
+                    ResponseApi<User> userResponse = await _userService.GetByEmailAsync(request.Email, request.BarbershopId, request.Role);
+                    if (userResponse.Data == null) return new(null, 400, "E-mail ou senha inválidos.");
+                    user = userResponse.Data;
+                }
 
-                User user = userResponse.Data;
                 System.Console.WriteLine(request.Password);
                 System.Console.WriteLine(user.Password);
                 System.Console.WriteLine(BCrypt.Net.BCrypt.Verify(request.Password, user.Password));
 
-                if(string.IsNullOrEmpty(user.Password) || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password)) return new(null, 400, "E-mail ou senha inválidos.");
+                if (string.IsNullOrEmpty(user.Password) || !BCrypt.Net.BCrypt.Verify(request.Password, user.Password)) return new(null, 400, "E-mail ou senha inválidos.");
 
                 var barbershopResponse = await _barbershopService.GetByIdAsync(user.BarbershopId);
                 var barbershop = barbershopResponse.Data;
@@ -107,15 +117,15 @@ namespace api_barber.Services
                     CreatedAt = DateTime.UtcNow
                 };
 
-                var createdUserRes = await _userService.CreateAsync(new CreateUserRequest 
-                { 
-                    Name = user.Name, 
-                    Email = user.Email, 
-                    WhatsApp = user.WhatsApp, 
-                    Role = user.Role, 
-                    DateOfBirth = user.DateOfBirth, 
-                    Document = user.Document, 
-                    Photo = user.Photo, 
+                var createdUserRes = await _userService.CreateAsync(new CreateUserRequest
+                {
+                    Name = user.Name,
+                    Email = user.Email,
+                    WhatsApp = user.WhatsApp,
+                    Role = user.Role,
+                    DateOfBirth = user.DateOfBirth,
+                    Document = user.Document,
+                    Photo = user.Photo,
                     Password = user.Password,
                     BarbershopId = user.BarbershopId
                 });

@@ -10,6 +10,7 @@ namespace api_barber.Interfaces
         Task<ResponseApi<List<dynamic>>> GetAllAsync(string barbershopId);
         Task<ResponseApi<User>> GetByIdAsync(string id);
         Task<ResponseApi<User>> GetByEmailAsync(string email, string barbershopId, RoleUserEnum? role);
+        Task<ResponseApi<User>> GetByEmailAdminAsync(string email);
         Task<ResponseApi<List<dynamic>>> GetBarbersAsync(string barbershopId);
         Task<ResponseApi<List<dynamic>>> GetCustomersAsync(string barbershopId);
         Task<ResponseApi<User>> CreateAsync(CreateUserRequest request);
