@@ -42,37 +42,37 @@ namespace api_barber.Services
                 var completedApps = periodAppointments.Where(a => a.Status == AppointmentStatusEnum.Finalizado || (int)a.Status == 3);
                 metrics.TotalRevenue = completedApps.Sum(a => a.Value);
 
-                // metrics.TopServices = periodAppointments
-                //     .GroupBy(a => a.ServiceTypeId)
-                //     .Select(g =>
-                //     {
-                //         var serviceType = allServiceTypes.FirstOrDefault(st => st.Id == g.Key);
-                //         var fallbackName = g.FirstOrDefault()?.ServiceTypeName;
-                //         return new RankingItem
-                //         {
-                //             Name = serviceType?.Name ?? (!string.IsNullOrEmpty(fallbackName) ? fallbackName : "Desconhecido"),
-                //             Count = g.Count()
-                //         };
-                //     })
-                //     .OrderByDescending(r => r.Count)
-                //     .Take(5)
-                //     .ToList();
+                metrics.TopServices = periodAppointments
+                    .Where(a => !string.IsNullOrEmpty(a.ServiceTypeId))
+                    .GroupBy(a => a.ServiceTypeId)
+                    .Select(g =>
+                    {
+                        var serviceType = allServiceTypes.FirstOrDefault(st => st.Id == g.Key);
+                        return new RankingItem
+                        {
+                            Name = serviceType?.Name ?? "Serviço",
+                            Count = g.Count()
+                        };
+                    })
+                    .OrderByDescending(r => r.Count)
+                    .Take(5)
+                    .ToList();
 
-                // metrics.TopBarbers = periodAppointments
-                //     .GroupBy(a => a.BarberId)
-                //     .Select(g =>
-                //     {
-                //         var barber = allUsers.FirstOrDefault(u => u.Id == g.Key);
-                //         var fallbackName = g.FirstOrDefault()?.BarberName;
-                //         return new RankingItem
-                //         {
-                //             Name = barber?.Name ?? (!string.IsNullOrEmpty(fallbackName) ? fallbackName : "Desconhecido"),
-                //             Count = g.Count()
-                //         };
-                //     })
-                //     .OrderByDescending(r => r.Count)
-                //     .Take(5)
-                //     .ToList();
+                metrics.TopBarbers = periodAppointments
+                    .Where(a => !string.IsNullOrEmpty(a.BarberId))
+                    .GroupBy(a => a.BarberId)
+                    .Select(g =>
+                    {
+                        var barber = allUsers.FirstOrDefault(u => u.Id == g.Key);
+                        return new RankingItem
+                        {
+                            Name = barber?.Name ?? "Profissional",
+                            Count = g.Count()
+                        };
+                    })
+                    .OrderByDescending(r => r.Count)
+                    .Take(5)
+                    .ToList();
 
                 return new(metrics, 200, "Métricas obtidas com sucesso");
             }
