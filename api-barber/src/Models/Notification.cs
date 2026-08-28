@@ -1,8 +1,9 @@
-﻿using MongoDB.Bson;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using api_barber.Models.Enums;
 namespace api_barber.Models
 {
+    [BsonIgnoreExtraElements]
     public class Notification : ModelBase
     {
         [BsonElement("type")]
@@ -29,6 +30,7 @@ namespace api_barber.Models
         public bool Send { get; set; } = false;
         
         [BsonElement("sendAt")]
+        [BsonDateTimeOptions(Kind = DateTimeKind.Utc)]
         public DateTime SendAt { get; set; }
         
         [BsonElement("barbershop_id")]
