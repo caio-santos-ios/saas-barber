@@ -48,7 +48,9 @@ namespace api_barber.src.Repositories
         {
             if (string.IsNullOrWhiteSpace(email)) return null!;
             var cleanEmail = email.Trim();
-            return await appDbContext.Users.Find(x => !x.Deleted && x.Email.Equals(cleanEmail) && x.Role == RoleUserEnum.Admin).FirstOrDefaultAsync();
+            var adminUser = await appDbContext.Users.Find(x => !x.Deleted && x.Email.Equals(cleanEmail) && x.Role == RoleUserEnum.Admin).FirstOrDefaultAsync();
+            if (adminUser != null) return adminUser;
+            return await appDbContext.Users.Find(x => !x.Deleted && x.Email.Equals(cleanEmail)).FirstOrDefaultAsync();
         }
         public async Task<User> GetByDocumentAsync(string document, string barbershopId, RoleUserEnum? role)
         {

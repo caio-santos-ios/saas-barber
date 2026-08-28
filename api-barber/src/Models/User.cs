@@ -3,6 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 using api_barber.Models.Enums;
 namespace api_barber.Models
 {
+    [BsonIgnoreExtraElements]
     public class User : ModelBase
     {
         [BsonElement("name")]

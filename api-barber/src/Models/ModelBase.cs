@@ -1,7 +1,8 @@
-﻿using MongoDB.Bson;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 namespace api_barber.Models
 {
+    [BsonIgnoreExtraElements]
     public abstract class ModelBase
     {
         [BsonId]
