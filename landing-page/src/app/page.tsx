@@ -363,6 +363,64 @@ export default function Home() {
           </div>
         </section>
 
+        <section className="section-shell screens-section" aria-labelledby="screens-title">
+          <div className="section-heading centered-heading">
+            <p className="section-eyebrow">Veja o painel por dentro</p>
+            <h2 id="screens-title">Mais clareza para cuidar da operação.</h2>
+            <p>Uma visão real das ferramentas que ajudam a barbearia a organizar agenda, clientes e equipe em um só lugar.</p>
+          </div>
+          <div className="screens-grid">
+            <figure className="screen-shot screen-shot-feature">
+              <div className="screen-shot-frame">
+                <Image
+                  src="/screens/painel-dashboard.png"
+                  alt="Dashboard real do painel Web do SaaS Barbearia"
+                  width={1573}
+                  height={890}
+                  sizes="(max-width: 760px) 100vw, 72vw"
+                />
+              </div>
+              <figcaption><strong>Dashboard</strong><span>Uma visão rápida do faturamento, agendamentos e desempenho da barbearia.</span></figcaption>
+            </figure>
+            <figure className="screen-shot">
+              <div className="screen-shot-frame">
+                <Image
+                  src="/screens/painel-agenda.png"
+                  alt="Tela de agenda do painel Web do SaaS Barbearia"
+                  width={1587}
+                  height={890}
+                  sizes="(max-width: 760px) 100vw, 50vw"
+                />
+              </div>
+              <figcaption><strong>Agenda</strong><span>Horários, clientes, profissionais e status em uma única tela.</span></figcaption>
+            </figure>
+            <figure className="screen-shot">
+              <div className="screen-shot-frame">
+                <Image
+                  src="/screens/painel-clientes.png"
+                  alt="Tela de clientes do painel Web do SaaS Barbearia"
+                  width={1585}
+                  height={887}
+                  sizes="(max-width: 760px) 100vw, 50vw"
+                />
+              </div>
+              <figcaption><strong>Clientes</strong><span>Cadastro, contatos, status e acesso rápido às ações da equipe.</span></figcaption>
+            </figure>
+            <figure className="screen-shot">
+              <div className="screen-shot-frame">
+                <Image
+                  src="/screens/painel-profissionais.png"
+                  alt="Tela de profissionais do painel Web do SaaS Barbearia"
+                  width={1588}
+                  height={889}
+                  sizes="(max-width: 760px) 100vw, 50vw"
+                />
+              </div>
+              <figcaption><strong>Profissionais</strong><span>Equipe, contatos, status e gestão dos barbeiros da barbearia.</span></figcaption>
+            </figure>
+          </div>
+        </section>
+
         <section id="beneficios" className="section-shell benefits-section">
           <div className="section-heading centered-heading">
             <p className="section-eyebrow">Feito para a rotina real</p>
