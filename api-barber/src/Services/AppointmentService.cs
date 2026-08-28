@@ -1,6 +1,7 @@
 using api_barber.Interfaces;
 using api_barber.Models;
 using api_barber.Requests.Appointment;
+using api_barber.Requests.Notification;
 using api_barber.src.Interfaces;
 using api_barber.src.Requests;
 using api_barber.src.Utils;
@@ -357,96 +358,78 @@ namespace api_barber.Services
                 ResponseApi<User> createdBy = await userService.GetByIdAsync(request.CreatedBy);
                 if (createdBy.Data is not null)
                 {
-                    // Deve cria 3 notificação
-                    // 1 confirmação, 2 minutos depois de criar o agendamento.
-                    // 2 no dia(no mesmo horario do agendamento, avisando que falta 24h) do agendamento.
-                    // 3 5 minutos antes do agendamento
+                    DateTime appointmentDateTime = entity.Date;
+                    if (TimeSpan.TryParse(entity.Hour, out var hourTimeSpan))
+                    {
+                        appointmentDateTime = entity.Date.Date.Add(hourTimeSpan);
+                    }
 
-                    ResponseApi<User> customer = await userService.GetByIdAsync(request.CustomerId);
+                    List<string> targetUserIds = [];
 
                     if (createdBy.Data.Role == RoleUserEnum.Admin)
                     {
-
-                        if (customer.Data is not null)
-                        {
-                            // se o admin tiver criando, deve enviar 6 notificação, 3 pro cliente e 3 pro barbeiro
-                            await notificationService.CreateManyAsync([
-                                new ()
-                                {
-                                    SendAt = DateTime.UtcNow.AddMinutes(2),
-                                    UserId = customer.Data.Id
-                                },
-                                new ()
-                                {
-                                    SendAt = entity.Date.AddDays(-1),
-                                    UserId = customer.Data.Id
-                                },
-                                new ()
-                                {
-                                    SendAt = entity.Date,
-                                    UserId = customer.Data.Id
-                                },
-
-                                new ()
-                                {
-                                    SendAt = DateTime.UtcNow.AddMinutes(2),
-                                    UserId = request.CreatedBy
-                                },
-                                new ()
-                                {
-                                    SendAt = entity.Date.AddDays(-1),
-                                    UserId = request.CreatedBy
-                                },
-                                new ()
-                                {
-                                    SendAt = entity.Date,
-                                    UserId = request.CreatedBy
-                                }
-                            ]);
-                        }
+                        if (!string.IsNullOrEmpty(request.CustomerId)) targetUserIds.Add(request.CustomerId);
+                        if (!string.IsNullOrEmpty(request.BarberId)) targetUserIds.Add(request.BarberId);
                     }
-
-                    if (createdBy.Data.Role == RoleUserEnum.Customer)
+                    else if (createdBy.Data.Role == RoleUserEnum.Customer)
                     {
                         ResponseApi<User> admin = await userService.GetAdminAsync(request.BarbershopId);
-
-                        if(customer.Data is not null && admin.Data is not null)
+                        if (admin.Data is not null && !string.IsNullOrEmpty(admin.Data.Id))
                         {
-                            // se o cliente tiver criando, deve enviar 6 notificação, 3 pro admin e 3 pro barbeiro
-                            await notificationService.CreateManyAsync([
-                                new ()
-                                {
-                                    SendAt = DateTime.UtcNow.AddMinutes(2),
-                                    UserId = customer.Data.Id
-                                },
-                                new ()
-                                {
-                                    SendAt = entity.Date.AddDays(-1),
-                                    UserId = customer.Data.Id
-                                },
-                                new ()
-                                {
-                                    SendAt = entity.Date,
-                                    UserId = customer.Data.Id
-                                },
-
-                                new ()
-                                {
-                                    SendAt = DateTime.UtcNow.AddMinutes(2),
-                                    UserId = admin.Data.Id
-                                },
-                                new ()
-                                {
-                                    SendAt = entity.Date.AddDays(-1),
-                                    UserId = admin.Data.Id
-                                },
-                                new ()
-                                {
-                                    SendAt = entity.Date,
-                                    UserId = admin.Data.Id
-                                }
-                            ]);                            
+                            targetUserIds.Add(admin.Data.Id);
                         }
+                        if (!string.IsNullOrEmpty(request.BarberId)) targetUserIds.Add(request.BarberId);
+                        if (!string.IsNullOrEmpty(request.CustomerId)) targetUserIds.Add(request.CustomerId);
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(request.CustomerId)) targetUserIds.Add(request.CustomerId);
+                        if (!string.IsNullOrEmpty(request.BarberId)) targetUserIds.Add(request.BarberId);
+                    }
+
+                    List<CreateNotificationRequest> notifications = [];
+                    foreach (var targetUserId in targetUserIds.Distinct())
+                    {
+                        notifications.Add(new CreateNotificationRequest
+                        {
+                            BarbershopId = request.BarbershopId,
+                            CreatedBy = request.CreatedBy,
+                            UserId = targetUserId,
+                            Title = "Novo Agendamento",
+                            Message = $"Agendamento para {entity.Date:dd/MM/yyyy} às {entity.Hour}.",
+                            Read = false,
+                            Send = false,
+                            SendAt = DateTime.UtcNow.AddMinutes(2)
+                        });
+
+                        notifications.Add(new CreateNotificationRequest
+                        {
+                            BarbershopId = request.BarbershopId,
+                            CreatedBy = request.CreatedBy,
+                            UserId = targetUserId,
+                            Title = "Lembrete de Agendamento",
+                            Message = $"Faltam 24h para o agendamento em {entity.Date:dd/MM/yyyy} às {entity.Hour}.",
+                            Read = false,
+                            Send = false,
+                            SendAt = appointmentDateTime.AddDays(-1)
+                        });
+
+                        notifications.Add(new CreateNotificationRequest
+                        {
+                            BarbershopId = request.BarbershopId,
+                            CreatedBy = request.CreatedBy,
+                            UserId = targetUserId,
+                            Title = "Agendamento em Breve",
+                            Message = $"Seu agendamento começará em 5 minutos (às {entity.Hour}).",
+                            Read = false,
+                            Send = false,
+                            SendAt = appointmentDateTime.AddMinutes(-5)
+                        });
+                    }
+
+                    if (notifications.Count > 0)
+                    {
+                        await notificationService.CreateManyAsync(notifications);
                     }
                 }
 

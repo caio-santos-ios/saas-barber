@@ -29,7 +29,7 @@ namespace api_barber.Works
 
                         DateTime today = DateTime.UtcNow;
 
-                        List<Models.Notification> notifications = await dbContext.Notifications.Find(x => !x.Deleted && !x.Send && x.SendAt == today).ToListAsync();
+                        List<Models.Notification> notifications = await dbContext.Notifications.Find(x => !x.Deleted && !x.Send && x.SendAt <= today).ToListAsync();
 
                         foreach (Models.Notification notification in notifications)
                         {
