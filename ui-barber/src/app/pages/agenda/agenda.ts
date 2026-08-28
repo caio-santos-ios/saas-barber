@@ -49,24 +49,33 @@ export class Agenda implements OnInit {
       );
 
       const dateString = this.selectedDate.toISOString().split('T')[0];
-      const statusMap: any = {
-        0: 'Agendado',
-        1: 'Cancelado',
-        2: 'Concluído',
-        'Marcado': 'Agendado',
-        'Cancelado': 'Cancelado',
-        'Finalizado': 'Concluído'
+      const getStatusInfo = (status: any) => {
+        const s = typeof status === 'string' ? status.trim().toLowerCase() : status;
+        if (s === 0 || s === '0' || s === 'marcado' || s === 'agendado') {
+          return { label: 'AGENDADO', code: 'scheduled' };
+        }
+        if (s === 2 || s === '2' || s === 'finalizado' || s === 'concluído' || s === 'concluido') {
+          return { label: 'CONCLUÍDO', code: 'completed' };
+        }
+        if (s === 1 || s === '1' || s === 3 || s === '3' || s === 'cancelado') {
+          return { label: 'CANCELADO', code: 'cancelled' };
+        }
+        return { label: 'AGENDADO', code: 'scheduled' };
       };
 
       this.appointments = (aptsRes.data.data || [])
         .filter((apt: any) => apt.date.startsWith(dateString))
-        .map((apt: any) => ({
-          ...apt,
-          barberName: userMap[apt.barberId] || apt.barberName || '-',
-          customerName: userMap[apt.customerId] || apt.customerName || '-',
-          statusLabel: statusMap[apt.status] ?? apt.status,
-          statusRaw: apt.status
-        }))
+        .map((apt: any) => {
+          const st = getStatusInfo(apt.status);
+          return {
+            ...apt,
+            barberName: userMap[apt.barberId] || apt.barberName || '-',
+            customerName: userMap[apt.customerId] || apt.customerName || '-',
+            statusLabel: st.label,
+            statusCode: st.code,
+            statusRaw: apt.status
+          };
+        })
         .sort((a: any, b: any) => a.hour.localeCompare(b.hour));
 
       this.cdr.detectChanges();

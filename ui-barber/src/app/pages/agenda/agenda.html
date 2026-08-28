@@ -49,9 +49,9 @@
             <td style="vertical-align: middle; font-weight: 500;">{{ apt.value | currency:'BRL' }}</td>
             <td style="vertical-align: middle;">
               <span class="status-badge" 
-                [class.active]="apt.statusRaw === 0 || apt.statusRaw === 1" 
-                [class.inactive]="apt.statusRaw === 3"
-                [class.cancelled]="apt.statusRaw === 2">{{ apt.statusLabel }}</span>
+                [class.status-scheduled]="apt.statusCode === 'scheduled'" 
+                [class.status-completed]="apt.statusCode === 'completed'"
+                [class.status-cancelled]="apt.statusCode === 'cancelled'">{{ apt.statusLabel }}</span>
             </td>
           </tr>
           <tr *ngIf="appointments.length === 0">
@@ -71,9 +71,9 @@
             <div style="font-weight: 600; color: var(--text-main); margin-top: 4px;">{{ apt.customerName }}</div>
           </div>
           <span class="status-badge" 
-            [class.active]="apt.statusRaw === 0 || apt.statusRaw === 1" 
-            [class.inactive]="apt.statusRaw === 3"
-            [class.cancelled]="apt.statusRaw === 2">{{ apt.statusLabel }}</span>
+            [class.status-scheduled]="apt.statusCode === 'scheduled'" 
+            [class.status-completed]="apt.statusCode === 'completed'"
+            [class.status-cancelled]="apt.statusCode === 'cancelled'">{{ apt.statusLabel }}</span>
         </div>
 
         <div class="mobile-card-body">
