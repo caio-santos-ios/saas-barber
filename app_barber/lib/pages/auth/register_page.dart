@@ -1,6 +1,7 @@
 import 'package:app_barber/api/api_client.dart';
 import 'package:app_barber/models/auth.dart';
 import 'package:app_barber/repositories/auth_repository.dart';
+import 'package:app_barber/repositories/barbershop_repository.dart';
 import 'package:app_barber/widgets/custom_text_field.dart';
 import 'package:brasil_fields/brasil_fields.dart';
 import 'package:flutter/material.dart';
@@ -30,11 +31,14 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _acceptTerms = false;
 
   late final AuthRepository _authRepository;
+  late final BarbershopRepository _barbershopRepository;
 
   @override
   void initState() {
     super.initState();
-    _authRepository = AuthRepository(ApiClient());
+    final client = ApiClient();
+    _authRepository = AuthRepository(client);
+    _barbershopRepository = BarbershopRepository(client);
   }
 
   @override
@@ -65,9 +69,20 @@ class _RegisterPageState extends State<RegisterPage> {
 
       try {
         final authBox = Hive.box('auth');
-        final currentBarbershopId = (widget.barbershopId != null && widget.barbershopId!.isNotEmpty)
+        var currentBarbershopId = (widget.barbershopId != null && widget.barbershopId!.isNotEmpty)
             ? widget.barbershopId!
             : (authBox.get('barbershopId', defaultValue: '') as String);
+
+        if (currentBarbershopId.isEmpty) {
+          final code = authBox.get('barbershopCode', defaultValue: '') as String;
+          if (code.isNotEmpty) {
+            final shop = await _barbershopRepository.getBarbershopByCode(code);
+            if (shop != null && shop.id.isNotEmpty) {
+              currentBarbershopId = shop.id;
+              await authBox.put('barbershopId', shop.id);
+            }
+          }
+        }
 
         if (currentBarbershopId.isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(

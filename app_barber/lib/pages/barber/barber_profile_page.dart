@@ -157,8 +157,8 @@ class _BarberProfilePageState extends ConsumerState<BarberProfilePage> {
     await authBox.delete('token');
     await authBox.delete('refreshToken');
     await authBox.delete('role');
-    await authBox.delete('barbershopId');
     await authBox.delete('photo');
+    await authBox.delete('useBiometrics');
 
     if (mounted) {
       Navigator.of(context).pushAndRemoveUntil(
