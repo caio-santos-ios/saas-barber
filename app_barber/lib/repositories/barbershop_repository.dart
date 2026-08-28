@@ -34,6 +34,15 @@ class BarbershopRepository {
     }
   }
 
+  Future<bool> updateBarbershop(Map<String, dynamic> data) async {
+    try {
+      final response = await apiClient.dio.put('/barbershops', data: data);
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
   Future<List<User>> getBarbershopTeam([String? barbershopId]) async {
     try {
       final authBox = Hive.box('auth');
@@ -48,6 +57,42 @@ class BarbershopRepository {
       return [];
     } catch (e) {
       return [];
+    }
+  }
+
+  Future<bool> createBarber(Map<String, dynamic> data) async {
+    try {
+      final response = await apiClient.dio.post('/users', data: {...data, 'role': 'Barber'});
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> updateBarber(Map<String, dynamic> data) async {
+    try {
+      final response = await apiClient.dio.put('/users', data: data);
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> deleteBarber(String id) async {
+    try {
+      final response = await apiClient.dio.delete('/users/$id');
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> changeBarberPassword(String id, String password) async {
+    try {
+      final response = await apiClient.dio.patch('/users/$id/password', data: {'password': password});
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
     }
   }
 
