@@ -34,11 +34,11 @@ class _SelectBarbershopPageState extends State<SelectBarbershopPage> {
     super.dispose();
   }
 
-  Future<void> _searchByCode(String code) async {
-    final cleanCode = code.trim();
-    if (cleanCode.length != 6) {
+  Future<void> _searchByCode(String input) async {
+    final clean = input.trim();
+    if (clean.isEmpty) {
       setState(() {
-        _errorMessage = 'O código deve conter exatamente 6 dígitos.';
+        _errorMessage = 'Por favor, insira o código da barbearia.';
         _foundBarbershop = null;
       });
       return;
@@ -51,7 +51,13 @@ class _SelectBarbershopPageState extends State<SelectBarbershopPage> {
     });
 
     try {
-      final shop = await _repository.getBarbershopByCode(cleanCode);
+      Barbershop? shop;
+      if (clean.length == 6) {
+        shop = await _repository.getBarbershopByCode(clean);
+      } else {
+        shop = await _repository.getBarbershop(clean) ?? await _repository.getBarbershopByCode(clean);
+      }
+
       if (!mounted) return;
 
       if (shop != null && shop.id.isNotEmpty) {
@@ -59,10 +65,13 @@ class _SelectBarbershopPageState extends State<SelectBarbershopPage> {
         setState(() {
           _foundBarbershop = shop;
           _errorMessage = null;
+          if (shop!.code.isNotEmpty) {
+            _codeController.text = shop.code;
+          }
         });
       } else {
         setState(() {
-          _errorMessage = 'Nenhuma barbearia encontrada para o código "$cleanCode".';
+          _errorMessage = 'Nenhuma barbearia encontrada para "$clean".';
           _foundBarbershop = null;
         });
       }
@@ -96,6 +105,11 @@ class _SelectBarbershopPageState extends State<SelectBarbershopPage> {
   }
 
   void _openQrScanner() {
+    final controller = MobileScannerController(
+      detectionSpeed: DetectionSpeed.noDuplicates,
+      returnImage: false,
+    );
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -103,7 +117,7 @@ class _SelectBarbershopPageState extends State<SelectBarbershopPage> {
       builder: (ctx) => Container(
         height: MediaQuery.of(context).size.height * 0.75,
         decoration: const BoxDecoration(
-          color: Colors.black,
+          color: Color(0xFF0F172A),
           borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
@@ -131,7 +145,10 @@ class _SelectBarbershopPageState extends State<SelectBarbershopPage> {
                     ),
                   ),
                   IconButton(
-                    onPressed: () => Navigator.of(ctx).pop(),
+                    onPressed: () {
+                      controller.dispose();
+                      Navigator.of(ctx).pop();
+                    },
                     icon: const Icon(Icons.close, color: Colors.white),
                   ),
                 ],
@@ -144,11 +161,38 @@ class _SelectBarbershopPageState extends State<SelectBarbershopPage> {
                   alignment: Alignment.center,
                   children: [
                     MobileScanner(
+                      controller: controller,
+                      errorBuilder: (context, error, child) {
+                        return Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(24.0),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.camera_alt_outlined, color: Colors.white70, size: 48),
+                                const SizedBox(height: 12),
+                                const Text(
+                                  'Acesso à câmera necessário',
+                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 8),
+                                const Text(
+                                  'Permita o acesso à câmera nas configurações para ler o QR Code.',
+                                  style: TextStyle(color: Colors.white60, fontSize: 13),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                       onDetect: (capture) {
                         final barcodes = capture.barcodes;
                         for (final barcode in barcodes) {
                           final value = barcode.rawValue;
                           if (value != null && value.isNotEmpty) {
+                            controller.dispose();
                             Navigator.of(ctx).pop();
                             String code = value.trim();
                             if (code.contains('/')) {
@@ -184,7 +228,11 @@ class _SelectBarbershopPageState extends State<SelectBarbershopPage> {
           ],
         ),
       ),
-    );
+    ).then((_) {
+      try {
+        controller.dispose();
+      } catch (_) {}
+    });
   }
 
   @override
@@ -272,139 +320,11 @@ class _SelectBarbershopPageState extends State<SelectBarbershopPage> {
                 children: [
                   Expanded(
                     child: SizedBox(
-                    height: 52,
-                    child: ElevatedButton(
-                      onPressed: _isLoading
-                          ? null
-                          : () => _searchByCode(_codeController.text),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primary,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: _isLoading
-                          ? const SizedBox(
-                              width: 22,
-                              height: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text(
-                              'Buscar Código',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                SizedBox(
-                  height: 52,
-                  child: OutlinedButton.icon(
-                    onPressed: _openQrScanner,
-                    icon: const Icon(Icons.qr_code_scanner, size: 22),
-                    label: const Text('Escanear'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: primary,
-                      side: BorderSide(color: primary, width: 1.5),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            if (_errorMessage != null) ...[
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.red.shade50,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.red.shade200),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.error_outline, color: Colors.red.shade700, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _errorMessage!,
-                        style: TextStyle(color: Colors.red.shade700, fontSize: 13),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-            if (_foundBarbershop != null) ...[
-              const SizedBox(height: 28),
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: primary, width: 2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: primary.withValues(alpha: 0.15),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 56,
-                          height: 56,
-                          decoration: BoxDecoration(
-                            color: primary.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: Icon(Icons.storefront_rounded, color: primary, size: 32),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                _foundBarbershop!.name,
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).textTheme.titleLarge?.color ?? Colors.black,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                _foundBarbershop!.phone.isNotEmpty ? _foundBarbershop!.phone : 'Código: ${_foundBarbershop!.code}',
-                                style: TextStyle(
-                                  color: Colors.grey.shade500,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Icon(Icons.check_circle, color: primary, size: 28),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 48,
+                      height: 52,
                       child: ElevatedButton(
-                        onPressed: _confirmSelection,
+                        onPressed: _isLoading
+                            ? null
+                            : () => _searchByCode(_codeController.text),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: primary,
                           foregroundColor: Colors.white,
@@ -413,20 +333,148 @@ class _SelectBarbershopPageState extends State<SelectBarbershopPage> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text(
-                          'Confirmar e Continuar',
-                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                        child: _isLoading
+                            ? const SizedBox(
+                                width: 22,
+                                height: 22,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.5,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(
+                                'Buscar Código',
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    height: 52,
+                    child: OutlinedButton.icon(
+                      onPressed: _openQrScanner,
+                      icon: const Icon(Icons.qr_code_scanner, size: 22),
+                      label: const Text('Escanear'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: primary,
+                        side: BorderSide(color: primary, width: 1.5),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
+              if (_errorMessage != null) ...[
+                const SizedBox(height: 20),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.red.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.error_outline, color: Colors.red.shade700, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _errorMessage!,
+                          style: TextStyle(color: Colors.red.shade700, fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              if (_foundBarbershop != null) ...[
+                const SizedBox(height: 28),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: primary, width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: primary.withValues(alpha: 0.15),
+                        blurRadius: 16,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 56,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              color: primary.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Icon(Icons.storefront_rounded, color: primary, size: 32),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _foundBarbershop!.name,
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Theme.of(context).textTheme.titleLarge?.color ?? Colors.black,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  _foundBarbershop!.phone.isNotEmpty ? _foundBarbershop!.phone : 'Código: ${_foundBarbershop!.code}',
+                                  style: TextStyle(
+                                    color: Colors.grey.shade500,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(Icons.check_circle, color: primary, size: 28),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: _confirmSelection,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: primary,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Confirmar e Continuar',
+                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
