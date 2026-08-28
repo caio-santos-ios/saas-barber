@@ -122,6 +122,10 @@ namespace api_barber.src.Repositories
             List<dynamic> list = results.Select(doc => BsonSerializer.Deserialize<dynamic>(doc)).ToList();
             return list;
         }
+        public async Task<User> GetAdminAsync(string barbershopId)
+        {
+            return await appDbContext.Users.Find(x => !x.Deleted && x.BarbershopId.Equals(barbershopId) && x.Role == RoleUserEnum.Admin).FirstOrDefaultAsync();
+        }
         #endregion
         #region CREATE
         public async Task<User> CreateAsync(User entity)

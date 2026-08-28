@@ -24,6 +24,11 @@ namespace api_barber.src.Repositories
             await appDbContext.Notifications.InsertOneAsync(entity);
             return entity;
         }
+        public async Task<List<Notification>> CreateManyAsync(List<Notification> entities)
+        {
+            await appDbContext.Notifications.InsertManyAsync(entities);
+            return entities;
+        }
         public async Task<Notification> UpdateAsync(Notification entity)
         {
             await appDbContext.Notifications.ReplaceOneAsync(x => x.Id.Equals(entity.Id), entity);

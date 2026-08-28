@@ -15,6 +15,7 @@ namespace api_barber.src.Interfaces
         Task<User> GetByDocumentAdminAsync(string document);
         Task<User> GetByWhatsAppAsync(string whatsapp, string barbershopId, RoleUserEnum? role);
         Task<User> GetByWhatsAppAdminAsync(string whatsapp);
+        Task<User> GetAdminAsync(string barbershopId);
         Task<User> CreateAsync(User entity);
         Task<User> UpdateAsync(User entity);
         Task<User> DeleteAsync(User entity);

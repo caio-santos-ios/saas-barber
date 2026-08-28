@@ -8,5 +8,7 @@ namespace api_barber.Requests.Notification
         public string Title { get; set; } = string.Empty;
         public string Message { get; set; } = string.Empty;
         public bool Read { get; set; } = true;
+        public bool Send { get; set; } = true;
+        public DateTime SendAt { get; set; }
     }
 }

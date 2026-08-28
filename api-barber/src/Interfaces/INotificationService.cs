@@ -7,8 +7,8 @@ namespace api_barber.Interfaces
     {
         Task<ResponseApi<List<dynamic>>> GetAllAsync(string barbershopId);
         Task<ResponseApi<Notification>> GetByIdAsync(string id);
-        Task<ResponseApi<Notification>> CreateEntityAsync(Notification entity);
         Task<ResponseApi<Notification>> CreateAsync(CreateNotificationRequest request);
+        Task<ResponseApi<List<Notification>>> CreateManyAsync(List<CreateNotificationRequest> request);
         Task<ResponseApi<Notification>> UpdateAsync(UpdateNotificationRequest request);
         Task<ResponseApi<Notification>> DeleteAsync(DeleteRequest request);
     }

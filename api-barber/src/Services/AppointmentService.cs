@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using api_barber.Interfaces;
 using api_barber.Models;
 using api_barber.Requests.Appointment;
@@ -9,7 +6,6 @@ using api_barber.src.Requests;
 using api_barber.src.Utils;
 using api_barber.Models.Enums;
 using MongoDB.Bson;
-using System.Linq;
 
 namespace api_barber.Services
 {
@@ -17,7 +13,10 @@ namespace api_barber.Services
         IAppointmentRepository repository,
         IScheduleRepository scheduleRepository,
         IServiceService serviceService,
-        IServiceTypeService serviceTypeService) : IAppointmentService
+        IServiceTypeService serviceTypeService,
+        IUserService userService,
+        INotificationService notificationService
+        ) : IAppointmentService
     {
         #region READ
         public async Task<ResponseApi<List<dynamic>>> GetAllAsync(string barbershopId, string? customerId = null, string? barberId = null)
@@ -354,6 +353,102 @@ namespace api_barber.Services
                 if (entity.Status == 0) entity.Status = AppointmentStatusEnum.Marcado;
                 Appointment created = await repository.CreateAsync(entity);
                 if (created is null) return new(null, 400, "Falha ao criar agendamento");
+
+                ResponseApi<User> createdBy = await userService.GetByIdAsync(request.CreatedBy);
+                if (createdBy.Data is not null)
+                {
+                    // Deve cria 3 notificação
+                    // 1 confirmação, 2 minutos depois de criar o agendamento.
+                    // 2 no dia(no mesmo horario do agendamento, avisando que falta 24h) do agendamento.
+                    // 3 5 minutos antes do agendamento
+
+                    ResponseApi<User> customer = await userService.GetByIdAsync(request.CustomerId);
+
+                    if (createdBy.Data.Role == RoleUserEnum.Admin)
+                    {
+
+                        if (customer.Data is not null)
+                        {
+                            // se o admin tiver criando, deve enviar 6 notificação, 3 pro cliente e 3 pro barbeiro
+                            await notificationService.CreateManyAsync([
+                                new ()
+                                {
+                                    SendAt = DateTime.UtcNow.AddMinutes(2),
+                                    UserId = customer.Data.Id
+                                },
+                                new ()
+                                {
+                                    SendAt = entity.Date.AddDays(-1),
+                                    UserId = customer.Data.Id
+                                },
+                                new ()
+                                {
+                                    SendAt = entity.Date,
+                                    UserId = customer.Data.Id
+                                },
+
+                                new ()
+                                {
+                                    SendAt = DateTime.UtcNow.AddMinutes(2),
+                                    UserId = request.CreatedBy
+                                },
+                                new ()
+                                {
+                                    SendAt = entity.Date.AddDays(-1),
+                                    UserId = request.CreatedBy
+                                },
+                                new ()
+                                {
+                                    SendAt = entity.Date,
+                                    UserId = request.CreatedBy
+                                }
+                            ]);
+                        }
+                    }
+
+                    if (createdBy.Data.Role == RoleUserEnum.Customer)
+                    {
+                        ResponseApi<User> admin = await userService.GetAdminAsync(request.BarbershopId);
+
+                        if(customer.Data is not null && admin.Data is not null)
+                        {
+                            // se o cliente tiver criando, deve enviar 6 notificação, 3 pro admin e 3 pro barbeiro
+                            await notificationService.CreateManyAsync([
+                                new ()
+                                {
+                                    SendAt = DateTime.UtcNow.AddMinutes(2),
+                                    UserId = customer.Data.Id
+                                },
+                                new ()
+                                {
+                                    SendAt = entity.Date.AddDays(-1),
+                                    UserId = customer.Data.Id
+                                },
+                                new ()
+                                {
+                                    SendAt = entity.Date,
+                                    UserId = customer.Data.Id
+                                },
+
+                                new ()
+                                {
+                                    SendAt = DateTime.UtcNow.AddMinutes(2),
+                                    UserId = admin.Data.Id
+                                },
+                                new ()
+                                {
+                                    SendAt = entity.Date.AddDays(-1),
+                                    UserId = admin.Data.Id
+                                },
+                                new ()
+                                {
+                                    SendAt = entity.Date,
+                                    UserId = admin.Data.Id
+                                }
+                            ]);                            
+                        }
+                    }
+                }
 
                 return new(created, 201, "Agendamento criado com sucesso");
             }

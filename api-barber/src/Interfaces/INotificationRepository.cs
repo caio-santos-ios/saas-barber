@@ -6,8 +6,9 @@ namespace api_barber.src.Interfaces
     {
         Task<List<dynamic>> GetAllAsync(List<BsonDocument> pipeline);
         Task<Notification> GetByIdAsync(string id);
-        Task<Notification> CreateAsync(Notification entity);
         Task<List<Notification>> GetAllEntitiesAsync(string barbershopId);
+        Task<Notification> CreateAsync(Notification entity);
+        Task<List<Notification>> CreateManyAsync(List<Notification> entities);
         Task<Notification> UpdateAsync(Notification entity);
         Task<Notification> DeleteAsync(Notification entity);
     }

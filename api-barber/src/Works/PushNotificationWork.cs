@@ -1,6 +1,7 @@
 using FirebaseAdmin.Messaging;
 using MongoDB.Driver;
 using api_barber.Infrastructures;
+using api_barber.Models;
 
 namespace api_barber.Works
 {
@@ -26,44 +27,42 @@ namespace api_barber.Works
                     {
                         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-                        var now = DateTime.UtcNow;
-                        var soon = now.AddMinutes(15);
+                        DateTime today = DateTime.UtcNow;
 
-                        var upcomingAppointments = await dbContext.Appointments.Find(a =>
-                            a.Deleted == false &&
-                            a.Date > now &&
-                            a.Date <= soon &&
-                            a.Status == api_barber.Models.Enums.AppointmentStatusEnum.Marcado
-                        ).ToListAsync(stoppingToken);
+                        List<Models.Notification> notifications = await dbContext.Notifications.Find(x => !x.Deleted && !x.Send && x.SendAt == today).ToListAsync();
 
-                        foreach (var appt in upcomingAppointments)
+                        foreach (Models.Notification notification in notifications)
                         {
 
-                            var customer = await dbContext.Users.Find(u => u.Id == appt.CustomerId).FirstOrDefaultAsync(stoppingToken);
-                            if (customer != null && !string.IsNullOrEmpty(customer.TokenFCM))
+                            User? user = await dbContext.Users.Find(u => u.Id == notification.UserId).FirstOrDefaultAsync(stoppingToken);
+
+                            if(user is not null)
                             {
-                                var message = new Message()
+                                if(!string.IsNullOrEmpty(user.TokenFCM))
                                 {
-                                    Token = customer.TokenFCM,
-                                    Notification = new FirebaseAdmin.Messaging.Notification()
+                                    var message = new Message()
                                     {
-                                        Title = "Lembrete de Agendamento",
-                                        Body = $"Seu agendamento está próximo! Será às {appt.Date.ToLocalTime().ToString("HH:mm")}."
+                                        Token = user.TokenFCM,
+                                        Notification = new FirebaseAdmin.Messaging.Notification()
+                                        {
+                                            Title = notification.Title,
+                                            Body = notification.Message
+                                        }
+                                    };
+
+                                    try
+                                    {
+                                        string response = await FirebaseMessaging.DefaultInstance.SendAsync(message, stoppingToken);
+                                        _logger.LogInformation($"Successfully sent message to {user.Name}: {response}");
+
+
+                                        notification.Send = true;
+                                        await dbContext.Notifications.ReplaceOneAsync(a => a.Id == notification.Id, notification, cancellationToken: stoppingToken);
                                     }
-                                };
-
-                                try
-                                {
-                                    string response = await FirebaseMessaging.DefaultInstance.SendAsync(message, stoppingToken);
-                                    _logger.LogInformation($"Successfully sent message to {customer.Name}: {response}");
-
-
-
-                                    await dbContext.Appointments.ReplaceOneAsync(a => a.Id == appt.Id, appt, cancellationToken: stoppingToken);
-                                }
-                                catch (Exception ex)
-                                {
-                                    _logger.LogError($"Error sending FCM to {customer.TokenFCM}: {ex.Message}");
+                                    catch (Exception ex)
+                                    {
+                                        _logger.LogError($"Error sending FCM to {user.TokenFCM}: {ex.Message}");
+                                    }
                                 }
                             }
                         }

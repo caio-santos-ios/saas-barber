@@ -15,6 +15,7 @@ namespace api_barber.Interfaces
         Task<ResponseApi<User>> GetByDocumentAdminAsync(string document);
         Task<ResponseApi<User>> GetByWhatsAppAsync(string whatsapp, string barbershopId, RoleUserEnum? role);
         Task<ResponseApi<User>> GetByWhatsAppAdminAsync(string whatsapp);
+        Task<ResponseApi<User>> GetAdminAsync(string barbershopId);
         Task<ResponseApi<List<dynamic>>> GetBarbersAsync(string barbershopId);
         Task<ResponseApi<List<dynamic>>> GetCustomersAsync(string barbershopId);
         Task<ResponseApi<User>> CreateAsync(CreateUserRequest request);

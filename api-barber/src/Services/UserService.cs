@@ -231,6 +231,20 @@ namespace api_barber.Services
                 return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
             }
         }
+        public async Task<ResponseApi<User>> GetAdminAsync(string barbershopId)
+        {
+            try
+            {
+                User user = await repository.GetAdminAsync(barbershopId);
+                if (user is null) return new(null, 404, "Usuário não encontrado");
+
+                return new(user, 200, "Usuário buscado com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
+            }
+        }
         #endregion
 
         #region CREATE

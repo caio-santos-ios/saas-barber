@@ -72,6 +72,27 @@ namespace api_barber.Services
                 return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
             }
         }
+        public async Task<ResponseApi<List<Notification>>> CreateManyAsync(List<CreateNotificationRequest> request)
+        {
+            try
+            {
+                List<Notification> entities = [];
+
+                foreach (CreateNotificationRequest req in request)
+                {
+                    Notification entity = ObjectMapper.Map<CreateNotificationRequest, Notification>(req);
+                    entities.Add(entity);
+                }
+
+                List<Notification> created = await repository.CreateManyAsync(entities);
+
+                return new(created, 201, "Criados com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
+            }
+        }
         #endregion
 
         #region UPDATE
