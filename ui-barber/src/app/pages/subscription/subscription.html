@@ -77,24 +77,24 @@
   </div>
 
   <div class="card checkout-container" *ngIf="selectedPlan && !pixResult && !boletoResult">
-    <div style="margin-bottom: 24px;">
-      <h2 style="color: var(--text-main); margin-bottom: 4px;">Checkout Seguro</h2>
-      <p style="color: var(--text-muted);">Plano: <strong>{{ selectedPlan.name }} — R$ {{ selectedPlan.price | number:'1.2-2' }}/mês</strong></p>
+    <div style="margin-bottom: 16px;">
+      <h2 style="color: var(--text-main); margin-bottom: 2px; font-size: 20px;">Checkout Seguro</h2>
+      <p style="color: var(--text-muted); margin: 0; font-size: 14px;">Plano: <strong>{{ selectedPlan.name }} — R$ {{ selectedPlan.price | number:'1.2-2' }}/mês</strong></p>
     </div>
 
-    <div style="margin-bottom: 28px;">
-      <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 14px; color: var(--text-muted);">FORMA DE PAGAMENTO</h3>
-      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+    <div style="margin-bottom: 16px;">
+      <h3 style="font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text-muted);">FORMA DE PAGAMENTO</h3>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap;">
         <button type="button" class="payment-method-btn" [class.selected]="billingType === 'CREDIT_CARD'" (click)="selectBillingType('CREDIT_CARD')">
-          <span style="font-size: 20px;">💳</span>
+          <span style="font-size: 18px;">💳</span>
           <span>Cartão de Crédito</span>
         </button>
         <button type="button" class="payment-method-btn" [class.selected]="billingType === 'PIX'" (click)="selectBillingType('PIX')">
-          <span style="font-size: 20px;">⚡</span>
+          <span style="font-size: 18px;">⚡</span>
           <span>PIX</span>
         </button>
         <button type="button" class="payment-method-btn" [class.selected]="billingType === 'BOLETO'" (click)="selectBillingType('BOLETO')">
-          <span style="font-size: 20px;">🧾</span>
+          <span style="font-size: 18px;">🧾</span>
           <span>Boleto Bancário</span>
         </button>
       </div>
@@ -102,7 +102,7 @@
 
     <form (ngSubmit)="processPayment()">
       <div *ngIf="billingType === 'CREDIT_CARD'">
-        <h3 style="margin-bottom: 16px; color: var(--text-muted); font-size: 14px; font-weight: 600; border-bottom: 1px solid var(--border-color); padding-bottom: 8px;">DADOS DO CARTÃO</h3>
+        <h3 style="margin-bottom: 12px; color: var(--text-muted); font-size: 13px; font-weight: 600; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">DADOS DO CARTÃO</h3>
 
         <div class="form-row">
           <div class="form-group">
@@ -131,21 +131,21 @@
         </div>
       </div>
 
-      <div *ngIf="billingType === 'PIX'" style="background: var(--bg-body); border-radius: 10px; padding: 20px; text-align: center; color: var(--text-muted);">
-        <div style="font-size: 40px; margin-bottom: 8px;">⚡</div>
-        <p style="margin: 0; font-weight: 500;">Clique em "Gerar PIX" para gerar o QR Code de pagamento.</p>
-        <p style="font-size: 13px; margin-top: 6px;">A assinatura será ativada após a confirmação do pagamento pelo Asaas.</p>
+      <div *ngIf="billingType === 'PIX'" style="background: var(--bg-body); border-radius: 10px; padding: 16px; text-align: center; color: var(--text-muted);">
+        <div style="font-size: 32px; margin-bottom: 4px;">⚡</div>
+        <p style="margin: 0; font-weight: 500; font-size: 14px;">Clique em "Gerar PIX" para gerar o QR Code de pagamento.</p>
+        <p style="font-size: 12px; margin-top: 4px;">A assinatura será ativada após a confirmação do pagamento pelo Asaas.</p>
       </div>
 
-      <div *ngIf="billingType === 'BOLETO'" style="background: var(--bg-body); border-radius: 10px; padding: 20px; text-align: center; color: var(--text-muted);">
-        <div style="font-size: 40px; margin-bottom: 8px;">🧾</div>
-        <p style="margin: 0; font-weight: 500;">Clique em "Gerar Boleto" para emitir o boleto bancário.</p>
-        <p style="font-size: 13px; margin-top: 6px;">O prazo de compensação é de até 3 dias úteis.</p>
+      <div *ngIf="billingType === 'BOLETO'" style="background: var(--bg-body); border-radius: 10px; padding: 16px; text-align: center; color: var(--text-muted);">
+        <div style="font-size: 32px; margin-bottom: 4px;">🧾</div>
+        <p style="margin: 0; font-weight: 500; font-size: 14px;">Clique em "Gerar Boleto" para emitir o boleto bancário.</p>
+        <p style="font-size: 12px; margin-top: 4px;">O prazo de compensação é de até 3 dias úteis.</p>
       </div>
 
-      <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 28px; border-top: 1px solid var(--border-color); padding-top: 20px;">
-        <button type="button" class="btn-secondary" (click)="cancelCheckout()" [disabled]="processing">Cancelar</button>
-        <button type="submit" class="btn-primary" [disabled]="processing">
+      <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 18px; border-top: 1px solid var(--border-color); padding-top: 14px;">
+        <button type="button" class="btn-secondary" (click)="cancelCheckout()" [disabled]="processing" style="padding: 10px 20px;">Cancelar</button>
+        <button type="submit" class="btn-primary" [disabled]="processing" style="padding: 10px 24px;">
           <span *ngIf="!processing">
             {{ billingType === 'CREDIT_CARD' ? 'Pagar e Assinar' : billingType === 'PIX' ? 'Gerar PIX' : 'Gerar Boleto' }}
           </span>
@@ -153,8 +153,8 @@
         </button>
       </div>
 
-      <div style="text-align: center; margin-top: 16px;">
-        <small style="color: var(--text-muted);">🔒 Pagamento processado de forma segura pelo Asaas</small>
+      <div style="text-align: center; margin-top: 10px;">
+        <small style="color: var(--text-muted); font-size: 12px;">🔒 Pagamento processado de forma segura pelo Asaas</small>
       </div>
     </form>
   </div>
