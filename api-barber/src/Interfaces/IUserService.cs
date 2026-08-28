@@ -21,6 +21,7 @@ namespace api_barber.Interfaces
         Task<ResponseApi<User>> CreateAsync(CreateUserRequest request);
         Task<ResponseApi<User>> UpdateAsync(UpdateUserRequest request);
         Task<ResponseApi<User>> UpdatePasswordAsync(string userId, string newPassword);
+        Task<ResponseApi<User>> UpdateTokenFcmAsync(string userId, string tokenFcm);
         Task<ResponseApi<User>> DeleteAsync(DeleteRequest request);
     }
 }

@@ -18,6 +18,7 @@ namespace api_barber.Models
         public DateTime? DateOfBirth { get; set; }
         [BsonElement("password")]
         public string Password { get; set; } = string.Empty;
+        [BsonElement("token_fcm")]
         public string? TokenFCM { get; set; }
         [BsonElement("firebase_uid")]
         public string FirebaseUid { get; set; } = string.Empty;

@@ -107,6 +107,11 @@ namespace api_barber.Services
                     return new(null, 400, "E-mail ou senha inválidos.");
                 }
 
+                if (!string.IsNullOrWhiteSpace(request.TokenFCM) && user.TokenFCM != request.TokenFCM)
+                {
+                    await _userService.UpdateTokenFcmAsync(user.Id, request.TokenFCM.Trim());
+                }
+
                 var barbershopResponse = await _barbershopService.GetByIdAsync(user.BarbershopId);
                 var barbershop = barbershopResponse.Data;
                 var subscriptionStatus = barbershop != null ? barbershop.SubscriptionStatus.ToString() : "Ativa";

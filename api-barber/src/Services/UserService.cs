@@ -428,6 +428,24 @@ namespace api_barber.Services
                 return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
             }
         }
+        public async Task<ResponseApi<User>> UpdateTokenFcmAsync(string userId, string tokenFcm)
+        {
+            try
+            {
+                User existedUser = await repository.GetByIdAsync(userId);
+                if (existedUser is null) return new(null, 404, "Usuário não encontrado");
+
+                existedUser.TokenFCM = tokenFcm;
+                User user = await repository.UpdateAsync(existedUser);
+                if (user is null) return new(null, 400, "Falha ao atualizar token FCM");
+
+                return new(user, 200, "Token FCM atualizado com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
+            }
+        }
         #endregion
 
         #region DELETE

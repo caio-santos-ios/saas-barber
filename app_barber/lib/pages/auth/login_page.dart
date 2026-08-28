@@ -132,6 +132,7 @@ class _LoginPageState extends State<LoginPage> {
       try {
         String? fcmToken;
         try {
+          await FirebaseMessaging.instance.requestPermission();
           fcmToken = await FirebaseMessaging.instance.getToken();
         } catch (e) {
           debugPrint('Failed to get FCM token: $e');

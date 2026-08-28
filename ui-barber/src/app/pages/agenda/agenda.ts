@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { api } from '../../services/api';
@@ -14,6 +14,7 @@ import { ToastrService } from 'ngx-toastr';
 export class Agenda implements OnInit {
   selectedDate: Date = new Date();
   appointments: any[] = [];
+  activeStatusDropdownId: string | null = null;
 
   isModalOpen = false;
   barbers: any[] = [];
@@ -234,5 +235,26 @@ export class Agenda implements OnInit {
       this.toastr.error('Erro ao atualizar status do agendamento.', 'Erro');
       await this.loadAppointments();
     }
+  }
+
+  toggleStatusDropdown(event: Event, aptId: string) {
+    event.stopPropagation();
+    this.activeStatusDropdownId = this.activeStatusDropdownId === aptId ? null : aptId;
+  }
+
+  closeStatusDropdown() {
+    this.activeStatusDropdownId = null;
+  }
+
+  async selectStatus(event: Event, apt: any, newStatus: number) {
+    event.stopPropagation();
+    this.activeStatusDropdownId = null;
+    if (this.getStatusNumeric(apt.status) === newStatus) return;
+    await this.updateStatus(apt, newStatus);
+  }
+
+  @HostListener('document:click')
+  onDocumentClick() {
+    this.activeStatusDropdownId = null;
   }
 }
