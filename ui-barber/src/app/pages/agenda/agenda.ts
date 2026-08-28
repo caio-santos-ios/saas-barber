@@ -211,4 +211,28 @@ export class Agenda implements OnInit {
       this.toastr.error(msg, 'Erro');
     }
   }
+
+  getStatusNumeric(status: any): number {
+    const s = typeof status === 'string' ? status.trim().toLowerCase() : status;
+    if (s === 0 || s === '0' || s === 'marcado' || s === 'agendado') return 0;
+    if (s === 2 || s === '2' || s === 'finalizado' || s === 'concluído' || s === 'concluido') return 2;
+    if (s === 1 || s === '1' || s === 3 || s === '3' || s === 'cancelado') return 1;
+    return 0;
+  }
+
+  async updateStatus(apt: any, newStatus: number) {
+    try {
+      apt.status = newStatus;
+      await api.put('/appointments/status', {
+        id: apt.id,
+        status: newStatus
+      });
+      this.toastr.success('Status atualizado com sucesso!', 'Sucesso');
+      await this.loadAppointments();
+    } catch (error) {
+      console.error('Erro ao atualizar status', error);
+      this.toastr.error('Erro ao atualizar status do agendamento.', 'Erro');
+      await this.loadAppointments();
+    }
+  }
 }

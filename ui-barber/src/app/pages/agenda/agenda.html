@@ -48,10 +48,18 @@
             <td style="vertical-align: middle; color: var(--text-muted);">{{ apt.serviceTypeName }}</td>
             <td style="vertical-align: middle; font-weight: 500;">{{ apt.value | currency:'BRL' }}</td>
             <td style="vertical-align: middle;">
-              <span class="status-badge" 
-                [class.status-scheduled]="apt.statusCode === 'scheduled'" 
-                [class.status-completed]="apt.statusCode === 'completed'"
-                [class.status-cancelled]="apt.statusCode === 'cancelled'">{{ apt.statusLabel }}</span>
+              <div class="status-select-wrapper">
+                <select class="status-badge status-select"
+                  [class.status-scheduled]="apt.statusCode === 'scheduled'" 
+                  [class.status-completed]="apt.statusCode === 'completed'"
+                  [class.status-cancelled]="apt.statusCode === 'cancelled'"
+                  [ngModel]="getStatusNumeric(apt.status)"
+                  (ngModelChange)="updateStatus(apt, $event)">
+                  <option [ngValue]="0">AGENDADO</option>
+                  <option [ngValue]="2">CONCLUÍDO</option>
+                  <option [ngValue]="1">CANCELADO</option>
+                </select>
+              </div>
             </td>
           </tr>
           <tr *ngIf="appointments.length === 0">
@@ -70,10 +78,18 @@
             </div>
             <div style="font-weight: 600; color: var(--text-main); margin-top: 4px;">{{ apt.customerName }}</div>
           </div>
-          <span class="status-badge" 
-            [class.status-scheduled]="apt.statusCode === 'scheduled'" 
-            [class.status-completed]="apt.statusCode === 'completed'"
-            [class.status-cancelled]="apt.statusCode === 'cancelled'">{{ apt.statusLabel }}</span>
+          <div class="status-select-wrapper">
+            <select class="status-badge status-select"
+              [class.status-scheduled]="apt.statusCode === 'scheduled'" 
+              [class.status-completed]="apt.statusCode === 'completed'"
+              [class.status-cancelled]="apt.statusCode === 'cancelled'"
+              [ngModel]="getStatusNumeric(apt.status)"
+              (ngModelChange)="updateStatus(apt, $event)">
+              <option [ngValue]="0">AGENDADO</option>
+              <option [ngValue]="2">CONCLUÍDO</option>
+              <option [ngValue]="1">CANCELADO</option>
+            </select>
+          </div>
         </div>
 
         <div class="mobile-card-body">
