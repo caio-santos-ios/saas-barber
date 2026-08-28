@@ -363,73 +363,148 @@ namespace api_barber.Services
                 ResponseApi<User> createdBy = await userService.GetByIdAsync(effectiveCreatedBy);
                 if (createdBy.Data is not null)
                 {
-                    DateTime appointmentDateTime = entity.Date;
+                    DateTime appointmentLocal = entity.Date.Date;
                     if (TimeSpan.TryParse(entity.Hour, out var hourTimeSpan))
                     {
-                        appointmentDateTime = entity.Date.Date.Add(hourTimeSpan);
+                        appointmentLocal = appointmentLocal.Add(hourTimeSpan);
                     }
 
-                    List<string> targetUserIds = [];
+                    TimeZoneInfo brTz;
+                    try
+                    {
+                        brTz = TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time");
+                    }
+                    catch
+                    {
+                        try
+                        {
+                            brTz = TimeZoneInfo.FindSystemTimeZoneById("America/Sao_Paulo");
+                        }
+                        catch
+                        {
+                            brTz = TimeZoneInfo.CreateCustomTimeZone("BRT", TimeSpan.FromHours(-3), "BRT", "BRT");
+                        }
+                    }
+
+                    DateTime appointmentUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(appointmentLocal, DateTimeKind.Unspecified), brTz);
+
+                    List<CreateNotificationRequest> notifications = [];
 
                     if (createdBy.Data.Role == RoleUserEnum.Admin)
                     {
-                        if (!string.IsNullOrEmpty(request.CustomerId)) targetUserIds.Add(request.CustomerId);
-                        if (!string.IsNullOrEmpty(request.BarberId)) targetUserIds.Add(request.BarberId);
+                        if (!string.IsNullOrEmpty(request.CustomerId))
+                        {
+                            notifications.Add(new CreateNotificationRequest
+                            {
+                                BarbershopId = request.BarbershopId,
+                                CreatedBy = request.CreatedBy,
+                                UserId = request.CustomerId,
+                                Title = "Novo Agendamento",
+                                Message = $"Agendamento para {entity.Date:dd/MM/yyyy} às {entity.Hour}.",
+                                Read = false,
+                                Send = false,
+                                SendAt = DateTime.UtcNow.AddMinutes(2)
+                            });
+
+                            notifications.Add(new CreateNotificationRequest
+                            {
+                                BarbershopId = request.BarbershopId,
+                                CreatedBy = request.CreatedBy,
+                                UserId = request.CustomerId,
+                                Title = "Lembrete de Agendamento",
+                                Message = $"Faltam 24h para o agendamento em {entity.Date:dd/MM/yyyy} às {entity.Hour}.",
+                                Read = false,
+                                Send = false,
+                                SendAt = appointmentUtc.AddDays(-1)
+                            });
+
+                            notifications.Add(new CreateNotificationRequest
+                            {
+                                BarbershopId = request.BarbershopId,
+                                CreatedBy = request.CreatedBy,
+                                UserId = request.CustomerId,
+                                Title = "Agendamento em Breve",
+                                Message = $"Seu agendamento começará em 5 minutos (às {entity.Hour}).",
+                                Read = false,
+                                Send = false,
+                                SendAt = appointmentUtc.AddMinutes(-5)
+                            });
+                        }
+
+                        if (!string.IsNullOrEmpty(request.BarberId))
+                        {
+                            notifications.Add(new CreateNotificationRequest
+                            {
+                                BarbershopId = request.BarbershopId,
+                                CreatedBy = request.CreatedBy,
+                                UserId = request.BarberId,
+                                Title = "Novo Agendamento",
+                                Message = $"Novo agendamento para {entity.Date:dd/MM/yyyy} às {entity.Hour}.",
+                                Read = false,
+                                Send = false,
+                                SendAt = DateTime.UtcNow.AddMinutes(2)
+                            });
+                        }
                     }
                     else if (createdBy.Data.Role == RoleUserEnum.Customer)
                     {
                         ResponseApi<User> admin = await userService.GetAdminAsync(request.BarbershopId);
                         if (admin.Data is not null && !string.IsNullOrEmpty(admin.Data.Id))
                         {
-                            targetUserIds.Add(admin.Data.Id);
+                            notifications.Add(new CreateNotificationRequest
+                            {
+                                BarbershopId = request.BarbershopId,
+                                CreatedBy = request.CreatedBy,
+                                UserId = admin.Data.Id,
+                                Title = "Novo Agendamento",
+                                Message = $"{request.CustomerName} agendou para {entity.Date:dd/MM/yyyy} às {entity.Hour}.",
+                                Read = false,
+                                Send = false,
+                                SendAt = DateTime.UtcNow.AddMinutes(2)
+                            });
                         }
-                        if (!string.IsNullOrEmpty(request.BarberId)) targetUserIds.Add(request.BarberId);
-                        if (!string.IsNullOrEmpty(request.CustomerId)) targetUserIds.Add(request.CustomerId);
-                    }
-                    else
-                    {
-                        if (!string.IsNullOrEmpty(request.CustomerId)) targetUserIds.Add(request.CustomerId);
-                        if (!string.IsNullOrEmpty(request.BarberId)) targetUserIds.Add(request.BarberId);
-                    }
 
-                    List<CreateNotificationRequest> notifications = [];
-                    foreach (var targetUserId in targetUserIds.Distinct())
-                    {
-                        notifications.Add(new CreateNotificationRequest
+                        if (!string.IsNullOrEmpty(request.BarberId))
                         {
-                            BarbershopId = request.BarbershopId,
-                            CreatedBy = request.CreatedBy,
-                            UserId = targetUserId,
-                            Title = "Novo Agendamento",
-                            Message = $"Agendamento para {entity.Date:dd/MM/yyyy} às {entity.Hour}.",
-                            Read = false,
-                            Send = false,
-                            SendAt = DateTime.UtcNow.AddMinutes(2)
-                        });
+                            notifications.Add(new CreateNotificationRequest
+                            {
+                                BarbershopId = request.BarbershopId,
+                                CreatedBy = request.CreatedBy,
+                                UserId = request.BarberId,
+                                Title = "Novo Agendamento",
+                                Message = $"{request.CustomerName} agendou com você para {entity.Date:dd/MM/yyyy} às {entity.Hour}.",
+                                Read = false,
+                                Send = false,
+                                SendAt = DateTime.UtcNow.AddMinutes(2)
+                            });
+                        }
 
-                        notifications.Add(new CreateNotificationRequest
+                        if (!string.IsNullOrEmpty(request.CustomerId))
                         {
-                            BarbershopId = request.BarbershopId,
-                            CreatedBy = request.CreatedBy,
-                            UserId = targetUserId,
-                            Title = "Lembrete de Agendamento",
-                            Message = $"Faltam 24h para o agendamento em {entity.Date:dd/MM/yyyy} às {entity.Hour}.",
-                            Read = false,
-                            Send = false,
-                            SendAt = appointmentDateTime.AddDays(-1)
-                        });
+                            notifications.Add(new CreateNotificationRequest
+                            {
+                                BarbershopId = request.BarbershopId,
+                                CreatedBy = request.CreatedBy,
+                                UserId = request.CustomerId,
+                                Title = "Lembrete de Agendamento",
+                                Message = $"Faltam 24h para o agendamento em {entity.Date:dd/MM/yyyy} às {entity.Hour}.",
+                                Read = false,
+                                Send = false,
+                                SendAt = appointmentUtc.AddDays(-1)
+                            });
 
-                        notifications.Add(new CreateNotificationRequest
-                        {
-                            BarbershopId = request.BarbershopId,
-                            CreatedBy = request.CreatedBy,
-                            UserId = targetUserId,
-                            Title = "Agendamento em Breve",
-                            Message = $"Seu agendamento começará em 5 minutos (às {entity.Hour}).",
-                            Read = false,
-                            Send = false,
-                            SendAt = appointmentDateTime.AddMinutes(-5)
-                        });
+                            notifications.Add(new CreateNotificationRequest
+                            {
+                                BarbershopId = request.BarbershopId,
+                                CreatedBy = request.CreatedBy,
+                                UserId = request.CustomerId,
+                                Title = "Agendamento em Breve",
+                                Message = $"Seu agendamento começará em 5 minutos (às {entity.Hour}).",
+                                Read = false,
+                                Send = false,
+                                SendAt = appointmentUtc.AddMinutes(-5)
+                            });
+                        }
                     }
 
                     if (notifications.Count > 0)
