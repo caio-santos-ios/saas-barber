@@ -6,9 +6,13 @@
     </div>
     <div class="header-actions">
       <div class="date-navigator">
-        <button (click)="changeDate(-1)" class="nav-btn">&lt;</button>
+        <button (click)="changeDate(-1)" class="nav-btn" title="Dia anterior">
+          <i class="fa-solid fa-chevron-left" style="font-size: 14px;"></i>
+        </button>
         <span class="current-date">{{ selectedDate | date:'dd/MM/yyyy' }}</span>
-        <button (click)="changeDate(1)" class="nav-btn">&gt;</button>
+        <button (click)="changeDate(1)" class="nav-btn" title="Próximo dia">
+          <i class="fa-solid fa-chevron-right" style="font-size: 14px;"></i>
+        </button>
       </div>
       <button (click)="openModal()" class="btn-primary" style="padding: 12px 24px;">+ Novo Agendamento</button>
     </div>
@@ -61,7 +65,9 @@
       <div class="mobile-data-card" *ngFor="let apt of appointments">
         <div class="mobile-card-header">
           <div>
-            <div style="font-weight: 700; font-size: 16px; color: var(--accent-primary);">🕒 {{ apt.hour }}</div>
+            <div style="font-weight: 700; font-size: 16px; color: var(--accent-primary); display: flex; align-items: center; gap: 6px;">
+              <i class="fa-regular fa-clock" style="font-size: 14px;"></i> {{ apt.hour }}
+            </div>
             <div style="font-weight: 600; color: var(--text-main); margin-top: 4px;">{{ apt.customerName }}</div>
           </div>
           <span class="status-badge" 

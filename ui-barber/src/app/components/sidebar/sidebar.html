@@ -13,13 +13,15 @@
     <a routerLink="/share" routerLinkActive="active" class="nav-item">Divulgar App</a>
     <a routerLink="/subscription" routerLinkActive="active" class="nav-item">Assinatura</a>
     <a routerLink="/settings" routerLinkActive="active" class="nav-item">Configurações</a>
-    <a href="https://wa.me/5511965079106?text=Ol%C3%A1%2C%20preciso%20de%20suporte%20no%20sistema%20Na%20R%C3%A9gua" target="_blank" rel="noopener noreferrer" class="nav-item" style="color: #25d366; display: flex; align-items: center; gap: 8px;">
-      <span>💬</span> Suporte WhatsApp
+    <a href="https://wa.me/5511965079106?text=Ol%C3%A1%2C%20preciso%20de%20suporte%20no%20sistema%20Na%20R%C3%A9gua" target="_blank" rel="noopener noreferrer" class="nav-item" style="color: #25d366; display: flex; align-items: center; gap: 10px;">
+      <i class="fa-brands fa-whatsapp" style="font-size: 16px;"></i> Suporte WhatsApp
     </a>
-    <button (click)="themeService.toggleTheme()" class="nav-item" style="background: none; border: none; width: 100%; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 8px; color: var(--text-sidebar-muted);">
-      <span>{{ themeService.isDark() ? '☀️' : '🌙' }}</span>
+    <button (click)="themeService.toggleTheme()" class="nav-item" style="background: none; border: none; width: 100%; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 10px; color: var(--text-sidebar-muted);">
+      <i class="fa-solid" [ngClass]="themeService.isDark() ? 'fa-sun' : 'fa-moon'" style="font-size: 14px; width: 16px; text-align: center;"></i>
       <span>{{ themeService.isDark() ? 'Modo Claro' : 'Modo Escuro' }}</span>
     </button>
-    <a (click)="logout()" class="nav-item logout-btn" style="cursor: pointer; margin-top: auto; margin-bottom: 1rem; color: #ff4d4f;">Sair</a>
+    <a (click)="logout()" class="nav-item logout-btn" style="cursor: pointer; margin-top: auto; margin-bottom: 1rem; color: #ff4d4f; display: flex; align-items: center; justify-content: center; gap: 8px;">
+      <i class="fa-solid fa-arrow-right-from-bracket"></i> Sair
+    </a>
   </nav>
 </aside>

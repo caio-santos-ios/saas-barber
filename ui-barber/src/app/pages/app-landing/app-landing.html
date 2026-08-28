@@ -3,7 +3,7 @@
   <header class="landing-header">
     <div class="header-container">
       <div class="logo-area">
-        <span class="logo-icon">✂️</span>
+        <span class="logo-icon"><i class="fa-solid fa-scissors" style="color: var(--accent-primary);"></i></span>
         <span class="logo-text">Na Régua</span>
       </div>
       <div class="shop-badge">
@@ -26,9 +26,9 @@
       </p>
 
       <div class="features-pill-row">
-        <div class="feature-pill">⚡ Agendamento em 30s</div>
-        <div class="feature-pill">🔔 Lembretes no Celular</div>
-        <div class="feature-pill">⭐ Barbeiros Especialistas</div>
+        <div class="feature-pill"><i class="fa-solid fa-bolt" style="color: var(--accent-primary); margin-right: 6px;"></i> Agendamento em 30s</div>
+        <div class="feature-pill"><i class="fa-regular fa-bell" style="color: var(--accent-primary); margin-right: 6px;"></i> Lembretes no Celular</div>
+        <div class="feature-pill"><i class="fa-solid fa-star" style="color: #f59e0b; margin-right: 6px;"></i> Barbeiros Especialistas</div>
       </div>
 
       <!-- Action Buttons -->
@@ -37,7 +37,7 @@
         
         <div class="store-buttons">
           <button class="btn-store btn-google" (click)="openAppOrStore('play')">
-            <div class="store-icon">🤖</div>
+            <div class="store-icon"><i class="fa-brands fa-google-play" style="font-size: 24px;"></i></div>
             <div class="store-text">
               <span class="small-text">DISPONÍVEL NO</span>
               <span class="bold-text">Google Play</span>
@@ -45,7 +45,7 @@
           </button>
 
           <button class="btn-store btn-apple" (click)="openAppOrStore('apple')">
-            <div class="store-icon">🍎</div>
+            <div class="store-icon"><i class="fa-brands fa-apple" style="font-size: 26px;"></i></div>
             <div class="store-text">
               <span class="small-text">BAIXAR NA</span>
               <span class="bold-text">App Store</span>
@@ -64,10 +64,10 @@
       <!-- Shop Info Footer -->
       <div class="shop-info-footer" *ngIf="barbershopAddress || barbershopPhone">
         <div *ngIf="barbershopPhone" class="info-item">
-          <span>📞</span> {{ barbershopPhone }}
+          <i class="fa-solid fa-phone" style="color: var(--accent-primary); margin-right: 6px;"></i> {{ barbershopPhone }}
         </div>
         <div *ngIf="barbershopAddress" class="info-item">
-          <span>📍</span> {{ barbershopAddress }}
+          <i class="fa-solid fa-location-dot" style="color: var(--accent-primary); margin-right: 6px;"></i> {{ barbershopAddress }}
         </div>
       </div>
     </div>

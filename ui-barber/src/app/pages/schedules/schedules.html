@@ -11,8 +11,8 @@
         <option *ngFor="let b of barbers" [value]="b.id">{{ b.name }}</option>
       </select>
 
-      <button class="btn-secondary" style="border: 1px solid var(--border-color);" (click)="openBatchModal()">
-        ⚡ Escala Semanal Rápida
+      <button class="btn-secondary" style="border: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px;" (click)="openBatchModal()">
+        <i class="fa-solid fa-bolt" style="color: var(--accent-primary);"></i> Escala Semanal Rápida
       </button>
 
       <button class="btn-primary" (click)="openModal()">
@@ -49,8 +49,8 @@
               <ng-container *ngIf="getScheduleForBarberAndDay(b.id, day.value) as sched; else noSched">
                 <div class="slot-badge" (click)="openModalForSlot(b.id, day.value)" title="Clique para editar este horário">
                   <span class="slot-time">{{ formatTimeSpanToTime(sched.startHour) }} - {{ formatTimeSpanToTime(sched.endHour) }}</span>
-                  <span class="slot-sub" *ngIf="sched.breakStart && sched.breakEnd" style="color: #f59e0b; font-weight: 600;">
-                    ☕ {{ formatTimeSpanToTime(sched.breakStart) }} - {{ formatTimeSpanToTime(sched.breakEnd) }}
+                  <span class="slot-sub" *ngIf="sched.breakStart && sched.breakEnd" style="color: #f59e0b; font-weight: 600; display: flex; align-items: center; gap: 4px; justify-content: center;">
+                    <i class="fa-solid fa-mug-hot" style="font-size: 10px;"></i> {{ formatTimeSpanToTime(sched.breakStart) }} - {{ formatTimeSpanToTime(sched.breakEnd) }}
                   </span>
                   <span class="slot-sub">{{ sched.intervalMinutes }} min</span>
                 </div>
@@ -58,14 +58,14 @@
               <ng-template #noSched>
                 <button class="slot-empty" (click)="openModalForSlot(b.id, day.value)" title="Clique para definir horário neste dia">
                   <span>Folga</span>
-                  <span class="plus-icon">+</span>
+                  <span class="plus-icon"><i class="fa-solid fa-plus" style="font-size: 10px;"></i></span>
                 </button>
               </ng-template>
             </td>
 
             <td>
-              <button class="btn-icon" (click)="openBatchModal(b.id)" title="Configurar semana toda para este barbeiro" style="font-size: 16px;">
-                ⚙️
+              <button class="btn-icon" (click)="openBatchModal(b.id)" title="Configurar semana toda para este barbeiro" style="font-size: 16px; color: var(--text-muted);">
+                <i class="fa-solid fa-gear"></i>
               </button>
             </td>
           </tr>
@@ -89,8 +89,8 @@
               <span class="barber-days-badge">{{ getActiveDaysCount(b.id) }} dias escalados</span>
             </div>
           </div>
-          <button class="btn-secondary" style="padding: 6px 12px; font-size: 13px;" (click)="openBatchModal(b.id)">
-            ⚡ Rápida
+          <button class="btn-secondary" style="padding: 6px 12px; font-size: 13px; display: flex; align-items: center; gap: 6px;" (click)="openBatchModal(b.id)">
+            <i class="fa-solid fa-bolt" style="color: var(--accent-primary);"></i> Rápida
           </button>
         </div>
 
@@ -100,15 +100,15 @@
             <ng-container *ngIf="getScheduleForBarberAndDay(b.id, day.value) as sched; else mobileNoSched">
               <div class="slot-badge" style="margin: 0;" (click)="openModalForSlot(b.id, day.value)">
                 <span class="slot-time">{{ formatTimeSpanToTime(sched.startHour) }} - {{ formatTimeSpanToTime(sched.endHour) }}</span>
-                <span class="slot-sub" *ngIf="sched.breakStart && sched.breakEnd" style="color: #f59e0b; font-weight: 600;">
-                  ☕ {{ formatTimeSpanToTime(sched.breakStart) }} - {{ formatTimeSpanToTime(sched.breakEnd) }}
+                <span class="slot-sub" *ngIf="sched.breakStart && sched.breakEnd" style="color: #f59e0b; font-weight: 600; display: flex; align-items: center; gap: 4px;">
+                  <i class="fa-solid fa-mug-hot" style="font-size: 10px;"></i> {{ formatTimeSpanToTime(sched.breakStart) }} - {{ formatTimeSpanToTime(sched.breakEnd) }}
                 </span>
               </div>
             </ng-container>
             <ng-template #mobileNoSched>
               <button class="slot-empty" style="min-width: 90px; height: 32px;" (click)="openModalForSlot(b.id, day.value)">
                 <span>Folga</span>
-                <span class="plus-icon">+</span>
+                <span class="plus-icon"><i class="fa-solid fa-plus" style="font-size: 10px;"></i></span>
               </button>
             </ng-template>
           </div>
@@ -179,7 +179,7 @@
       
       <div class="modal-footer" style="display: flex; justify-content: space-between;">
         <div>
-          <button *ngIf="isEditing" type="button" class="btn-secondary" style="color: #ef4444; border-color: #fee2e2;" (click)="closeModal(); openDeleteModal(formData)">Excluir</button>
+          <button *ngIf="isEditing" type="button" class="btn-secondary" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);" (click)="closeModal(); openDeleteModal(formData)">Excluir</button>
         </div>
         <div style="display: flex; gap: 8px;">
           <button type="button" class="btn-secondary" (click)="closeModal()">Cancelar</button>
@@ -193,7 +193,9 @@
 <div class="modal-overlay" *ngIf="isBatchModalOpen">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h2>⚡ Escala Semanal Rápida</h2>
+      <h2 style="display: flex; align-items: center; gap: 8px;">
+        <i class="fa-solid fa-bolt" style="color: var(--accent-primary);"></i> Escala Semanal Rápida
+      </h2>
       <button class="btn-close" (click)="closeBatchModal()">&times;</button>
     </div>
     
@@ -257,13 +259,15 @@
 <div class="modal-overlay" *ngIf="isDeleteModalOpen">
   <div class="modal-content" style="max-width: 400px; text-align: center;" (click)="$event.stopPropagation()">
     <div class="modal-body" style="padding-top: 32px;">
-      <div style="font-size: 48px; margin-bottom: 16px;">🗑️</div>
+      <div style="font-size: 40px; color: #ef4444; margin-bottom: 16px;">
+        <i class="fa-solid fa-trash-can"></i>
+      </div>
       <h2 style="margin-bottom: 8px;">Excluir Escala?</h2>
       <p style="color: var(--text-muted); margin-bottom: 24px;">Tem certeza que deseja remover este horário? O profissional ficará com folga neste dia.</p>
       
       <div class="modal-footer" style="justify-content: center;">
         <button type="button" class="btn-secondary" (click)="closeDeleteModal()">Cancelar</button>
-        <button type="button" class="btn-primary" style="background-color: #c62828;" (click)="confirmDelete()">Excluir</button>
+        <button type="button" class="btn-primary" style="background-color: #ef4444;" (click)="confirmDelete()">Excluir</button>
       </div>
     </div>
   </div>

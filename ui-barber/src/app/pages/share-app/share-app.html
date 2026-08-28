@@ -5,22 +5,20 @@
       <p class="page-subtitle">Divulgue seu código exclusivo ou imprima o cartaz para seus clientes se conectarem pelo aplicativo</p>
     </div>
     <div class="header-actions">
-      <button class="btn-secondary" (click)="downloadQrCode()">
-        <span style="font-size: 16px;">💾</span> Baixar QR Code
+      <button class="btn-secondary" (click)="downloadQrCode()" style="display: flex; align-items: center; gap: 8px;">
+        <i class="fa-solid fa-download"></i> Baixar QR Code
       </button>
-      <button class="btn-primary" (click)="printPoster()">
-        <span style="font-size: 16px;">🖨️</span> Imprimir Cartaz
+      <button class="btn-primary" (click)="printPoster()" style="display: flex; align-items: center; gap: 8px;">
+        <i class="fa-solid fa-print"></i> Imprimir Cartaz
       </button>
     </div>
   </div>
 
   <div class="share-grid">
-    <!-- Left Column: Share Options -->
     <div class="share-controls">
-      <!-- Code Card -->
       <div class="card mb-4">
-        <h3 class="card-title">
-          <span>🔢</span> Código Exclusivo da Barbearia
+        <h3 class="card-title" style="display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-hashtag" style="color: var(--accent-primary);"></i> Código Exclusivo da Barbearia
         </h3>
         <p class="card-desc">
           Seus clientes precisam deste código de 6 dígitos no primeiro acesso ao aplicativo para se vincularem à sua barbearia.
@@ -30,22 +28,21 @@
           <div class="code-number-display">
             {{ barbershopCode || '------' }}
           </div>
-          <button class="btn-primary copy-btn" (click)="copyCode()">
-            Copiar Código
+          <button class="btn-primary copy-btn" (click)="copyCode()" style="display: flex; align-items: center; gap: 6px;">
+            <i class="fa-regular fa-copy"></i> Copiar Código
           </button>
         </div>
 
         <div class="actions-row mt-3">
-          <button class="btn-whatsapp" (click)="shareWhatsApp()">
-            <span style="font-size: 18px;">💬</span> Compartilhar Código no WhatsApp
+          <button class="btn-whatsapp" (click)="shareWhatsApp()" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+            <i class="fa-brands fa-whatsapp" style="font-size: 18px;"></i> Compartilhar Código no WhatsApp
           </button>
         </div>
       </div>
 
-      <!-- Instructions Card -->
       <div class="card mb-4">
-        <h3 class="card-title">
-          <span>💡</span> Como utilizar na sua barbearia
+        <h3 class="card-title" style="display: flex; align-items: center; gap: 8px;">
+          <i class="fa-regular fa-lightbulb" style="color: var(--accent-primary);"></i> Como utilizar na sua barbearia
         </h3>
         <ul class="tips-list">
           <li>
@@ -61,7 +58,6 @@
       </div>
     </div>
 
-    <!-- Right Column: Interactive Poster Preview -->
     <div class="poster-preview-wrapper">
       <div class="poster-preview-header">
         <h4>Pré-visualização do Cartaz (A4)</h4>
@@ -99,15 +95,18 @@
         </div>
 
         <div class="poster-footer" *ngIf="barbershopAddress || barbershopPhone">
-          <div *ngIf="barbershopPhone">📞 {{ barbershopPhone }}</div>
-          <div *ngIf="barbershopAddress" class="poster-address">📍 {{ barbershopAddress }}</div>
+          <div *ngIf="barbershopPhone" style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <i class="fa-solid fa-phone"></i> {{ barbershopPhone }}
+          </div>
+          <div *ngIf="barbershopAddress" class="poster-address" style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <i class="fa-solid fa-location-dot"></i> {{ barbershopAddress }}
+          </div>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Printable Poster Area (Only visible when printing) -->
 <div class="print-poster-container print-only">
   <div class="print-poster-inner">
     <div class="print-header">
@@ -120,8 +119,8 @@
       <div class="print-qr-box">
         <img *ngIf="qrCodeDataUrl" [src]="qrCodeDataUrl" alt="QR Code" class="print-qr-img" />
       </div>
-      <div class="print-scan-text">
-        <span class="camera-icon">📷</span>
+      <div class="print-scan-text" style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+        <i class="fa-solid fa-qrcode"></i>
         <span>Escaneie o QR Code com a câmera do app</span>
       </div>
     </div>
