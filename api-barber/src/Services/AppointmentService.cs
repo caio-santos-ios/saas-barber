@@ -101,7 +101,60 @@ namespace api_barber.Services
                 ];
 
                 List<dynamic> result = await repository.GetAllAsync(pipeline);
-                return new(result, 200, "Agendamentos listados com sucesso");
+
+                DateTime now = DateTime.Now;
+
+                var sortedResult = result.OrderBy(item =>
+                {
+                    IDictionary<string, object> dict = (IDictionary<string, object>)item;
+                    DateTime date = DateTime.MinValue;
+                    if (dict.TryGetValue("date", out var dVal) && dVal != null)
+                    {
+                        if (dVal is DateTime dt) date = dt;
+                        else if (DateTime.TryParse(dVal.ToString(), out var dtParsed)) date = dtParsed;
+                    }
+
+                    string hour = dict.TryGetValue("hour", out var hVal) ? hVal?.ToString() ?? "" : "";
+                    TimeSpan ts = TimeSpan.Zero;
+                    TimeSpan.TryParse(hour, out ts);
+
+                    DateTime fullDateTime = date.Date + ts;
+                    int status = 0;
+                    if (dict.TryGetValue("status", out var sVal) && sVal != null)
+                    {
+                        int.TryParse(sVal.ToString(), out status);
+                    }
+
+                    bool isUpcoming = fullDateTime >= now.AddMinutes(-30) && status != (int)AppointmentStatusEnum.Finalizado && status != (int)AppointmentStatusEnum.Cancelado;
+                    return isUpcoming ? 0 : 1;
+                })
+                .ThenBy(item =>
+                {
+                    IDictionary<string, object> dict = (IDictionary<string, object>)item;
+                    DateTime date = DateTime.MinValue;
+                    if (dict.TryGetValue("date", out var dVal) && dVal != null)
+                    {
+                        if (dVal is DateTime dt) date = dt;
+                        else if (DateTime.TryParse(dVal.ToString(), out var dtParsed)) date = dtParsed;
+                    }
+
+                    string hour = dict.TryGetValue("hour", out var hVal) ? hVal?.ToString() ?? "" : "";
+                    TimeSpan ts = TimeSpan.Zero;
+                    TimeSpan.TryParse(hour, out ts);
+
+                    DateTime fullDateTime = date.Date + ts;
+                    int status = 0;
+                    if (dict.TryGetValue("status", out var sVal) && sVal != null)
+                    {
+                        int.TryParse(sVal.ToString(), out status);
+                    }
+
+                    bool isUpcoming = fullDateTime >= now.AddMinutes(-30) && status != (int)AppointmentStatusEnum.Finalizado && status != (int)AppointmentStatusEnum.Cancelado;
+                    return isUpcoming ? fullDateTime.Ticks : -fullDateTime.Ticks;
+                })
+                .ToList();
+
+                return new(sortedResult, 200, "Agendamentos listados com sucesso");
             }
             catch (Exception ex)
             {

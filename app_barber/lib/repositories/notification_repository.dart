@@ -15,7 +15,7 @@ class NotificationRepository {
         return data.map((json) => AppNotification.fromJson(json)).toList();
       }
       return [];
-    } on DioException catch (e) {
+    } on DioException catch (_) {
       return [];
     }
   }
