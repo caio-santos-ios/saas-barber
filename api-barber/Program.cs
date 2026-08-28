@@ -16,14 +16,25 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 DotNetEnv.Env.Load();
 builder.Configuration.AddEnvironmentVariables();
 
-var firebaseKeyFile = Environment.GetEnvironmentVariable("FIREBASE_CREDENTIALS_PATH") ?? "firebase-service-account.json";
-var firebaseKeyPath = Path.IsPathRooted(firebaseKeyFile) ? firebaseKeyFile : Path.Combine(builder.Environment.ContentRootPath, firebaseKeyFile);
-if (File.Exists(firebaseKeyPath) && FirebaseAdmin.FirebaseApp.DefaultInstance == null)
+var firebaseCredentialsJson = Environment.GetEnvironmentVariable("FIREBASE_CREDENTIALS_JSON");
+if (!string.IsNullOrWhiteSpace(firebaseCredentialsJson) && FirebaseAdmin.FirebaseApp.DefaultInstance == null)
 {
     FirebaseAdmin.FirebaseApp.Create(new FirebaseAdmin.AppOptions
     {
-        Credential = Google.Apis.Auth.OAuth2.GoogleCredential.FromFile(firebaseKeyPath)
+        Credential = Google.Apis.Auth.OAuth2.GoogleCredential.FromJson(firebaseCredentialsJson)
     });
+}
+else
+{
+    var firebaseKeyFile = Environment.GetEnvironmentVariable("FIREBASE_CREDENTIALS_PATH") ?? "firebase-service-account.json";
+    var firebaseKeyPath = Path.IsPathRooted(firebaseKeyFile) ? firebaseKeyFile : Path.Combine(builder.Environment.ContentRootPath, firebaseKeyFile);
+    if (File.Exists(firebaseKeyPath) && FirebaseAdmin.FirebaseApp.DefaultInstance == null)
+    {
+        FirebaseAdmin.FirebaseApp.Create(new FirebaseAdmin.AppOptions
+        {
+            Credential = Google.Apis.Auth.OAuth2.GoogleCredential.FromFile(firebaseKeyPath)
+        });
+    }
 }
 var port = Environment.GetEnvironmentVariable("PORT");
 if (!string.IsNullOrEmpty(port))
