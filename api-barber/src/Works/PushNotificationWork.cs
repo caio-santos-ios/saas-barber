@@ -36,8 +36,10 @@ namespace api_barber.Works
 
         private async Task SendNotificationAsync(AppDbContext context)
         {
+            DateTime today = DateTime.UtcNow;
+            
             List<Models.Notification> notifications = await context.Notifications
-                .Find(x => !x.Deleted && !x.Send)
+                .Find(x => !x.Deleted && !x.Send && x.SendAt <= today)
                 .ToListAsync();
 
             foreach (Models.Notification notification in notifications)
@@ -55,7 +57,7 @@ namespace api_barber.Works
                             "Notificação {Id}: usuário {UserId} não tem tokens FCM registrados.",
                             notification.Id, notification.UserId);
 
-                        await MarkAsSentAsync(context, notification.Id);
+                        // await MarkAsSentAsync(context, notification.Id);
                         continue;
                     }
 
