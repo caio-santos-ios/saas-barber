@@ -15,7 +15,7 @@ namespace api_barber.Services
             try
             {
                 var cleanBarbershopId = (barbershopId ?? "").Trim();
-                var appointmentsResponse = await appDbContext.Appointments.Find(x => x.Deleted != true && x.BarbershopId == cleanBarbershopId).ToListAsync();
+                var appointmentsResponse = await appDbContext.Appointments.Find(x => x.BarbershopId == cleanBarbershopId).ToListAsync();
                 var servicesResponse = await appDbContext.Services.Find(x => x.Deleted != true && x.BarbershopId == cleanBarbershopId).ToListAsync();
                 var serviceTypesResponse = await appDbContext.ServiceTypes.Find(x => x.Deleted != true && x.BarbershopId == cleanBarbershopId).ToListAsync();
                 var usersResponse = await appDbContext.Users.Find(x => x.Deleted != true && x.BarbershopId == cleanBarbershopId).ToListAsync();
@@ -30,13 +30,13 @@ namespace api_barber.Services
 
                 var periodAppointments = allAppointments.Where(a => a.Date.Date >= startOfPeriod.Date && a.Date.Date <= endOfPeriod.Date).ToList();
 
-                var scheduledCount = periodAppointments.Count(a => a.Status == AppointmentStatusEnum.Marcado || (int)a.Status == 0);
-                var completedCount = periodAppointments.Count(a => a.Status == AppointmentStatusEnum.Finalizado || (int)a.Status == 2 || (int)a.Status == 3);
-                var canceledCount = periodAppointments.Count(a => a.Status == AppointmentStatusEnum.Cancelado || (int)a.Status == 1);
+                var canceledCount = periodAppointments.Count(a => a.Deleted || a.Status == AppointmentStatusEnum.Cancelado || (int)a.Status == 1);
+                var completedCount = periodAppointments.Count(a => !a.Deleted && (a.Status == AppointmentStatusEnum.Finalizado || (int)a.Status == 2 || (int)a.Status == 3));
+                var scheduledCount = periodAppointments.Count(a => !a.Deleted && (a.Status == AppointmentStatusEnum.Marcado || (int)a.Status == 0));
 
                 var metrics = new DashboardMetricsResponse
                 {
-                    TotalAppointments = periodAppointments.Count,
+                    TotalAppointments = scheduledCount + completedCount + canceledCount,
                     ScheduledAppointments = scheduledCount,
                     CompletedAppointments = completedCount,
                     CanceledAppointments = canceledCount,
@@ -44,7 +44,7 @@ namespace api_barber.Services
                     ConfirmedAppointments = scheduledCount
                 };
 
-                var completedApps = periodAppointments.Where(a => a.Status == AppointmentStatusEnum.Finalizado || (int)a.Status == 2 || (int)a.Status == 3);
+                var completedApps = periodAppointments.Where(a => !a.Deleted && (a.Status == AppointmentStatusEnum.Finalizado || (int)a.Status == 2 || (int)a.Status == 3));
                 metrics.TotalRevenue = completedApps.Sum(a => a.Value);
 
                 var serviceTypeMap = allServiceTypes.ToDictionary(st => st.Id, st => st.Name);

@@ -39,13 +39,13 @@ class Appointment {
     if (status is int) return status;
     if (status is String) {
       switch (status.toLowerCase()) {
-        case 'marcado': return 1;
-        case 'cancelado': return 2;
-        case 'finalizado': return 3;
-        default: return 1;
+        case 'marcado': return 0;
+        case 'cancelado': return 1;
+        case 'finalizado': return 2;
+        default: return 0;
       }
     }
-    return 1;
+    return 0;
   }
 
   factory Appointment.fromJson(Map<String, dynamic> json) {

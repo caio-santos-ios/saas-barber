@@ -74,10 +74,10 @@ class AppointmentRepository {
   Future<bool> cancelAppointment(String appointmentId, String barbershopId) async {
     try {
       final response = await apiClient.dio.put(
-        '/appointments/$appointmentId/status?barbershopId=$barbershopId',
+        '/appointments/status?barbershopId=$barbershopId',
         data: {
           'id': appointmentId,
-          'status': 2,
+          'status': 1,
           'cancelNotes': 'Cancelado pelo cliente',
         },
       );

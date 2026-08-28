@@ -81,7 +81,7 @@ class _BarberDashboardPageState extends State<BarberDashboardPage> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              _updateStatus(appt, 3);
+              _updateStatus(appt, 2);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
             child: const Text('Sim, concluir', style: TextStyle(color: Colors.white)),
@@ -105,7 +105,7 @@ class _BarberDashboardPageState extends State<BarberDashboardPage> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              _updateStatus(appt, 2);
+              _updateStatus(appt, 1);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Sim, cancelar', style: TextStyle(color: Colors.white)),
