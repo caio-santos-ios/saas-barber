@@ -38,10 +38,17 @@ class AppointmentRepository {
     }
   }
 
-  Future<List<String>> getAvailableSlots(String barberId, DateTime date, String barbershopId) async {
+  Future<List<String>> getAvailableSlots(String barberId, DateTime date, String barbershopId, {String? serviceId, String? customerId}) async {
     try {
       final dateStr = date.toIso8601String().split('T')[0];
-      final response = await apiClient.dio.get('/appointments/availability?barberId=$barberId&date=$dateStr&barbershopId=$barbershopId');
+      var url = '/appointments/availability?barberId=$barberId&date=$dateStr&barbershopId=$barbershopId';
+      if (serviceId != null && serviceId.isNotEmpty) {
+        url += '&serviceId=$serviceId';
+      }
+      if (customerId != null && customerId.isNotEmpty) {
+        url += '&customerId=$customerId';
+      }
+      final response = await apiClient.dio.get(url);
       if (response.statusCode == 200 && response.data['data'] != null) {
         final List data = response.data['data'];
         return data.cast<String>();

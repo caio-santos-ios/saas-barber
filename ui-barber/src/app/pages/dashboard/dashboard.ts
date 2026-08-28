@@ -79,25 +79,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
         const statusMap: any = { 0: 'Agendado', 1: 'Agendado', 2: 'Cancelado', 3: 'Concluído' };
         const rawApts: any[] = appointmentsRes.data?.data || [];
-
-        const start = new Date(this.startDate + 'T00:00:00');
-        const end = new Date(this.endDate + 'T23:59:59');
-
-        this.appointments = rawApts
-          .filter((apt: any) => {
-            const d = new Date(apt.date);
-            return d >= start && d <= end;
-          })
-          .map((apt: any) => ({
-            ...apt,
-            barberName: apt.barberName || userMap[apt.barberId] || '-',
-            customerName: apt.customerName || userMap[apt.customerId] || '-',
-            serviceName: apt.serviceTypeName || apt.serviceName || '-',
-            price: apt.value ?? apt.price ?? 0,
-            statusLabel: statusMap[apt.status] ?? apt.status,
-            statusRaw: apt.status
-          }))
-          .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        this.appointments = rawApts.map((apt: any) => ({...apt, statusLabel: statusMap[apt.status] ?? apt.status, statusRaw: apt.status}));
 
         this.metrics = metricsRes.data?.data || null;
         this.error = '';

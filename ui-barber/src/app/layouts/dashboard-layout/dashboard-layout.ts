@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet, Router } from '@angular/router';
 import { Sidebar } from '../../components/sidebar/sidebar';
 import { Auth } from '../../services/auth';
+import { ThemeService } from '../../services/theme';
 
 @Component({
   selector: 'app-dashboard-layout',
@@ -14,7 +15,7 @@ import { Auth } from '../../services/auth';
 export class DashboardLayout {
   isSidebarOpen = window.innerWidth >= 1024;
 
-  constructor(public auth: Auth, public router: Router) {}
+  constructor(public auth: Auth, public router: Router, public themeService: ThemeService) {}
 
   @HostListener('window:resize', ['$event'])
   onResize(event: any) {

@@ -5,7 +5,9 @@ using api_barber.Requests.User;
 using api_barber.src.Interfaces;
 using api_barber.src.Requests;
 using api_barber.src.Utils;
+using api_barber.Utils;
 using MongoDB.Bson;
+
 namespace api_barber.Services
 {
     public class UserService(IUserRepository repository) : IUserService
@@ -15,6 +17,11 @@ namespace api_barber.Services
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(barbershopId))
+                {
+                    return new(new List<dynamic>(), 200, "Usuários listados com sucesso");
+                }
+
                 List<BsonDocument> pipeline =
                 [
                     new("$match", new BsonDocument
@@ -26,14 +33,19 @@ namespace api_barber.Services
                     {
                         {"_id", 0},
                         {"id", new BsonDocument("$toString", "$_id")},
-                        {"name", 1}
+                        {"name", 1},
+                        {"email", 1},
+                        {"whatsapp", 1},
+                        {"role", 1},
+                        {"active", new BsonDocument("$ifNull", new BsonArray { "$active", true })},
+                        {"createdAt", 1}
                     }),
-                    new("$sort", new BsonDocument { { "createdAt", 1 } } )
+                    new("$sort", new BsonDocument { { "createdAt", -1 } } )
                 ];
 
-                List<dynamic> barbers = await repository.GetBarbersAsync(pipeline);
+                List<dynamic> users = await repository.GetAllAsync(pipeline);
 
-                return new(barbers, 200, "Usuários listados com sucesso");
+                return new(users, 200, "Usuários listados com sucesso");
             }
             catch (Exception ex)
             {
@@ -47,7 +59,7 @@ namespace api_barber.Services
                 User user = await repository.GetByIdAsync(id);
                 if (user is null) return new(null, 404, "Usuário não encontrado");
 
-                return new(user, 200, "Usuários buscado com sucesso");
+                return new(user, 200, "Usuário buscado com sucesso");
             }
             catch (Exception ex)
             {
@@ -61,7 +73,7 @@ namespace api_barber.Services
                 User user = await repository.GetByEmailAsync(email, barbershopId, role);
                 if (user is null) return new(null, 404, "Usuário não encontrado");
 
-                return new(user, 200, "Usuários buscado com sucesso");
+                return new(user, 200, "Usuário buscado com sucesso");
             }
             catch (Exception ex)
             {
@@ -75,7 +87,63 @@ namespace api_barber.Services
                 User user = await repository.GetByEmailAdminAsync(email);
                 if (user is null) return new(null, 404, "Usuário não encontrado");
 
-                return new(user, 200, "Usuários buscado com sucesso");
+                return new(user, 200, "Usuário buscado com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
+            }
+        }
+        public async Task<ResponseApi<User>> GetByDocumentAsync(string document, string barbershopId, RoleUserEnum? role)
+        {
+            try
+            {
+                User user = await repository.GetByDocumentAsync(document, barbershopId, role);
+                if (user is null) return new(null, 404, "Usuário não encontrado");
+
+                return new(user, 200, "Usuário buscado com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
+            }
+        }
+        public async Task<ResponseApi<User>> GetByDocumentAdminAsync(string document)
+        {
+            try
+            {
+                User user = await repository.GetByDocumentAdminAsync(document);
+                if (user is null) return new(null, 404, "Usuário não encontrado");
+
+                return new(user, 200, "Usuário buscado com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
+            }
+        }
+        public async Task<ResponseApi<User>> GetByWhatsAppAsync(string whatsapp, string barbershopId, RoleUserEnum? role)
+        {
+            try
+            {
+                User user = await repository.GetByWhatsAppAsync(whatsapp, barbershopId, role);
+                if (user is null) return new(null, 404, "Usuário não encontrado");
+
+                return new(user, 200, "Usuário buscado com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
+            }
+        }
+        public async Task<ResponseApi<User>> GetByWhatsAppAdminAsync(string whatsapp)
+        {
+            try
+            {
+                User user = await repository.GetByWhatsAppAdminAsync(whatsapp);
+                if (user is null) return new(null, 404, "Usuário não encontrado");
+
+                return new(user, 200, "Usuário buscado com sucesso");
             }
             catch (Exception ex)
             {
@@ -90,7 +158,7 @@ namespace api_barber.Services
                 {
                     return new(new List<dynamic>(), 200, "Barbeiros listados com sucesso");
                 }
-                
+
                 List<BsonDocument> pipeline =
                 [
                     new("$match", new BsonDocument
@@ -147,6 +215,7 @@ namespace api_barber.Services
                         {"name", 1},
                         {"email", 1},
                         {"whatsapp", 1},
+                        {"document", 1},
                         {"active", new BsonDocument("$ifNull", new BsonArray { "$active", true })},
                         {"createdAt", 1},
                     }),
@@ -169,6 +238,57 @@ namespace api_barber.Services
         {
             try
             {
+                if (!string.IsNullOrWhiteSpace(request.Email))
+                {
+                    if (!ValidationUtils.IsValidEmail(request.Email))
+                    {
+                        return new(null, 400, "E-mail inválido.");
+                    }
+
+                    User existingEmail = request.Role == RoleUserEnum.Admin 
+                        ? await repository.GetByEmailAdminAsync(request.Email.Trim())
+                        : await repository.GetByEmailAsync(request.Email.Trim(), request.BarbershopId, request.Role);
+
+                    if (existingEmail != null)
+                    {
+                        return new(null, 400, "Este e-mail já está cadastrado.");
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(request.WhatsApp))
+                {
+                    if (!ValidationUtils.IsValidPhone(request.WhatsApp))
+                    {
+                        return new(null, 400, "WhatsApp/Telefone inválido.");
+                    }
+
+                    User existingWhatsApp = request.Role == RoleUserEnum.Admin
+                        ? await repository.GetByWhatsAppAdminAsync(request.WhatsApp.Trim())
+                        : await repository.GetByWhatsAppAsync(request.WhatsApp.Trim(), request.BarbershopId, request.Role);
+
+                    if (existingWhatsApp != null)
+                    {
+                        return new(null, 400, "Este WhatsApp já está cadastrado.");
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(request.Document))
+                {
+                    if (!ValidationUtils.IsValidDocument(request.Document))
+                    {
+                        return new(null, 400, "Documento (CPF/CNPJ) inválido.");
+                    }
+
+                    User existingDoc = request.Role == RoleUserEnum.Admin
+                        ? await repository.GetByDocumentAdminAsync(request.Document.Trim())
+                        : await repository.GetByDocumentAsync(request.Document.Trim(), request.BarbershopId, request.Role);
+
+                    if (existingDoc != null)
+                    {
+                        return new(null, 400, "Este documento já está cadastrado.");
+                    }
+                }
+
                 User entity = ObjectMapper.Map<CreateUserRequest, User>(request);
                 if (!string.IsNullOrEmpty(entity.Password) && !entity.Password.StartsWith("$2a$") && !entity.Password.StartsWith("$2b$"))
                 {
@@ -194,6 +314,57 @@ namespace api_barber.Services
             {
                 User existedUser = await repository.GetByIdAsync(request.Id);
                 if (existedUser is null) return new(null, 404, "Usuário não encontrado");
+
+                if (!string.IsNullOrWhiteSpace(request.Email))
+                {
+                    if (!ValidationUtils.IsValidEmail(request.Email))
+                    {
+                        return new(null, 400, "E-mail inválido.");
+                    }
+
+                    User existingEmail = existedUser.Role == RoleUserEnum.Admin
+                        ? await repository.GetByEmailAdminAsync(request.Email.Trim())
+                        : await repository.GetByEmailAsync(request.Email.Trim(), existedUser.BarbershopId, existedUser.Role);
+
+                    if (existingEmail != null && existingEmail.Id != existedUser.Id)
+                    {
+                        return new(null, 400, "Este e-mail já está cadastrado.");
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(request.WhatsApp))
+                {
+                    if (!ValidationUtils.IsValidPhone(request.WhatsApp))
+                    {
+                        return new(null, 400, "WhatsApp/Telefone inválido.");
+                    }
+
+                    User existingWhatsApp = existedUser.Role == RoleUserEnum.Admin
+                        ? await repository.GetByWhatsAppAdminAsync(request.WhatsApp.Trim())
+                        : await repository.GetByWhatsAppAsync(request.WhatsApp.Trim(), existedUser.BarbershopId, existedUser.Role);
+
+                    if (existingWhatsApp != null && existingWhatsApp.Id != existedUser.Id)
+                    {
+                        return new(null, 400, "Este WhatsApp já está cadastrado.");
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(request.Document))
+                {
+                    if (!ValidationUtils.IsValidDocument(request.Document))
+                    {
+                        return new(null, 400, "Documento (CPF/CNPJ) inválido.");
+                    }
+
+                    User existingDoc = existedUser.Role == RoleUserEnum.Admin
+                        ? await repository.GetByDocumentAdminAsync(request.Document.Trim())
+                        : await repository.GetByDocumentAsync(request.Document.Trim(), existedUser.BarbershopId, existedUser.Role);
+
+                    if (existingDoc != null && existingDoc.Id != existedUser.Id)
+                    {
+                        return new(null, 400, "Este documento já está cadastrado.");
+                    }
+                }
 
                 User entity = existedUser;
 

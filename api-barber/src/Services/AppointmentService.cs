@@ -15,7 +15,8 @@ namespace api_barber.Services
 {
     public class AppointmentService(
         IAppointmentRepository repository,
-        IScheduleRepository scheduleRepository) : IAppointmentService
+        IScheduleRepository scheduleRepository,
+        IServiceService serviceService) : IAppointmentService
     {
         #region READ
         public async Task<ResponseApi<List<dynamic>>> GetAllAsync(string barbershopId, string? customerId = null, string? barberId = null)
@@ -46,34 +47,33 @@ namespace api_barber.Services
                 List<BsonDocument> pipeline =
                 [
                     new("$match", matchDoc),
-
-                    new("$addFields", new BsonDocument {
-                        {"barberIdObjectId", new BsonDocument("$toObjectId", "$barber_id")},
-                        {"customerIdObjectId", new BsonDocument("$toObjectId", "$customer_id")},
-                        {"serviceTypeIdObjectId", new BsonDocument("$toObjectId", "$service_type_id")},
+                    new("$addFields", new BsonDocument
+                    {
+                        {"customerObjectId", new BsonDocument("$toObjectId", "$customer_id")},
+                        {"barberObjectId", new BsonDocument("$toObjectId", "$barber_id")},
+                        {"serviceTypeObjectId", new BsonDocument("$toObjectId", "$service_type_id")}
                     }),
-
-                    new("$lookup", new BsonDocument {
+                    new("$lookup", new BsonDocument
+                    {
                         {"from", "users"},
-                        {"localField", "barberIdObjectId"},
-                        {"foreignField", "_id"},
-                        {"as", "barbers"}
-                    }),
-
-                    new("$lookup", new BsonDocument {
-                        {"from", "users"},
-                        {"localField", "customerIdObjectId"},
+                        {"localField", "customerObjectId"},
                         {"foreignField", "_id"},
                         {"as", "customers"}
                     }),
-
-                    new("$lookup", new BsonDocument {
+                    new("$lookup", new BsonDocument
+                    {
+                        {"from", "users"},
+                        {"localField", "barberObjectId"},
+                        {"foreignField", "_id"},
+                        {"as", "barbers"}
+                    }),
+                    new("$lookup", new BsonDocument
+                    {
                         {"from", "services_types"},
-                        {"localField", "serviceTypeIdObjectId"},
+                        {"localField", "serviceTypeObjectId"},
                         {"foreignField", "_id"},
                         {"as", "serviceTypes"}
                     }),
-
                     new("$project", new BsonDocument
                     {
                         {"_id", 0},
@@ -97,7 +97,7 @@ namespace api_barber.Services
                         {"paymentStatus", new BsonDocument("$ifNull", new BsonArray { "$payment_status", "$paymentStatus", "" })},
                         {"createdAt", 1}
                     }),
-                    new("$sort", new BsonDocument { { "date", -1 }, { "hour", -1 } } )
+                    new("$sort", new BsonDocument { { "date", 1 }, { "hour", 1 } } )
                 ];
 
                 List<dynamic> list = await repository.GetAllAsync(pipeline);
@@ -125,7 +125,7 @@ namespace api_barber.Services
             }
         }
 
-        public async Task<ResponseApi<List<string>>> GetAvailableSlotsAsync(string barberId, DateTime date, string barbershopId)
+        public async Task<ResponseApi<List<string>>> GetAvailableSlotsAsync(string barberId, DateTime date, string barbershopId, string? serviceId = null, string? customerId = null)
         {
             try
             {
@@ -135,20 +135,110 @@ namespace api_barber.Services
 
                 if (schedule == null) return new(new List<string>(), 200, "Nenhuma escala para este dia.");
 
+                int serviceDurationMinutes = schedule.IntervalMinutes > 0 ? schedule.IntervalMinutes : 30;
+                if (!string.IsNullOrWhiteSpace(serviceId))
+                {
+                    var srvRes = await serviceService.GetByIdAsync(serviceId);
+                    if (srvRes.Data != null && srvRes.Data.DurationMinutes.HasValue && srvRes.Data.DurationMinutes.Value > 0)
+                    {
+                        serviceDurationMinutes = srvRes.Data.DurationMinutes.Value;
+                    }
+                }
+
                 var existingAppointments = await repository.GetByBarberAndDateAsync(barberId, date, barbershopId);
-                var validAppointments = existingAppointments.Where(a => a.Status != AppointmentStatusEnum.Cancelado).ToList();
+                var validAppointments = existingAppointments.Where(a => a.Status != AppointmentStatusEnum.Cancelado && !a.Deleted).ToList();
+
+                List<Appointment> validCustomerAppointments = [];
+                if (!string.IsNullOrWhiteSpace(customerId))
+                {
+                    var custApts = await repository.GetByCustomerAndDateAsync(customerId, date, barbershopId);
+                    validCustomerAppointments = custApts.Where(a => a.Status != AppointmentStatusEnum.Cancelado && !a.Deleted).ToList();
+                }
 
                 var availableSlots = new List<string>();
                 var currentTime = schedule.StartHour;
+                int step = schedule.IntervalMinutes > 0 ? schedule.IntervalMinutes : 30;
+                TimeSpan serviceDuration = TimeSpan.FromMinutes(serviceDurationMinutes);
 
-                while (currentTime < schedule.EndHour)
+                while (currentTime + serviceDuration <= schedule.EndHour)
                 {
-                    string timeString = currentTime.ToString(@"hh\:mm");
-                    if (!validAppointments.Any(a => a.Hour == timeString))
+                    var slotEnd = currentTime + serviceDuration;
+                    bool isSlotValid = true;
+
+                    if (schedule.BreakStart.HasValue && schedule.BreakEnd.HasValue && schedule.BreakEnd > schedule.BreakStart)
                     {
-                        availableSlots.Add(timeString);
+                        if (currentTime < schedule.BreakEnd.Value && slotEnd > schedule.BreakStart.Value)
+                        {
+                            isSlotValid = false;
+                        }
                     }
-                    currentTime = currentTime.Add(TimeSpan.FromMinutes(schedule.IntervalMinutes));
+
+                    if (isSlotValid)
+                    {
+                        foreach (var apt in validAppointments)
+                        {
+                            if (TimeSpan.TryParse(apt.Hour, out var aptStart))
+                            {
+                                var aptDuration = TimeSpan.FromMinutes(30);
+                                if (!string.IsNullOrWhiteSpace(apt.ServiceId))
+                                {
+                                    var srv = await serviceService.GetByIdAsync(apt.ServiceId);
+                                    if (srv.Data != null && srv.Data.DurationMinutes.HasValue && srv.Data.DurationMinutes.Value > 0)
+                                    {
+                                        aptDuration = TimeSpan.FromMinutes(srv.Data.DurationMinutes.Value);
+                                    }
+                                }
+                                var aptEnd = aptStart + aptDuration;
+                                if (currentTime < aptEnd && slotEnd > aptStart)
+                                {
+                                    isSlotValid = false;
+                                    break;
+                                }
+                            }
+                            else if (apt.Hour == currentTime.ToString(@"hh\:mm"))
+                            {
+                                isSlotValid = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (isSlotValid && validCustomerAppointments.Count > 0)
+                    {
+                        foreach (var custApt in validCustomerAppointments)
+                        {
+                            if (TimeSpan.TryParse(custApt.Hour, out var custAptStart))
+                            {
+                                var custAptDuration = TimeSpan.FromMinutes(30);
+                                if (!string.IsNullOrWhiteSpace(custApt.ServiceId))
+                                {
+                                    var srv = await serviceService.GetByIdAsync(custApt.ServiceId);
+                                    if (srv.Data != null && srv.Data.DurationMinutes.HasValue && srv.Data.DurationMinutes.Value > 0)
+                                    {
+                                        custAptDuration = TimeSpan.FromMinutes(srv.Data.DurationMinutes.Value);
+                                    }
+                                }
+                                var custAptEnd = custAptStart + custAptDuration;
+                                if (currentTime < custAptEnd && slotEnd > custAptStart)
+                                {
+                                    isSlotValid = false;
+                                    break;
+                                }
+                            }
+                            else if (custApt.Hour == currentTime.ToString(@"hh\:mm"))
+                            {
+                                isSlotValid = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (isSlotValid)
+                    {
+                        availableSlots.Add(currentTime.ToString(@"hh\:mm"));
+                    }
+
+                    currentTime = currentTime.Add(TimeSpan.FromMinutes(step));
                 }
 
                 return new(availableSlots, 200, "Slots obtidos com sucesso");
@@ -201,6 +291,7 @@ namespace api_barber.Services
                 return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
             }
         }
+
         public async Task<ResponseApi<Appointment>> UpdateStatusAsync(UpdateAppointmentStatusRequest request)
         {
             try
@@ -208,16 +299,18 @@ namespace api_barber.Services
                 Appointment existed = await repository.GetByIdAsync(request.Id);
                 if (existed is null) return new(null, 404, "Agendamento não encontrado");
 
-                Appointment entity = existed;
-                entity.UpdatedAt = existed.CreatedAt;
-                entity.UpdatedBy = existed.CreatedBy;
-                entity.Status = request.Status;
-                entity.CancelNotes = request.CancelNotes;
+                existed.Status = request.Status;
+                if (!string.IsNullOrEmpty(request.CancelNotes))
+                {
+                    existed.CancelNotes = request.CancelNotes;
+                }
+                existed.UpdatedBy = request.UpdatedBy;
+                existed.UpdatedAt = DateTime.UtcNow;
 
-                Appointment updated = await repository.UpdateAsync(entity);
-                if (updated is null) return new(null, 400, "Falha ao atualizar agendamento");
+                Appointment updated = await repository.UpdateAsync(existed);
+                if (updated is null) return new(null, 400, "Falha ao atualizar status do agendamento");
 
-                return new(updated, 200, "Agendamento atualizado com sucesso");
+                return new(updated, 200, "Status atualizado com sucesso");
             }
             catch (Exception ex)
             {
@@ -235,7 +328,7 @@ namespace api_barber.Services
                 if (existed is null) return new(null, 404, "Agendamento não encontrado");
 
                 existed.Deleted = true;
-                existed.DeletedAt = DateTime.Now;
+                existed.DeletedAt = DateTime.UtcNow;
                 existed.DeletedBy = request.DeletedBy;
 
                 Appointment deleted = await repository.DeleteAsync(existed);

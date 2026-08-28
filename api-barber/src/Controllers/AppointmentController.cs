@@ -38,10 +38,11 @@ namespace api_barber.Controllers
         }
 
         [HttpGet("availability")]
-        public async Task<IActionResult> GetAvailability([FromQuery] string barberId, [FromQuery] System.DateTime date)
+        public async Task<IActionResult> GetAvailability([FromQuery] string barberId, [FromQuery] System.DateTime date, [FromQuery] string? serviceId, [FromQuery] string? customerId)
         {
             string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
-            ResponseApi<List<string>> response = await service.GetAvailableSlotsAsync(barberId, date, barbershopId);
+            string effectiveCustomerId = !string.IsNullOrEmpty(customerId) ? customerId : (User.FindFirst("userId")?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "");
+            ResponseApi<List<string>> response = await service.GetAvailableSlotsAsync(barberId, date, barbershopId, serviceId, effectiveCustomerId);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
 

@@ -12,8 +12,12 @@
       </div>
     </div>
     
-    <div class="header-right" *ngIf="!auth.hasActiveSubscription()">
-      <button class="btn-secondary" style="padding: 0.5rem 1rem; border-color: transparent; color: #ef4444;" (click)="auth.clearToken(); router.navigate(['/login'])">Sair</button>
+    <div class="header-right" style="display: flex; align-items: center; gap: 12px;">
+      <button class="theme-toggle-btn" (click)="themeService.toggleTheme()" [title]="themeService.isDark() ? 'Mudar para modo claro' : 'Mudar para modo escuro'">
+        {{ themeService.isDark() ? '☀️' : '🌙' }}
+      </button>
+
+      <button class="btn-secondary" *ngIf="!auth.hasActiveSubscription()" style="padding: 0.5rem 1rem; border-color: transparent; color: #ef4444;" (click)="auth.clearToken(); router.navigate(['/login'])">Sair</button>
     </div>
   </header>
 

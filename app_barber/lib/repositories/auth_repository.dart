@@ -9,13 +9,10 @@ class AuthRepository {
   AuthRepository(this.apiClient);
 
   Future<UserSession?> login(LoginRequest request) async {
-    print(request.toJson());
     final response = await apiClient.dio.post(
       '/auth/login',
       data: request.toJson(),
     );
-
-    print(response.data);
 
     if (response.statusCode == 200) {
       final data = response.data['data'] ?? response.data;
@@ -98,22 +95,6 @@ class AuthRepository {
     } on DioException catch (e) {
       throw Exception(e.response?.data['message'] ?? 'Ocorreu um erro inesperado.');
     }
-  
-    try {
-      final response = await apiClient.dio.post(
-        '/auth/update-password',
-        data: {'password': newPassword},
-      );
-      
-      if (response.statusCode == 200) {
-        final authBox = Hive.box('auth');
-        await authBox.put('passwordResetRequired', false);
-        return true;
-      }
-      return false;
-    } on DioException catch (e) {
-      throw Exception(e.response?.data['message'] ?? 'Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.');
-    }
   }
 
   void logout() {
@@ -121,9 +102,13 @@ class AuthRepository {
     authBox.delete('token');
     authBox.delete('refreshToken');
     authBox.delete('role');
-    authBox.delete('barbershopId');
     authBox.delete('passwordResetRequired');
     authBox.delete('photo');
+  }
+
+  void clearBarbershop() {
+    final authBox = Hive.box('auth');
+    authBox.delete('barbershopId');
   }
 }
 

@@ -81,11 +81,25 @@ class _CustomerBookingPageState extends State<CustomerBookingPage> {
     setState(() => _isLoadingSlots = true);
     final authBox = Hive.box('auth');
     final barbershopId = authBox.get('barbershopId', defaultValue: '');
+    final token = authBox.get('token', defaultValue: '');
+    String customerId = '';
+    if (token.isNotEmpty) {
+      try {
+        Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+        customerId = decodedToken['sub'] ?? 
+                     decodedToken['userId'] ?? 
+                     decodedToken['nameid'] ?? 
+                     decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] ?? 
+                     '';
+      } catch (_) {}
+    }
 
     final slots = await _appointmentRepo.getAvailableSlots(
       _selectedBarber!.id, 
       _selectedDate!, 
-      barbershopId
+      barbershopId,
+      serviceId: _selectedService?.id,
+      customerId: customerId,
     );
 
     if (mounted) {

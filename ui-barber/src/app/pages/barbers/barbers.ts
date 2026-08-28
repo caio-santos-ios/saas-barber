@@ -25,6 +25,8 @@ export class Barbers extends GlobalService implements OnInit {
   barberToDelete: any = null;
   barberToChangePassword: any = null;
   newPassword = '';
+  showPassword = false;
+  showNewPassword = false;
   
   formData = {
     id: '',
@@ -61,6 +63,7 @@ export class Barbers extends GlobalService implements OnInit {
   }
 
   async openModal(barber?: any) {
+    this.showPassword = false;
     const barberId = typeof barber === 'string' ? barber : barber?.id;
     if (barberId) {
       this.isEditing = true;
@@ -94,6 +97,7 @@ export class Barbers extends GlobalService implements OnInit {
 
   closeModal() {
     this.isModalOpen = false;
+    this.showPassword = false;
   }
 
   isFormValid(): boolean {
@@ -173,6 +177,7 @@ export class Barbers extends GlobalService implements OnInit {
   openPasswordModal(barber: any) {
     this.barberToChangePassword = barber;
     this.newPassword = '';
+    this.showNewPassword = false;
     this.isPasswordModalOpen = true;
   }
 
@@ -180,6 +185,7 @@ export class Barbers extends GlobalService implements OnInit {
     this.isPasswordModalOpen = false;
     this.barberToChangePassword = null;
     this.newPassword = '';
+    this.showNewPassword = false;
   }
 
   async savePassword() {

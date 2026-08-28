@@ -24,7 +24,7 @@ class AppBarber extends ConsumerWidget {
     final String themeMode = ref.watch(themeModeProvider("theme_mode"));
 
     return MaterialApp(
-      title: 'Cortaê',
+      title: 'Na Régua',
       theme: ThemeData(
         brightness: Brightness.light,
         colorScheme: ColorScheme.fromSeed(

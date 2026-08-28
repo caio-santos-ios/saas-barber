@@ -32,7 +32,7 @@
   </div>
 
   <div class="metrics-grid" *ngIf="metrics && !loading">
-    <div class="card primary" style="background: #1e293b; color: white; border: none;">
+    <div class="card primary revenue-card" style="background: #1e293b; color: white; border: none;">
       <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem;">Faturamento</div>
       <div class="metric-val">{{ (metrics.totalRevenue || 0) | currency:'BRL' }}</div>
       <div style="font-size: 0.75rem; opacity: 0.8;">no período</div>
@@ -113,7 +113,7 @@
     </div>
   </div>
 
-  <div class="dashboard-content" *ngIf="metrics && !loading" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 2rem;">
+  <div class="rankings-grid" *ngIf="metrics && !loading">
     <div class="card">
       <h3 style="margin: 0 0 1rem 0; font-size: 1.1rem; color: var(--text-main);">Top Serviços</h3>
       <ul style="list-style: none; padding: 0; margin: 0;">
@@ -141,7 +141,8 @@
     <div style="padding: 1.5rem 1.5rem 0 1.5rem; margin-bottom: 1rem;">
       <h2 style="margin: 0; font-size: 1.25rem; color: var(--text-main);">Agenda do Período</h2>
     </div>
-    <div class="table-responsive">
+    
+    <div class="table-responsive desktop-table-view">
       <table class="table">
         <thead>
           <tr>
@@ -168,7 +169,7 @@
               </div>
             </td>
             <td style="vertical-align: middle; color: var(--text-muted);">
-              {{ apt.serviceName }}
+              {{ apt.serviceTypeName }}
             </td>
             <td style="vertical-align: middle; font-weight: 600; color: var(--text-main);">
               {{ (apt.price || apt.value || 0) | currency:'BRL' }}
@@ -185,6 +186,42 @@
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="mobile-cards-view">
+      <div class="mobile-data-card" *ngFor="let apt of appointments">
+        <div class="mobile-card-header">
+          <div>
+            <div style="font-weight: 700; font-size: 15px; color: var(--accent-primary);">
+              📅 {{ apt.date | date:'dd/MM/yyyy' }} às {{ apt.hour }}
+            </div>
+            <div style="font-weight: 600; color: var(--text-main); margin-top: 4px;">{{ apt.customerName }}</div>
+          </div>
+          <span class="status-badge"
+            [class.active]="apt.statusRaw === 0 || apt.statusRaw === 1"
+            [class.inactive]="apt.statusRaw === 3"
+            [class.cancelled]="apt.statusRaw === 2">{{ apt.statusLabel }}</span>
+        </div>
+
+        <div class="mobile-card-body">
+          <div class="mobile-card-field">
+            <span class="mobile-card-field-label">Profissional</span>
+            <span class="mobile-card-field-value">{{ apt.barberName }}</span>
+          </div>
+          <div class="mobile-card-field">
+            <span class="mobile-card-field-label">Serviço</span>
+            <span class="mobile-card-field-value">{{ apt.serviceName }}</span>
+          </div>
+          <div class="mobile-card-field">
+            <span class="mobile-card-field-label">Valor</span>
+            <span class="mobile-card-field-value" style="font-weight: 700; color: var(--text-main);">
+              {{ (apt.price || apt.value || 0) | currency:'BRL' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="appointments.length === 0" class="text-center py-4 text-muted">Nenhum agendamento encontrado no período.</div>
     </div>
   </div>
 </div>

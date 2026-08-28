@@ -22,7 +22,7 @@
   </div>
 
   <div class="card" style="padding: 0; overflow: hidden;">
-    <div class="table-responsive" *ngIf="!loading">
+    <div class="table-responsive desktop-table-view" *ngIf="!loading">
       <table class="matrix-table">
         <thead>
           <tr>
@@ -49,6 +49,9 @@
               <ng-container *ngIf="getScheduleForBarberAndDay(b.id, day.value) as sched; else noSched">
                 <div class="slot-badge" (click)="openModalForSlot(b.id, day.value)" title="Clique para editar este horário">
                   <span class="slot-time">{{ formatTimeSpanToTime(sched.startHour) }} - {{ formatTimeSpanToTime(sched.endHour) }}</span>
+                  <span class="slot-sub" *ngIf="sched.breakStart && sched.breakEnd" style="color: #f59e0b; font-weight: 600;">
+                    ☕ {{ formatTimeSpanToTime(sched.breakStart) }} - {{ formatTimeSpanToTime(sched.breakEnd) }}
+                  </span>
                   <span class="slot-sub">{{ sched.intervalMinutes }} min</span>
                 </div>
               </ng-container>
@@ -72,6 +75,47 @@
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="mobile-cards-view" *ngIf="!loading" style="padding: 16px;">
+      <div class="mobile-data-card" *ngFor="let b of filteredBarbers">
+        <div class="mobile-card-header">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div class="barber-avatar">
+              {{ b.name ? b.name.charAt(0).toUpperCase() : 'P' }}
+            </div>
+            <div>
+              <div class="barber-name" style="font-size: 16px;">{{ b.name }}</div>
+              <span class="barber-days-badge">{{ getActiveDaysCount(b.id) }} dias escalados</span>
+            </div>
+          </div>
+          <button class="btn-secondary" style="padding: 6px 12px; font-size: 13px;" (click)="openBatchModal(b.id)">
+            ⚡ Rápida
+          </button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+          <div *ngFor="let day of daysOfWeek" style="display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px dashed var(--border-color);">
+            <span style="font-weight: 600; font-size: 13px; color: var(--text-main); min-width: 60px;">{{ day.label }}</span>
+            <ng-container *ngIf="getScheduleForBarberAndDay(b.id, day.value) as sched; else mobileNoSched">
+              <div class="slot-badge" style="margin: 0;" (click)="openModalForSlot(b.id, day.value)">
+                <span class="slot-time">{{ formatTimeSpanToTime(sched.startHour) }} - {{ formatTimeSpanToTime(sched.endHour) }}</span>
+                <span class="slot-sub" *ngIf="sched.breakStart && sched.breakEnd" style="color: #f59e0b; font-weight: 600;">
+                  ☕ {{ formatTimeSpanToTime(sched.breakStart) }} - {{ formatTimeSpanToTime(sched.breakEnd) }}
+                </span>
+              </div>
+            </ng-container>
+            <ng-template #mobileNoSched>
+              <button class="slot-empty" style="min-width: 90px; height: 32px;" (click)="openModalForSlot(b.id, day.value)">
+                <span>Folga</span>
+                <span class="plus-icon">+</span>
+              </button>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="filteredBarbers.length === 0" class="text-center py-4 text-muted">Nenhum profissional encontrado.</div>
     </div>
 
     <div *ngIf="loading" class="text-center py-4 text-muted">Carregando escalas...</div>
@@ -103,12 +147,23 @@
 
       <div class="form-group" style="display: flex; gap: 16px;">
         <div style="flex: 1;">
-          <label>Início *</label>
+          <label>Início do Expediente *</label>
           <input type="time" [(ngModel)]="formData.startHour" class="form-input" />
         </div>
         <div style="flex: 1;">
-          <label>Fim *</label>
+          <label>Fim do Expediente *</label>
           <input type="time" [(ngModel)]="formData.endHour" class="form-input" />
+        </div>
+      </div>
+
+      <div class="form-group" style="display: flex; gap: 16px; background: var(--bg-card); padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color);">
+        <div style="flex: 1;">
+          <label>Início do Intervalo (Descanso/Almoço)</label>
+          <input type="time" [(ngModel)]="formData.breakStart" class="form-input" placeholder="Ex: 12:00" />
+        </div>
+        <div style="flex: 1;">
+          <label>Fim do Intervalo (Descanso/Almoço)</label>
+          <input type="time" [(ngModel)]="formData.breakEnd" class="form-input" placeholder="Ex: 13:00" />
         </div>
       </div>
 
@@ -159,6 +214,17 @@
         <div style="flex: 1;">
           <label>Horário de Término *</label>
           <input type="time" [(ngModel)]="batchFormData.endHour" class="form-input" />
+        </div>
+      </div>
+
+      <div class="form-group" style="display: flex; gap: 16px; background: var(--bg-card); padding: 12px; border-radius: 8px; border: 1px dashed var(--border-color);">
+        <div style="flex: 1;">
+          <label>Início do Intervalo (Descanso/Almoço)</label>
+          <input type="time" [(ngModel)]="batchFormData.breakStart" class="form-input" placeholder="Ex: 12:00" />
+        </div>
+        <div style="flex: 1;">
+          <label>Fim do Intervalo (Descanso/Almoço)</label>
+          <input type="time" [(ngModel)]="batchFormData.breakEnd" class="form-input" placeholder="Ex: 13:00" />
         </div>
       </div>
 

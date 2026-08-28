@@ -13,7 +13,7 @@
   </div>
 
   <div class="card">
-    <div class="table-responsive" *ngIf="!loading">
+    <div class="table-responsive desktop-table-view" *ngIf="!loading">
       <table class="table">
         <thead>
           <tr>
@@ -48,11 +48,45 @@
             </td>
           </tr>
           <tr *ngIf="customers.length === 0">
-            <td colspan="5" class="text-center py-4 text-muted">Nenhum cliente cadastrado.</td>
+            <td colspan="4" class="text-center py-4 text-muted">Nenhum cliente cadastrado.</td>
           </tr>
         </tbody>
       </table>
     </div>
+
+    <div class="mobile-cards-view" *ngIf="!loading">
+      <div class="mobile-data-card" *ngFor="let customer of customers">
+        <div class="mobile-card-header">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="width: 40px; height: 40px; background-color: var(--accent-primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; flex-shrink: 0;">
+              {{ customer.name ? customer.name.charAt(0).toUpperCase() : 'C' }}
+            </div>
+            <div>
+              <div style="font-weight: 600; color: var(--text-main); font-size: 15px;">{{ customer.name || 'Sem Nome' }}</div>
+              <div style="font-size: 12px; color: var(--text-muted);">{{ customer.email || 'Sem E-mail' }}</div>
+            </div>
+          </div>
+          <span class="status-badge" [ngClass]="customer.active !== false ? 'active' : 'inactive'">
+            {{ customer.active !== false ? 'Ativo' : 'Inativo' }}
+          </span>
+        </div>
+
+        <div class="mobile-card-body">
+          <div class="mobile-card-field">
+            <span class="mobile-card-field-label">WhatsApp</span>
+            <span class="mobile-card-field-value">{{ customer.whatsapp ? customer.whatsapp : '-' }}</span>
+          </div>
+        </div>
+
+        <div class="mobile-card-actions">
+          <button class="btn-secondary" style="padding: 6px 12px; font-size: 13px;" (click)="openModal(customer)">✏️ Editar</button>
+          <button class="btn-secondary" style="padding: 6px 12px; font-size: 13px; color: #c62828; border-color: #fee2e2;" (click)="openDeleteModal(customer)">🗑️ Excluir</button>
+        </div>
+      </div>
+
+      <div *ngIf="customers.length === 0" class="text-center py-4 text-muted">Nenhum cliente cadastrado.</div>
+    </div>
+
     <div *ngIf="loading" class="text-center py-4 text-muted">Carregando...</div>
   </div>
 </div>

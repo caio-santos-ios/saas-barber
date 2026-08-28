@@ -10,6 +10,10 @@ namespace api_barber.Models
         public TimeSpan StartHour { get; set; }
         [BsonElement("end_hour")]
         public TimeSpan EndHour { get; set; }
+        [BsonElement("break_start")]
+        public TimeSpan? BreakStart { get; set; }
+        [BsonElement("break_end")]
+        public TimeSpan? BreakEnd { get; set; }
         [BsonElement("interval_minutes")]
         public int IntervalMinutes { get; set; }
         [BsonElement("notes")]
@@ -22,4 +26,3 @@ namespace api_barber.Models
         public bool Active { get; set; } = true;
     }
 }
-

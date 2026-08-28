@@ -37,6 +37,20 @@ namespace api_barber.src.Repositories
 
             return await appDbContext.Appointments.Find(filter).ToListAsync();
         }
+
+        public async Task<List<Appointment>> GetByCustomerAndDateAsync(string customerId, DateTime date, string barbershopId)
+        {
+            var startOfDay = date.Date;
+            var endOfDay = startOfDay.AddDays(1).AddTicks(-1);
+
+            var filter = Builders<Appointment>.Filter.Eq(e => e.CustomerId, customerId) &
+                 Builders<Appointment>.Filter.Eq(e => e.BarbershopId, barbershopId) &
+                 Builders<Appointment>.Filter.Eq(e => e.Deleted, false) &
+                 Builders<Appointment>.Filter.Gte(e => e.Date, startOfDay) &
+                 Builders<Appointment>.Filter.Lte(e => e.Date, endOfDay);
+
+            return await appDbContext.Appointments.Find(filter).ToListAsync();
+        }
         #endregion
 
         #region CREATE

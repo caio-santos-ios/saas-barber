@@ -8,6 +8,7 @@ class ApiClient {
     dio = Dio(
       BaseOptions(
         baseUrl: 'http://192.168.18.72:5056',
+        // baseUrl: 'https://saas-barber-y69y.onrender.com',
         connectTimeout: const Duration(seconds: 10),
         receiveTimeout: const Duration(seconds: 10),
       ),

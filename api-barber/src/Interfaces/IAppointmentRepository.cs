@@ -14,5 +14,6 @@ namespace api_barber.src.Interfaces
         
         Task<List<Appointment>> GetAllEntitiesAsync(string barbershopId);
         Task<List<Appointment>> GetByBarberAndDateAsync(string barberId, DateTime date, string barbershopId);
+        Task<List<Appointment>> GetByCustomerAndDateAsync(string customerId, DateTime date, string barbershopId);
     }
 }

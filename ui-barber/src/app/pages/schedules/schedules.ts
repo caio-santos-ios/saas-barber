@@ -40,6 +40,8 @@ export class Schedules implements OnInit {
     day: 0,
     startHour: '09:00',
     endHour: '18:00',
+    breakStart: '',
+    breakEnd: '',
     intervalMinutes: 30,
     notes: ''
   };
@@ -48,6 +50,8 @@ export class Schedules implements OnInit {
     barberId: '',
     startHour: '09:00',
     endHour: '18:00',
+    breakStart: '',
+    breakEnd: '',
     intervalMinutes: 30,
     selectedDays: [0, 1, 2, 3, 4, 5],
     notes: ''
@@ -107,7 +111,7 @@ export class Schedules implements OnInit {
   }
 
   formatTimeSpanToTime(timeSpan: string): string {
-    if (!timeSpan) return '00:00';
+    if (!timeSpan) return '';
     return timeSpan.substring(0, 5);
   }
 
@@ -125,6 +129,8 @@ export class Schedules implements OnInit {
         day: 0, 
         startHour: '09:00', 
         endHour: '18:00',
+        breakStart: '',
+        breakEnd: '',
         intervalMinutes: 30,
         notes: ''
       };
@@ -144,6 +150,8 @@ export class Schedules implements OnInit {
         day,
         startHour: '09:00',
         endHour: '18:00',
+        breakStart: '',
+        breakEnd: '',
         intervalMinutes: 30,
         notes: ''
       };
@@ -159,8 +167,10 @@ export class Schedules implements OnInit {
         id: sched.id,
         barberId: sched.barberId,
         day: sched.day,
-        startHour: this.formatTimeSpanToTime(sched.startHour),
-        endHour: this.formatTimeSpanToTime(sched.endHour),
+        startHour: this.formatTimeSpanToTime(sched.startHour) || '09:00',
+        endHour: this.formatTimeSpanToTime(sched.endHour) || '18:00',
+        breakStart: this.formatTimeSpanToTime(sched.breakStart) || '',
+        breakEnd: this.formatTimeSpanToTime(sched.breakEnd) || '',
         intervalMinutes: sched.intervalMinutes || 30,
         notes: sched.notes || ''
       };
@@ -191,6 +201,8 @@ export class Schedules implements OnInit {
         day: Number(this.formData.day),
         startHour: `${this.formData.startHour}:00`,
         endHour: `${this.formData.endHour}:00`,
+        breakStart: this.formData.breakStart ? `${this.formData.breakStart}:00` : null,
+        breakEnd: this.formData.breakEnd ? `${this.formData.breakEnd}:00` : null,
         intervalMinutes: this.formData.intervalMinutes,
         notes: this.formData.notes || ''
       };
@@ -221,6 +233,8 @@ export class Schedules implements OnInit {
       barberId: barberId || (this.barbers.length > 0 ? this.barbers[0].id : ''),
       startHour: '09:00',
       endHour: '18:00',
+      breakStart: '',
+      breakEnd: '',
       intervalMinutes: 30,
       selectedDays: [0, 1, 2, 3, 4, 5],
       notes: ''
@@ -233,9 +247,9 @@ export class Schedules implements OnInit {
   }
 
   toggleBatchDay(dayValue: number) {
-    const index = this.batchFormData.selectedDays.indexOf(dayValue);
-    if (index > -1) {
-      this.batchFormData.selectedDays.splice(index, 1);
+    const idx = this.batchFormData.selectedDays.indexOf(dayValue);
+    if (idx > -1) {
+      this.batchFormData.selectedDays.splice(idx, 1);
     } else {
       this.batchFormData.selectedDays.push(dayValue);
     }
@@ -250,6 +264,7 @@ export class Schedules implements OnInit {
       this.toastr.warning('Selecione um profissional.', 'Atenção');
       return;
     }
+
     if (this.batchFormData.selectedDays.length === 0) {
       this.toastr.warning('Selecione pelo menos um dia da semana.', 'Atenção');
       return;
@@ -260,29 +275,30 @@ export class Schedules implements OnInit {
       for (const day of this.batchFormData.selectedDays) {
         const existing = this.getScheduleForBarberAndDay(this.batchFormData.barberId, day);
         const payload: any = {
-          id: existing ? existing.id : undefined,
           barberId: this.batchFormData.barberId,
-          day: Number(day),
+          day,
           startHour: `${this.batchFormData.startHour}:00`,
           endHour: `${this.batchFormData.endHour}:00`,
+          breakStart: this.batchFormData.breakStart ? `${this.batchFormData.breakStart}:00` : null,
+          breakEnd: this.batchFormData.breakEnd ? `${this.batchFormData.breakEnd}:00` : null,
           intervalMinutes: this.batchFormData.intervalMinutes,
           notes: this.batchFormData.notes || ''
         };
 
         if (existing) {
+          payload.id = existing.id;
           await api.put(`/schedules`, payload);
         } else {
-          delete payload.id;
           await api.post(`/schedules`, payload);
         }
       }
 
-      this.toastr.success('Escala semanal aplicada com sucesso!', 'Sucesso');
+      this.toastr.success('Escala semanal configurada com sucesso!', 'Sucesso');
       this.closeBatchModal();
       await this.loadInitialData();
     } catch (err) {
-      console.error('Erro ao aplicar escala semanal', err);
-      this.toastr.error('Erro ao configurar escala semanal.', 'Erro');
+      console.error('Erro ao configurar escala semanal', err);
+      this.toastr.error('Erro ao aplicar escalas.', 'Erro');
     } finally {
       this.loading = false;
       this.cdr.detectChanges();
@@ -301,15 +317,14 @@ export class Schedules implements OnInit {
 
   async confirmDelete() {
     if (!this.scheduleToDelete) return;
-    
     try {
       await api.delete(`/schedules/${this.scheduleToDelete.id}`);
-      this.toastr.success('Escala excluída com sucesso!', 'Sucesso');
+      this.toastr.success('Horário removido com sucesso!', 'Sucesso');
       this.closeDeleteModal();
       await this.loadInitialData();
     } catch (err) {
-      console.error('Erro ao excluir escala', err);
-      this.toastr.error('Erro ao excluir escala. Tente novamente.', 'Erro');
+      console.error('Erro ao deletar horário', err);
+      this.toastr.error('Erro ao remover horário.', 'Erro');
     } finally {
       this.cdr.detectChanges();
     }

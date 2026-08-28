@@ -46,6 +46,8 @@ namespace api_barber.Services
                         {"day", 1},
                         {"startHour", "$start_hour"},
                         {"endHour", "$end_hour"},
+                        {"breakStart", "$break_start"},
+                        {"breakEnd", "$break_end"},
                         {"intervalMinutes", "$interval_minutes"},
                         {"notes", 1},
                         {"active", 1},
@@ -83,6 +85,24 @@ namespace api_barber.Services
             try
             {
                 Schedule entity = ObjectMapper.Map<CreateScheduleRequest, Schedule>(request);
+                if (!string.IsNullOrWhiteSpace(request.BreakStart) && TimeSpan.TryParse(request.BreakStart, out var bs))
+                {
+                    entity.BreakStart = bs;
+                }
+                else
+                {
+                    entity.BreakStart = null;
+                }
+
+                if (!string.IsNullOrWhiteSpace(request.BreakEnd) && TimeSpan.TryParse(request.BreakEnd, out var be))
+                {
+                    entity.BreakEnd = be;
+                }
+                else
+                {
+                    entity.BreakEnd = null;
+                }
+
                 var created = await repository.CreateAsync(entity);
                 return new(created, 201, "Criado com sucesso");
             }
@@ -103,6 +123,25 @@ namespace api_barber.Services
                 Schedule entity = ObjectMapper.Map<UpdateScheduleRequest, Schedule>(request);
                 entity.CreatedAt = existed.CreatedAt;
                 entity.CreatedBy = existed.CreatedBy;
+
+                if (!string.IsNullOrWhiteSpace(request.BreakStart) && TimeSpan.TryParse(request.BreakStart, out var bs))
+                {
+                    entity.BreakStart = bs;
+                }
+                else
+                {
+                    entity.BreakStart = null;
+                }
+
+                if (!string.IsNullOrWhiteSpace(request.BreakEnd) && TimeSpan.TryParse(request.BreakEnd, out var be))
+                {
+                    entity.BreakEnd = be;
+                }
+                else
+                {
+                    entity.BreakEnd = null;
+                }
+
                 var updated = await repository.UpdateAsync(entity);
                 return new(updated, 200, "Atualizado com sucesso");
             }
@@ -135,4 +174,3 @@ namespace api_barber.Services
         #endregion
     }
 }
-

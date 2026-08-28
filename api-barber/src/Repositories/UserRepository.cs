@@ -29,6 +29,28 @@ namespace api_barber.src.Repositories
         {
             return await appDbContext.Users.Find(x => !x.Deleted && x.Email.Equals(email) && x.Role == RoleUserEnum.Admin).FirstOrDefaultAsync();
         }
+        public async Task<User> GetByDocumentAsync(string document, string barbershopId, RoleUserEnum? role)
+        {
+            if (string.IsNullOrWhiteSpace(document)) return null!;
+            if (role is not null) return await appDbContext.Users.Find(x => !x.Deleted && x.Document.Equals(document) && x.Role == role && x.BarbershopId == barbershopId).FirstOrDefaultAsync();
+            return await appDbContext.Users.Find(x => !x.Deleted && x.Document.Equals(document) && x.BarbershopId == barbershopId).FirstOrDefaultAsync();
+        }
+        public async Task<User> GetByDocumentAdminAsync(string document)
+        {
+            if (string.IsNullOrWhiteSpace(document)) return null!;
+            return await appDbContext.Users.Find(x => !x.Deleted && x.Document.Equals(document) && x.Role == RoleUserEnum.Admin).FirstOrDefaultAsync();
+        }
+        public async Task<User> GetByWhatsAppAsync(string whatsapp, string barbershopId, RoleUserEnum? role)
+        {
+            if (string.IsNullOrWhiteSpace(whatsapp)) return null!;
+            if (role is not null) return await appDbContext.Users.Find(x => !x.Deleted && x.WhatsApp.Equals(whatsapp) && x.Role == role && x.BarbershopId == barbershopId).FirstOrDefaultAsync();
+            return await appDbContext.Users.Find(x => !x.Deleted && x.WhatsApp.Equals(whatsapp) && x.BarbershopId == barbershopId).FirstOrDefaultAsync();
+        }
+        public async Task<User> GetByWhatsAppAdminAsync(string whatsapp)
+        {
+            if (string.IsNullOrWhiteSpace(whatsapp)) return null!;
+            return await appDbContext.Users.Find(x => !x.Deleted && x.WhatsApp.Equals(whatsapp) && x.Role == RoleUserEnum.Admin).FirstOrDefaultAsync();
+        }
         public async Task<List<dynamic>> GetBarbersAsync(List<BsonDocument> pipeline)
         {
             List<BsonDocument> results = await appDbContext.Users.Aggregate<BsonDocument>(pipeline).ToListAsync();

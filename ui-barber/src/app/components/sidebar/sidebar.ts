@@ -3,6 +3,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 
 import { Router } from '@angular/router';
 import { Auth } from '../../services/auth';
+import { ThemeService } from '../../services/theme';
 
 @Component({
   selector: 'app-sidebar',
@@ -12,7 +13,7 @@ import { Auth } from '../../services/auth';
   styleUrls: ['./sidebar.css']
 })
 export class Sidebar {
-  constructor(private auth: Auth, private router: Router) {}
+  constructor(private auth: Auth, private router: Router, public themeService: ThemeService) {}
 
   logout() {
     this.auth.clearToken();

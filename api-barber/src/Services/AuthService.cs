@@ -4,6 +4,7 @@ using api_barber.Models;
 using api_barber.Models.Enums;
 using api_barber.Requests.Auth;
 using api_barber.src.Requests;
+using api_barber.Utils;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -16,10 +17,9 @@ namespace api_barber.Services
         private readonly IBarbershopService _barbershopService;
         private readonly IAsaasService _asaasService;
         private readonly IUserService _userService;
-        private readonly api_barber.src.Interfaces.IUserRepository _userRepository;
         private readonly IEmailService _emailService;
 
-        public AuthService(api_barber.src.Interfaces.IUserRepository userRepository,
+        public AuthService(
             IConfiguration config,
             IBarbershopService barbershopService,
             IAsaasService asaasService,
@@ -30,35 +30,38 @@ namespace api_barber.Services
             _barbershopService = barbershopService;
             _asaasService = asaasService;
             _userService = userService;
-            _userRepository = userRepository;
             _emailService = emailService;
         }
         public string GenerateJwtToken(string userId, string role, string barbershopId)
         {
-            var secret = Environment.GetEnvironmentVariable("JWT_KEY") ?? "";
-            var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "";
-            var audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? "";
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-            var claims = new[]
-            {
+            string secret = Environment.GetEnvironmentVariable("JWT_KEY") ?? "";
+            string issuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "";
+            string audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? "";
+
+            SymmetricSecurityKey securityKey = new(Encoding.UTF8.GetBytes(secret));
+            SigningCredentials credentials = new(securityKey, SecurityAlgorithms.HmacSha256);
+
+            Claim[] claims = [
                 new Claim(JwtRegisteredClaimNames.Sub, userId),
                 new Claim("role", role),
                 new Claim("barbershopId", barbershopId),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
-            var token = new JwtSecurityToken(
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())                
+            ];
+
+            JwtSecurityToken token = new(
                 issuer: issuer,
                 audience: audience,
                 claims: claims,
                 expires: DateTime.Now.AddHours(2),
                 signingCredentials: credentials);
+
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
         public async Task<ResponseApi<AuthResponse>> LoginAsync(LoginRequest request)
         {
             try
             {
+                System.Console.WriteLine(request.Email);
                 User user = new();
                 if (request.Role == RoleUserEnum.Admin)
                 {
@@ -69,10 +72,12 @@ namespace api_barber.Services
                 else
                 {
                     ResponseApi<User> userResponse = await _userService.GetByEmailAsync(request.Email, request.BarbershopId, request.Role);
+                    System.Console.WriteLine(userResponse.Data);
                     if (userResponse.Data == null)
                     {
                         userResponse = await _userService.GetByEmailAsync(request.Email, request.BarbershopId, null);
                     }
+                    
                     if (userResponse.Data == null)
                     {
                         userResponse = await _userService.GetByEmailAdminAsync(request.Email);
@@ -125,8 +130,14 @@ namespace api_barber.Services
         {
             try
             {
+                if (!ValidationUtils.IsValidEmail(request.Email)) return new(null, 400, "E-mail inválido.");
+                if (!ValidationUtils.IsValidPhone(request.WhatsApp)) return new(null, 400, "WhatsApp/Telefone inválido.");
+
                 ResponseApi<User> existingUser = await _userService.GetByEmailAsync(request.Email, request.BarbershopId, RoleUserEnum.Customer);
                 if (existingUser.Data is not null) return new(null, 400, "Este e-mail já está cadastrado.");
+
+                ResponseApi<User> existingPhone = await _userService.GetByWhatsAppAsync(request.WhatsApp, request.BarbershopId, RoleUserEnum.Customer);
+                if (existingPhone.Data is not null) return new(null, 400, "Este WhatsApp já está cadastrado.");
 
                 User user = new()
                 {
@@ -153,6 +164,11 @@ namespace api_barber.Services
                     BarbershopId = user.BarbershopId
                 });
 
+                if (createdUserRes.Data is null)
+                {
+                    return new(null, createdUserRes.Status, createdUserRes.Message);
+                }
+
                 string userId = createdUserRes.Data?.Id ?? user.Id;
 
                 var barbershopResponse = await _barbershopService.GetByIdAsync(user.BarbershopId);
@@ -178,8 +194,18 @@ namespace api_barber.Services
         {
             try
             {
-                ResponseApi<User> existingUser = await _userService.GetByEmailAsync(request.Email, "", null);
+                if (!ValidationUtils.IsValidEmail(request.Email)) return new(null, 400, "E-mail inválido.");
+                if (!ValidationUtils.IsValidDocument(request.Document)) return new(null, 400, "Documento (CPF/CNPJ) inválido.");
+                if (!ValidationUtils.IsValidPhone(request.WhatsApp)) return new(null, 400, "WhatsApp/Telefone inválido.");
+
+                ResponseApi<User> existingUser = await _userService.GetByEmailAdminAsync(request.Email);
                 if (existingUser.Data is not null) return new(null, 400, "Este e-mail já está cadastrado.");
+
+                ResponseApi<User> existingDoc = await _userService.GetByDocumentAdminAsync(request.Document);
+                if (existingDoc.Data is not null) return new(null, 400, "Este documento já está cadastrado.");
+
+                ResponseApi<User> existingWhatsApp = await _userService.GetByWhatsAppAdminAsync(request.WhatsApp);
+                if (existingWhatsApp.Data is not null) return new(null, 400, "Este WhatsApp já está cadastrado.");
 
                 Enum.TryParse<TypePersonEnum>(request.TypePerson, out var typePerson);
 

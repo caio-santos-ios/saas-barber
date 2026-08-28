@@ -15,7 +15,8 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: white;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   padding: 0.5rem;
   border-radius: 8px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
@@ -106,18 +107,17 @@
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
-  background: #f1f5f9;
-  color: #64748b;
+  background: var(--status-active-bg);
+  color: var(--status-active);
 }
 .status-badge.active {
-  background: #dcfce7;
-  color: #16a34a;
+  background: var(--status-active-bg);
+  color: var(--status-active);
 }
 .status-badge.cancelled {
-  background: #fee2e2;
-  color: #ef4444;
+  background: var(--status-inactive-bg);
+  color: var(--status-inactive);
 }
-
 
 .modal-overlay {
   position: fixed;
@@ -133,7 +133,8 @@
 }
 
 .modal-content {
-  background: white;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   width: 90%;
   max-width: 500px;
@@ -153,6 +154,7 @@
 .modal-header h2 {
   font-size: 1.25rem;
   font-weight: 700;
+  color: var(--text-main);
 }
 
 .close-btn {
@@ -188,7 +190,7 @@
 .slot-btn {
   padding: 8px;
   border: 1px solid var(--border-color);
-  background: white;
+  background: var(--bg-main);
   border-radius: 8px;
   cursor: pointer;
   font-weight: 500;
@@ -203,7 +205,8 @@
 
 .slot-btn.selected {
   background: var(--accent-primary);
-  color: white;
+  color: #000;
+  font-weight: 600;
   border-color: var(--accent-primary);
 }
 
@@ -212,10 +215,9 @@
   color: #ef4444;
   font-size: 0.875rem;
   padding: 1rem;
-  background: #fee2e2;
+  background: var(--status-inactive-bg);
   border-radius: 8px;
 }
-
 
 .form-group {
   display: flex;
@@ -226,34 +228,33 @@
 .form-group label {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #64748b;
+  color: var(--text-muted);
   text-transform: uppercase;
 }
 
 .form-input {
   appearance: none;
   -webkit-appearance: none;
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background-color: var(--bg-main);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 10px 14px;
   font-size: 0.875rem;
   font-weight: 500;
   font-family: inherit;
-  color: #334155;
+  color: var(--text-main);
   transition: all 0.2s ease;
   outline: none;
   width: 100%;
 }
 
 .form-input:hover {
-  border-color: #cbd5e1;
-  background-color: #f1f5f9;
+  border-color: var(--border-color);
 }
 
 .form-input:focus {
   border-color: var(--accent-primary);
-  background-color: white;
+  background-color: var(--bg-card);
   box-shadow: 0 0 0 3px rgba(220, 163, 17, 0.1);
 }
 

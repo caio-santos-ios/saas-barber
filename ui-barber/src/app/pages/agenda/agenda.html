@@ -15,7 +15,7 @@
   </div>
 
   <div class="card">
-    <div class="table-responsive">
+    <div class="table-responsive desktop-table-view">
       <table class="table">
         <thead>
           <tr>
@@ -56,9 +56,40 @@
         </tbody>
       </table>
     </div>
+
+    <div class="mobile-cards-view">
+      <div class="mobile-data-card" *ngFor="let apt of appointments">
+        <div class="mobile-card-header">
+          <div>
+            <div style="font-weight: 700; font-size: 16px; color: var(--accent-primary);">🕒 {{ apt.hour }}</div>
+            <div style="font-weight: 600; color: var(--text-main); margin-top: 4px;">{{ apt.customerName }}</div>
+          </div>
+          <span class="status-badge" 
+            [class.active]="apt.statusRaw === 0 || apt.statusRaw === 1" 
+            [class.inactive]="apt.statusRaw === 3"
+            [class.cancelled]="apt.statusRaw === 2">{{ apt.statusLabel }}</span>
+        </div>
+
+        <div class="mobile-card-body">
+          <div class="mobile-card-field">
+            <span class="mobile-card-field-label">Profissional</span>
+            <span class="mobile-card-field-value">{{ apt.barberName }}</span>
+          </div>
+          <div class="mobile-card-field">
+            <span class="mobile-card-field-label">Serviço</span>
+            <span class="mobile-card-field-value">{{ apt.serviceTypeName }}</span>
+          </div>
+          <div class="mobile-card-field">
+            <span class="mobile-card-field-label">Valor</span>
+            <span class="mobile-card-field-value" style="font-weight: 700; color: var(--text-main);">{{ apt.value | currency:'BRL' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="appointments.length === 0" class="text-center py-4 text-muted">Nenhum agendamento para este dia.</div>
+    </div>
   </div>
 </div>
-
 
 <div class="modal-overlay" *ngIf="isModalOpen">
   <div class="modal-content" (click)="$event.stopPropagation()">
