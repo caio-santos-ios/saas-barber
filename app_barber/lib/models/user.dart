@@ -5,6 +5,7 @@ class User {
   final String whatsapp;
   final String photo;
   final String role;
+  final String document;
 
   User({
     required this.id,
@@ -13,6 +14,7 @@ class User {
     required this.whatsapp,
     required this.photo,
     required this.role,
+    this.document = '',
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -23,6 +25,7 @@ class User {
       whatsapp: json['whatsapp'] ?? '',
       photo: json['photo'] ?? '',
       role: json['role']?.toString() ?? '',
+      document: json['document'] ?? '',
     );
   }
 }

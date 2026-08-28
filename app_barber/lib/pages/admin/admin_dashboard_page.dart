@@ -36,13 +36,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
       final startStr = _startDate.toIso8601String().split('T')[0];
       final endStr = _endDate.toIso8601String().split('T')[0];
 
-      final results = await Future.wait([
-        _appointmentRepo.getBarberAppointments(barbershopId),
-        apiClient.dio.get('/web/dashboard?startDate=$startStr&endDate=$endStr'),
-      ]);
-
-      final appointments = results[0] as List<Appointment>;
-      final metricsResponse = results[1];
+      final appointments = await _appointmentRepo.getBarberAppointments(barbershopId);
+      final metricsResponse = await apiClient.dio.get('/web/dashboard?startDate=$startStr&endDate=$endStr');
 
       if (mounted) {
         setState(() {
