@@ -62,7 +62,6 @@ namespace api_barber.Services
         {
             try
             {
-                System.Console.WriteLine(request.Email);
                 User user = new();
                 if (request.Role == RoleUserEnum.Admin)
                 {
@@ -73,7 +72,6 @@ namespace api_barber.Services
                 else
                 {
                     ResponseApi<User> userResponse = await _userService.GetByEmailAsync(request.Email, request.BarbershopId, request.Role);
-                    System.Console.WriteLine(userResponse.Data);
                     if (userResponse.Data == null)
                     {
                         userResponse = await _userService.GetByEmailAsync(request.Email, request.BarbershopId, null);
