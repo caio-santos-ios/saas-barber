@@ -52,12 +52,20 @@
   min-height: 44px;
   display: flex;
   align-items: center;
+  gap: 12px;
   color: var(--text-sidebar-muted);
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
   transition: all 0.2s;
   text-decoration: none;
+}
+
+.nav-icon {
+  width: 18px;
+  text-align: center;
+  font-size: 15px;
+  flex-shrink: 0;
 }
 
 .nav-item:hover {

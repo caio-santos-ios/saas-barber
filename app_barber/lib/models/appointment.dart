@@ -42,6 +42,9 @@ class Appointment {
         case 'marcado': return 0;
         case 'cancelado': return 1;
         case 'finalizado': return 2;
+        case 'naorealizado':
+        case 'não realizado':
+        case 'nao realizado': return 3;
         default: return 0;
       }
     }

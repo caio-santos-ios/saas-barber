@@ -30,6 +30,22 @@ namespace api_barber.Controllers
             var response = await subscriptionService.CancelAsync(barbershopId);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
+
+        [HttpGet("invoices/{paymentId}/pix")]
+        public async Task<IActionResult> GetInvoicePix(string paymentId)
+        {
+            string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
+            var response = await subscriptionService.GetInvoicePixAsync(paymentId, barbershopId);
+            return StatusCode(response.Status, new { response.Data, response.Message });
+        }
+
+        [HttpPost("invoices/{paymentId}/pay-card")]
+        public async Task<IActionResult> PayInvoiceWithCreditCard(string paymentId, [FromBody] CreditCardRequest request)
+        {
+            string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
+            var response = await subscriptionService.PayInvoiceWithCreditCardAsync(paymentId, request, barbershopId);
+            return StatusCode(response.Status, new { response.Data, response.Message });
+        }
     }
 }
 

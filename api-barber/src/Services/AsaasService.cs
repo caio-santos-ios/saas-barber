@@ -203,5 +203,60 @@ namespace api_barber.Services
             }
             return false;
         }
+
+        public async Task<object?> GetPaymentPixAsync(string paymentId)
+        {
+            var response = await _httpClient.GetAsync($"payments/{paymentId}/pixQrCode");
+            if (response.IsSuccessStatusCode)
+            {
+                var responseBody = await response.Content.ReadAsStringAsync();
+                var json = JsonSerializer.Deserialize<JsonElement>(responseBody);
+                return new
+                {
+                    pixQrCode = json.TryGetProperty("encodedImage", out var img) ? img.GetString() : null,
+                    pixKey = json.TryGetProperty("payload", out var key) ? key.GetString() : null,
+                    expirationDate = json.TryGetProperty("expirationDate", out var exp) ? exp.GetString() : null
+                };
+            }
+            return null;
+        }
+
+        public async Task<object?> PayWithCreditCardAsync(string paymentId, api_barber.Requests.Subscription.CreditCardRequest creditCard, object? creditCardHolderInfo)
+        {
+            var payload = new
+            {
+                creditCard = new
+                {
+                    holderName = creditCard.HolderName,
+                    number = creditCard.Number,
+                    expiryMonth = creditCard.ExpiryMonth,
+                    expiryYear = creditCard.ExpiryYear,
+                    ccv = creditCard.Ccv
+                },
+                creditCardHolderInfo
+            };
+            var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync($"payments/{paymentId}/payWithCreditCard", content);
+            if (response.IsSuccessStatusCode)
+            {
+                var responseBody = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Deserialize<JsonElement>(responseBody);
+            }
+            else
+            {
+                var errorBody = await response.Content.ReadAsStringAsync();
+                try
+                {
+                    var errJson = JsonSerializer.Deserialize<JsonElement>(errorBody);
+                    var errMsg = errJson.GetProperty("errors")[0].GetProperty("description").GetString();
+                    throw new Exception(errMsg);
+                }
+                catch (Exception ex) when (ex is not JsonException && ex is not KeyNotFoundException)
+                {
+                    throw;
+                }
+                throw new Exception("Falha ao pagar com cartão no Asaas.");
+            }
+        }
     }
 }

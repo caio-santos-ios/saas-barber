@@ -149,7 +149,7 @@ namespace api_barber.Services
                         int.TryParse(sVal.ToString(), out status);
                     }
 
-                    bool isUpcoming = fullDateTime >= now.AddMinutes(-30) && status != (int)AppointmentStatusEnum.Finalizado && status != (int)AppointmentStatusEnum.Cancelado;
+                    bool isUpcoming = fullDateTime >= now.AddMinutes(-30) && status != (int)AppointmentStatusEnum.Finalizado && status != (int)AppointmentStatusEnum.Cancelado && status != (int)AppointmentStatusEnum.NaoRealizado;
                     return isUpcoming ? fullDateTime.Ticks : -fullDateTime.Ticks;
                 })
                 .ToList();
@@ -219,13 +219,13 @@ namespace api_barber.Services
                 }
 
                 var existingAppointments = await repository.GetByBarberAndDateAsync(barberId, date, barbershopId);
-                var validAppointments = existingAppointments.Where(a => a.Status != AppointmentStatusEnum.Cancelado && !a.Deleted).ToList();
+                var validAppointments = existingAppointments.Where(a => a.Status != AppointmentStatusEnum.Cancelado && a.Status != AppointmentStatusEnum.NaoRealizado && !a.Deleted).ToList();
 
                 List<Appointment> validCustomerAppointments = [];
                 if (!string.IsNullOrWhiteSpace(customerId))
                 {
                     var custApts = await repository.GetByCustomerAndDateAsync(customerId, date, barbershopId);
-                    validCustomerAppointments = custApts.Where(a => a.Status != AppointmentStatusEnum.Cancelado && !a.Deleted).ToList();
+                    validCustomerAppointments = custApts.Where(a => a.Status != AppointmentStatusEnum.Cancelado && a.Status != AppointmentStatusEnum.NaoRealizado && !a.Deleted).ToList();
                 }
 
                 var availableSlots = new List<string>();

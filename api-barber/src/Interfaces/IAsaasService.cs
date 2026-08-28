@@ -6,6 +6,8 @@ namespace api_barber.Interfaces
         Task<object> CreateSubscriptionAsync(string asaasCustomerId, string planId, decimal value, string billingType, api_barber.Requests.Subscription.CreditCardRequest? creditCard = null, object? creditCardHolderInfo = null);
         Task<object?> GetInvoicesAsync(string customerId);
         Task<bool> CancelSubscriptionAsync(string customerId);
+        Task<object?> GetPaymentPixAsync(string paymentId);
+        Task<object?> PayWithCreditCardAsync(string paymentId, api_barber.Requests.Subscription.CreditCardRequest creditCard, object? creditCardHolderInfo);
     }
 }
 

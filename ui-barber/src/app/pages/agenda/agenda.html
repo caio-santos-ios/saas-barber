@@ -48,11 +48,12 @@
             <td style="vertical-align: middle; color: var(--text-muted);">{{ apt.serviceTypeName }}</td>
             <td style="vertical-align: middle; font-weight: 500;">{{ apt.value | currency:'BRL' }}</td>
             <td style="vertical-align: middle;">
-              <div class="status-dropdown-container">
+              <div class="status-dropdown-container" [class.is-active]="activeStatusDropdownId === apt.id">
                 <button type="button" class="status-badge status-btn"
                   [class.status-scheduled]="apt.statusCode === 'scheduled'" 
                   [class.status-completed]="apt.statusCode === 'completed'"
                   [class.status-cancelled]="apt.statusCode === 'cancelled'"
+                  [class.status-not-done]="apt.statusCode === 'not-done'"
                   (click)="toggleStatusDropdown($event, apt.id)">
                   <span>{{ apt.statusLabel }}</span>
                   <i class="fa-solid fa-chevron-down status-chevron"></i>
@@ -74,6 +75,11 @@
                     <span>CANCELADO</span>
                     <i *ngIf="getStatusNumeric(apt.status) === 1" class="fa-solid fa-check check-icon"></i>
                   </div>
+                  <div class="status-dropdown-item item-not-done" (click)="selectStatus($event, apt, 3)">
+                    <span class="status-dot dot-not-done"></span>
+                    <span>NÃO REALIZADO</span>
+                    <i *ngIf="getStatusNumeric(apt.status) === 3" class="fa-solid fa-check check-icon"></i>
+                  </div>
                 </div>
               </div>
             </td>
@@ -94,11 +100,12 @@
             </div>
             <div style="font-weight: 600; color: var(--text-main); margin-top: 4px;">{{ apt.customerName }}</div>
           </div>
-          <div class="status-dropdown-container">
+          <div class="status-dropdown-container" [class.is-active]="activeStatusDropdownId === apt.id">
             <button type="button" class="status-badge status-btn"
               [class.status-scheduled]="apt.statusCode === 'scheduled'" 
               [class.status-completed]="apt.statusCode === 'completed'"
               [class.status-cancelled]="apt.statusCode === 'cancelled'"
+              [class.status-not-done]="apt.statusCode === 'not-done'"
               (click)="toggleStatusDropdown($event, apt.id)">
               <span>{{ apt.statusLabel }}</span>
               <i class="fa-solid fa-chevron-down status-chevron"></i>
@@ -119,6 +126,11 @@
                 <span class="status-dot dot-cancelled"></span>
                 <span>CANCELADO</span>
                 <i *ngIf="getStatusNumeric(apt.status) === 1" class="fa-solid fa-check check-icon"></i>
+              </div>
+              <div class="status-dropdown-item item-not-done" (click)="selectStatus($event, apt, 3)">
+                <span class="status-dot dot-not-done"></span>
+                <span>NÃO REALIZADO</span>
+                <i *ngIf="getStatusNumeric(apt.status) === 3" class="fa-solid fa-check check-icon"></i>
               </div>
             </div>
           </div>

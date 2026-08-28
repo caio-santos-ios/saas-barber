@@ -1,10 +1,11 @@
-﻿namespace api_barber.Models.Enums
+namespace api_barber.Models.Enums
 {
     public enum AppointmentStatusEnum
     {
         Marcado,
         Cancelado,
-        Finalizado
+        Finalizado,
+        NaoRealizado
     }
 }
 

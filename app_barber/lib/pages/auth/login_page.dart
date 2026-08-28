@@ -39,27 +39,49 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
     final apiClient = ApiClient();
     _authRepository = AuthRepository(apiClient);
-    _checkAutoBiometrics();
+    _loadSavedData();
+  }
+
+  void _loadSavedData() {
+    final authBox = Hive.box('auth');
+    final savedEmail = authBox.get('savedEmail', defaultValue: '') as String;
+    final savedRole = authBox.get('savedRole', defaultValue: 'Customer') as String;
+    if (savedEmail.isNotEmpty) {
+      _emailController.text = savedEmail;
+    }
+    if (savedRole.isNotEmpty) {
+      _selectedRole = savedRole;
+    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAutoBiometrics();
+    });
   }
 
   Future<void> _checkAutoBiometrics() async {
     final authBox = Hive.box('auth');
-    final useBiometrics = authBox.get('useBiometrics', defaultValue: false);
-    final token = authBox.get('token');
+    final useBiometrics = authBox.get('useBiometrics', defaultValue: false) as bool;
+    final savedPassword = authBox.get('savedPassword', defaultValue: '') as String;
+    final savedEmail = authBox.get('savedEmail', defaultValue: '') as String;
 
-    if (useBiometrics && token != null) {
+    if (useBiometrics && savedPassword.isNotEmpty && savedEmail.isNotEmpty) {
       try {
-        final bool didAuthenticate = await _localAuth.authenticate(
-          localizedReason: 'Autentique-se para acessar a barbearia',
-        );
+        final canCheck = await _localAuth.canCheckBiometrics;
+        final isSupported = await _localAuth.isDeviceSupported();
 
-        if (didAuthenticate && mounted) {
-          _routeUser(
-            authBox.get('passwordResetRequired', defaultValue: false),
-            authBox.get('role', defaultValue: 'customer'),
+        if (canCheck || isSupported) {
+          final bool didAuthenticate = await _localAuth.authenticate(
+            localizedReason: 'Autentique-se para entrar na barbearia',
           );
+
+          if (didAuthenticate && mounted) {
+            _passwordController.text = savedPassword;
+            _emailController.text = savedEmail;
+            _doLogin();
+          }
         }
-      } catch (e) {}
+      } catch (e) {
+        debugPrint('Biometric auth error: $e');
+      }
     }
   }
 
@@ -97,7 +119,7 @@ class _LoginPageState extends State<LoginPage> {
       final canCheck = await _localAuth.canCheckBiometrics;
       final isSupported = await _localAuth.isDeviceSupported();
 
-      if (canCheck && isSupported && mounted) {
+      if ((canCheck || isSupported) && mounted) {
         final result = await showDialog<bool>(
           context: context,
           barrierDismissible: false,
@@ -118,8 +140,17 @@ class _LoginPageState extends State<LoginPage> {
         );
         if (result != null) {
           await authBox.put('useBiometrics', result);
+          if (result == true) {
+            await authBox.put('savedPassword', _passwordController.text);
+            await authBox.put('savedEmail', _emailController.text.trim());
+            await authBox.put('savedRole', _selectedRole);
+          }
         }
       }
+    } else if (useBiometrics == true) {
+      await authBox.put('savedPassword', _passwordController.text);
+      await authBox.put('savedEmail', _emailController.text.trim());
+      await authBox.put('savedRole', _selectedRole);
     }
   }
 
@@ -154,6 +185,11 @@ class _LoginPageState extends State<LoginPage> {
         if (!mounted) return;
 
         if (session != null) {
+          await authBox.put('savedEmail', _emailController.text.trim());
+          await authBox.put('savedRole', _selectedRole);
+          if (authBox.get('useBiometrics', defaultValue: false) == true) {
+            await authBox.put('savedPassword', _passwordController.text);
+          }
           await _askForBiometrics();
           
           if (!mounted) return;
@@ -371,26 +407,50 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  SizedBox(
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _doLogin,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 56,
+                          child: ElevatedButton(
+                            onPressed: _isLoading ? null : _doLogin,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).colorScheme.primary,
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: _isLoading
+                                ? const SizedBox(
+                                    width: 24,
+                                    height: 24,
+                                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                                  )
+                                : const Text('Entrar', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          ),
                         ),
                       ),
-                      child: _isLoading
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
-                            )
-                          : const Text('Entrar', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                    ),
+                      if (authBox.get('useBiometrics', defaultValue: false) == true && (authBox.get('savedPassword', defaultValue: '') as String).isNotEmpty) ...[
+                        const SizedBox(width: 12),
+                        SizedBox(
+                          height: 56,
+                          width: 56,
+                          child: OutlinedButton(
+                            onPressed: _isLoading ? null : _checkAutoBiometrics,
+                            style: OutlinedButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              side: BorderSide(color: Theme.of(context).colorScheme.primary, width: 1.5),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Icon(Icons.fingerprint, color: Theme.of(context).colorScheme.primary, size: 28),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   const SizedBox(height: 24),
                   Row(

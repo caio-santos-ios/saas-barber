@@ -102,6 +102,54 @@ namespace api_barber.Services
             await barbershopService.UpdateEntityAsync(barbershop);
             return new(null, 200, "Subscription cancelled successfully");
         }
+
+        public async Task<ResponseApi<object>> GetInvoicePixAsync(string paymentId, string barbershopId)
+        {
+            if (string.IsNullOrEmpty(barbershopId)) return new(null, 400, "BarbershopId is required");
+            if (string.IsNullOrEmpty(paymentId)) return new(null, 400, "PaymentId is required");
+
+            var barbershopResponse = await barbershopService.GetByIdAsync(barbershopId);
+            if (barbershopResponse.Data is null || string.IsNullOrEmpty(barbershopResponse.Data.AsaasCustomerId))
+                return new(null, 404, "Barbershop não encontrada");
+
+            var pixData = await asaasService.GetPaymentPixAsync(paymentId);
+            if (pixData == null)
+                return new(null, 400, "Não foi possível obter o PIX para esta fatura");
+
+            return new(pixData, 200, "PIX obtido com sucesso");
+        }
+
+        public async Task<ResponseApi<object>> PayInvoiceWithCreditCardAsync(string paymentId, CreditCardRequest creditCard, string barbershopId)
+        {
+            if (string.IsNullOrEmpty(barbershopId)) return new(null, 400, "BarbershopId is required");
+            if (string.IsNullOrEmpty(paymentId)) return new(null, 400, "PaymentId is required");
+            if (creditCard == null) return new(null, 400, "Dados do cartão são obrigatórios");
+
+            var barbershopResponse = await barbershopService.GetByIdAsync(barbershopId);
+            if (barbershopResponse.Data is null)
+                return new(null, 404, "Barbershop não encontrada");
+
+            var barbershop = barbershopResponse.Data;
+            object creditCardHolderInfo = new
+            {
+                name = string.IsNullOrEmpty(barbershop.Name) ? "Titular Padrão" : barbershop.Name,
+                email = string.IsNullOrEmpty(barbershop.Email) ? "titular@asaas.com" : barbershop.Email,
+                cpfCnpj = string.IsNullOrEmpty(barbershop.Document) ? "00000000000" : barbershop.Document,
+                postalCode = "01311000",
+                addressNumber = "123",
+                phone = string.IsNullOrEmpty(barbershop.Phone) ? "11999999999" : barbershop.Phone
+            };
+
+            try
+            {
+                var result = await asaasService.PayWithCreditCardAsync(paymentId, creditCard, creditCardHolderInfo);
+                return new(result, 200, "Pagamento processado com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 400, ex.Message);
+            }
+        }
     }
 }
 

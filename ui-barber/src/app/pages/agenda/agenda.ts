@@ -58,8 +58,11 @@ export class Agenda implements OnInit {
         if (s === 2 || s === '2' || s === 'finalizado' || s === 'concluído' || s === 'concluido') {
           return { label: 'CONCLUÍDO', code: 'completed' };
         }
-        if (s === 1 || s === '1' || s === 3 || s === '3' || s === 'cancelado') {
+        if (s === 1 || s === '1' || s === 'cancelado') {
           return { label: 'CANCELADO', code: 'cancelled' };
+        }
+        if (s === 3 || s === '3' || s === 'naorealizado' || s === 'não realizado' || s === 'nao realizado') {
+          return { label: 'NÃO REALIZADO', code: 'not-done' };
         }
         return { label: 'AGENDADO', code: 'scheduled' };
       };
@@ -216,8 +219,9 @@ export class Agenda implements OnInit {
   getStatusNumeric(status: any): number {
     const s = typeof status === 'string' ? status.trim().toLowerCase() : status;
     if (s === 0 || s === '0' || s === 'marcado' || s === 'agendado') return 0;
+    if (s === 1 || s === '1' || s === 'cancelado') return 1;
     if (s === 2 || s === '2' || s === 'finalizado' || s === 'concluído' || s === 'concluido') return 2;
-    if (s === 1 || s === '1' || s === 3 || s === '3' || s === 'cancelado') return 1;
+    if (s === 3 || s === '3' || s === 'naorealizado' || s === 'não realizado' || s === 'nao realizado') return 3;
     return 0;
   }
 

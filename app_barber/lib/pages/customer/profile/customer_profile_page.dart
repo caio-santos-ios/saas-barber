@@ -46,7 +46,8 @@ class _CustomerProfilePageState extends ConsumerState<CustomerProfilePage> {
     final authBox = Hive.box('auth');
     _photo = authBox.get('photo', defaultValue: '');
     
-    _useBiometrics = Hive.box('settings').get('biometrics', defaultValue: false);
+    _useBiometrics = authBox.get('useBiometrics', defaultValue: false) ||
+        Hive.box('settings').get('biometrics', defaultValue: false);
 
     try {        
       final response = await _apiClient.dio.get('/users/${barberService.getUserId()}');
@@ -257,6 +258,7 @@ class _CustomerProfilePageState extends ConsumerState<CustomerProfilePage> {
                 onChanged: (val) {
                   setState(() => _useBiometrics = val);
                   Hive.box('settings').put('biometrics', val);
+                  Hive.box('auth').put('useBiometrics', val);
                 },
                 activeColor: Theme.of(context).colorScheme.primary,
               ),

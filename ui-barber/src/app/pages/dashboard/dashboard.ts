@@ -85,8 +85,11 @@ export class Dashboard implements OnInit, OnDestroy {
           if (s === 2 || s === '2' || s === 'finalizado' || s === 'concluído' || s === 'concluido') {
             return { label: 'CONCLUÍDO', code: 'completed' };
           }
-          if (s === 1 || s === '1' || s === 3 || s === '3' || s === 'cancelado') {
+          if (s === 1 || s === '1' || s === 'cancelado') {
             return { label: 'CANCELADO', code: 'cancelled' };
+          }
+          if (s === 3 || s === '3' || s === 'naorealizado' || s === 'não realizado' || s === 'nao realizado') {
+            return { label: 'NÃO REALIZADO', code: 'not-done' };
           }
           return { label: 'AGENDADO', code: 'scheduled' };
         };

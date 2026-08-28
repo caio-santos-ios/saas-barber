@@ -185,6 +185,95 @@ export class Subscription implements OnInit {
     this.router.navigate(['/dashboard']);
   }
 
+  isPayModalOpen = false;
+  selectedInvoice: any = null;
+  invoiceBillingType: 'PIX' | 'BOLETO' | 'CREDIT_CARD' = 'PIX';
+  invoicePixLoading = false;
+  invoicePixData: { pixQrCode?: string; pixKey?: string; expirationDate?: string } | null = null;
+  invoiceCardData = {
+    holderName: '',
+    number: '',
+    expiryMonth: '',
+    expiryYear: '',
+    ccv: ''
+  };
+  payingInvoice = false;
+
+  openPayModal(invoice: any) {
+    this.selectedInvoice = invoice;
+    this.isPayModalOpen = true;
+    this.invoiceBillingType = invoice.billingType === 'BOLETO' ? 'BOLETO' : invoice.billingType === 'CREDIT_CARD' ? 'CREDIT_CARD' : 'PIX';
+    this.invoicePixData = null;
+    this.invoiceCardData = { holderName: '', number: '', expiryMonth: '', expiryYear: '', ccv: '' };
+    if (this.invoiceBillingType === 'PIX') {
+      this.loadInvoicePix(invoice.id);
+    }
+  }
+
+  closePayModal() {
+    this.isPayModalOpen = false;
+    this.selectedInvoice = null;
+    this.invoicePixData = null;
+  }
+
+  selectInvoiceBillingType(type: 'PIX' | 'BOLETO' | 'CREDIT_CARD') {
+    this.invoiceBillingType = type;
+    if (type === 'PIX' && !this.invoicePixData && this.selectedInvoice) {
+      this.loadInvoicePix(this.selectedInvoice.id);
+    }
+  }
+
+  async loadInvoicePix(paymentId: string) {
+    this.invoicePixLoading = true;
+    this.cdr.detectChanges();
+    try {
+      const res = await api.get(`/subscriptions/invoices/${paymentId}/pix`);
+      this.invoicePixData = res.data?.data || res.data;
+    } catch (err) {
+      this.toastr.error('Não foi possível carregar a chave PIX desta fatura.', 'Erro');
+    } finally {
+      this.invoicePixLoading = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  copyInvoicePixKey() {
+    if (this.invoicePixData?.pixKey) {
+      navigator.clipboard.writeText(this.invoicePixData.pixKey);
+      this.toastr.info('Chave PIX copiada!', 'Copiado');
+    }
+  }
+
+  async payInvoiceWithCard() {
+    if (!this.selectedInvoice) return;
+    if (!this.invoiceCardData.holderName || !this.invoiceCardData.number || !this.invoiceCardData.expiryMonth || !this.invoiceCardData.expiryYear || !this.invoiceCardData.ccv) {
+      this.toastr.warning('Preencha todos os campos do cartão.', 'Campos Obrigatórios');
+      return;
+    }
+
+    this.payingInvoice = true;
+    this.cdr.detectChanges();
+    try {
+      const ccNumber = this.invoiceCardData.number.replace(/\s+/g, '');
+      await api.post(`/subscriptions/invoices/${this.selectedInvoice.id}/pay-card`, {
+        holderName: this.invoiceCardData.holderName,
+        number: ccNumber,
+        expiryMonth: this.invoiceCardData.expiryMonth,
+        expiryYear: this.invoiceCardData.expiryYear,
+        ccv: this.invoiceCardData.ccv
+      });
+      this.toastr.success('Pagamento realizado com sucesso!', 'Fatura Paga');
+      this.closePayModal();
+      await this.loadInvoices();
+    } catch (err: any) {
+      const msg = err.response?.data?.message || 'Erro ao processar pagamento do cartão.';
+      this.toastr.error(msg, 'Erro no Pagamento');
+    } finally {
+      this.payingInvoice = false;
+      this.cdr.detectChanges();
+    }
+  }
+
   translateStatus(status: string): string {
     const map: Record<string, string> = {
       'PENDING': 'Pendente',

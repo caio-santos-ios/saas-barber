@@ -176,16 +176,20 @@ class _CustomerAppointmentsPageState extends State<CustomerAppointmentsPage> {
     String statusText;
     
     switch (appt.status) {
-      case 2:
+      case 1:
         statusColor = Colors.red;
         statusText = 'Cancelado';
         break;
-      case 3:
+      case 2:
         statusColor = Colors.green;
         statusText = 'Concluído';
         break;
-      default:
+      case 3:
         statusColor = Colors.orange;
+        statusText = 'Não Realizado';
+        break;
+      default:
+        statusColor = Colors.blue;
         statusText = 'Agendado';
     }
 

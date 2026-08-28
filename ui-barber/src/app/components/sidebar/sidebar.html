@@ -4,24 +4,53 @@
   </div>
   
   <nav class="sidebar-nav">
-    <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">Dashboard</a>
-    <a routerLink="/calendar" routerLinkActive="active" class="nav-item">Agenda</a>
-    <a routerLink="/customers" routerLinkActive="active" class="nav-item">Clientes</a>
-    <a routerLink="/barbers" routerLinkActive="active" class="nav-item">Profissionais</a>
-    <a routerLink="/services" routerLinkActive="active" class="nav-item">Serviços</a>
-    <a routerLink="/schedules" routerLinkActive="active" class="nav-item">Escalas</a>
-    <a routerLink="/share" routerLinkActive="active" class="nav-item">Divulgar App</a>
-    <a routerLink="/subscription" routerLinkActive="active" class="nav-item">Assinatura</a>
-    <a routerLink="/settings" routerLinkActive="active" class="nav-item">Configurações</a>
+    <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+      <i class="fa-solid fa-chart-pie nav-icon"></i>
+      <span>Dashboard</span>
+    </a>
+    <a routerLink="/calendar" routerLinkActive="active" class="nav-item">
+      <i class="fa-regular fa-calendar-days nav-icon"></i>
+      <span>Agenda</span>
+    </a>
+    <a routerLink="/customers" routerLinkActive="active" class="nav-item">
+      <i class="fa-solid fa-users nav-icon"></i>
+      <span>Clientes</span>
+    </a>
+    <a routerLink="/barbers" routerLinkActive="active" class="nav-item">
+      <i class="fa-solid fa-scissors nav-icon"></i>
+      <span>Profissionais</span>
+    </a>
+    <a routerLink="/services" routerLinkActive="active" class="nav-item">
+      <i class="fa-solid fa-list-check nav-icon"></i>
+      <span>Serviços</span>
+    </a>
+    <a routerLink="/schedules" routerLinkActive="active" class="nav-item">
+      <i class="fa-regular fa-clock nav-icon"></i>
+      <span>Escalas</span>
+    </a>
+    <a routerLink="/share" routerLinkActive="active" class="nav-item">
+      <i class="fa-solid fa-bullhorn nav-icon"></i>
+      <span>Divulgar App</span>
+    </a>
+    <a routerLink="/subscription" routerLinkActive="active" class="nav-item">
+      <i class="fa-solid fa-crown nav-icon"></i>
+      <span>Assinatura</span>
+    </a>
+    <a routerLink="/settings" routerLinkActive="active" class="nav-item">
+      <i class="fa-solid fa-gear nav-icon"></i>
+      <span>Configurações</span>
+    </a>
     <a href="https://wa.me/5511965079106?text=Ol%C3%A1%2C%20preciso%20de%20suporte%20no%20sistema%20Na%20R%C3%A9gua" target="_blank" rel="noopener noreferrer" class="nav-item" style="color: #25d366; display: flex; align-items: center; gap: 10px;">
-      <i class="fa-brands fa-whatsapp" style="font-size: 16px;"></i> Suporte WhatsApp
+      <i class="fa-brands fa-whatsapp nav-icon" style="font-size: 16px;"></i>
+      <span>Suporte WhatsApp</span>
     </a>
     <button (click)="themeService.toggleTheme()" class="nav-item" style="background: none; border: none; width: 100%; cursor: pointer; text-align: left; display: flex; align-items: center; gap: 10px; color: var(--text-sidebar-muted);">
-      <i class="fa-solid" [ngClass]="themeService.isDark() ? 'fa-sun' : 'fa-moon'" style="font-size: 14px; width: 16px; text-align: center;"></i>
+      <i class="fa-solid nav-icon" [ngClass]="themeService.isDark() ? 'fa-sun' : 'fa-moon'" style="font-size: 14px; width: 16px; text-align: center;"></i>
       <span>{{ themeService.isDark() ? 'Modo Claro' : 'Modo Escuro' }}</span>
     </button>
     <a (click)="logout()" class="nav-item logout-btn" style="cursor: pointer; margin-top: auto; margin-bottom: 1rem; color: #ff4d4f; display: flex; align-items: center; justify-content: center; gap: 8px;">
-      <i class="fa-solid fa-arrow-right-from-bracket"></i> Sair
+      <i class="fa-solid fa-arrow-right-from-bracket"></i>
+      <span>Sair</span>
     </a>
   </nav>
 </aside>

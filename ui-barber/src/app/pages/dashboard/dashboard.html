@@ -178,7 +178,8 @@
               <span class="status-badge"
                 [class.status-scheduled]="apt.statusCode === 'scheduled'"
                 [class.status-completed]="apt.statusCode === 'completed'"
-                [class.status-cancelled]="apt.statusCode === 'cancelled'">{{ apt.statusLabel }}</span>
+                [class.status-cancelled]="apt.statusCode === 'cancelled'"
+                [class.status-not-done]="apt.statusCode === 'not-done'">{{ apt.statusLabel }}</span>
             </td>
           </tr>
           <tr *ngIf="appointments.length === 0">
@@ -200,7 +201,8 @@
           <span class="status-badge"
             [class.status-scheduled]="apt.statusCode === 'scheduled'"
             [class.status-completed]="apt.statusCode === 'completed'"
-            [class.status-cancelled]="apt.statusCode === 'cancelled'">{{ apt.statusLabel }}</span>
+            [class.status-cancelled]="apt.statusCode === 'cancelled'"
+            [class.status-not-done]="apt.statusCode === 'not-done'">{{ apt.statusLabel }}</span>
         </div>
 
         <div class="mobile-card-body">
