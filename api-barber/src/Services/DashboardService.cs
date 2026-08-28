@@ -30,9 +30,9 @@ namespace api_barber.Services
 
                 var periodAppointments = allAppointments.Where(a => a.Date.Date >= startOfPeriod.Date && a.Date.Date <= endOfPeriod.Date).ToList();
 
-                var canceledCount = periodAppointments.Count(a => a.Deleted || a.Status == AppointmentStatusEnum.Cancelado || (int)a.Status == 1);
-                var completedCount = periodAppointments.Count(a => !a.Deleted && (a.Status == AppointmentStatusEnum.Finalizado || (int)a.Status == 2 || (int)a.Status == 3));
-                var scheduledCount = periodAppointments.Count(a => !a.Deleted && (a.Status == AppointmentStatusEnum.Marcado || (int)a.Status == 0));
+                var canceledCount = periodAppointments.Count(a => a.Deleted || a.Status == AppointmentStatusEnum.Cancelado || (int)a.Status == 1 || (int)a.Status == 3);
+                var completedCount = periodAppointments.Count(a => !a.Deleted && (a.Status == AppointmentStatusEnum.Finalizado || (int)a.Status == 2) && (int)a.Status != 3 && (int)a.Status != 1);
+                var scheduledCount = periodAppointments.Count(a => !a.Deleted && (a.Status == AppointmentStatusEnum.Marcado || (int)a.Status == 0) && (int)a.Status != 3 && (int)a.Status != 1);
 
                 var metrics = new DashboardMetricsResponse
                 {
@@ -44,7 +44,7 @@ namespace api_barber.Services
                     ConfirmedAppointments = scheduledCount
                 };
 
-                var completedApps = periodAppointments.Where(a => !a.Deleted && (a.Status == AppointmentStatusEnum.Finalizado || (int)a.Status == 2 || (int)a.Status == 3));
+                var completedApps = periodAppointments.Where(a => !a.Deleted && (a.Status == AppointmentStatusEnum.Finalizado || (int)a.Status == 2) && (int)a.Status != 3 && (int)a.Status != 1);
                 metrics.TotalRevenue = completedApps.Sum(a => a.Value);
 
                 var serviceTypeMap = allServiceTypes.ToDictionary(st => st.Id, st => st.Name);
@@ -80,7 +80,7 @@ namespace api_barber.Services
                     .Select(g => new DailyRevenueItem
                     {
                         Date = g.Key.ToString("dd/MM"),
-                        Revenue = g.Where(a => a.Status == AppointmentStatusEnum.Finalizado || (int)a.Status == 2 || (int)a.Status == 3).Sum(a => a.Value),
+                        Revenue = g.Where(a => !a.Deleted && (a.Status == AppointmentStatusEnum.Finalizado || (int)a.Status == 2) && (int)a.Status != 3 && (int)a.Status != 1).Sum(a => a.Value),
                         Count = g.Count()
                     })
                     .ToList();
@@ -102,7 +102,7 @@ namespace api_barber.Services
                     .Select(g => new BarberRevenueItem
                     {
                         Name = userMap.GetValueOrDefault(g.Key) ?? "Profissional",
-                        Revenue = g.Where(a => a.Status == AppointmentStatusEnum.Finalizado || (int)a.Status == 2 || (int)a.Status == 3).Sum(a => a.Value),
+                        Revenue = g.Where(a => !a.Deleted && (a.Status == AppointmentStatusEnum.Finalizado || (int)a.Status == 2) && (int)a.Status != 3 && (int)a.Status != 1).Sum(a => a.Value),
                         Count = g.Count()
                     })
                     .OrderByDescending(b => b.Revenue)

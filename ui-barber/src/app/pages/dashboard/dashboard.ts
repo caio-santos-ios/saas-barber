@@ -81,6 +81,7 @@ export class Dashboard implements OnInit, OnDestroy {
           0: 'Agendado',
           1: 'Cancelado',
           2: 'Concluído',
+          3: 'Cancelado',
           'Marcado': 'Agendado',
           'Cancelado': 'Cancelado',
           'Finalizado': 'Concluído'
