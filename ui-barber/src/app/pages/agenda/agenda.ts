@@ -86,7 +86,17 @@ export class Agenda implements OnInit {
     if (!this.formData.barberId || !this.formData.date) return;
     
     try {
-      const res = await api.get(`/appointments/availability?barberId=${this.formData.barberId}&date=${this.formData.date}`);
+      const params = new URLSearchParams({
+        barberId: this.formData.barberId,
+        date: this.formData.date
+      });
+      if (this.formData.serviceId) {
+        params.append('serviceId', this.formData.serviceId);
+      }
+      if (this.formData.customerId) {
+        params.append('customerId', this.formData.customerId);
+      }
+      const res = await api.get(`/appointments/availability?${params.toString()}`);
       this.availableSlots = res.data.data || [];
       this.formData.hour = '';
     } catch (err) {

@@ -16,7 +16,8 @@ namespace api_barber.Services
     public class AppointmentService(
         IAppointmentRepository repository,
         IScheduleRepository scheduleRepository,
-        IServiceService serviceService) : IAppointmentService
+        IServiceService serviceService,
+        IServiceTypeService serviceTypeService) : IAppointmentService
     {
         #region READ
         public async Task<ResponseApi<List<dynamic>>> GetAllAsync(string barbershopId, string? customerId = null, string? barberId = null)
@@ -80,17 +81,16 @@ namespace api_barber.Services
                         {"id", new BsonDocument("$toString", "$_id")},
                         {"date", 1},
                         {"hour", 1},
-
                         {"customerName", new BsonDocument("$first", "$customers.name")},
                         {"barberName", new BsonDocument("$first", "$barbers.name")},
                         {"serviceTypeName", new BsonDocument("$first", "$serviceTypes.name")},
-
                         {"serviceId", new BsonDocument("$ifNull", new BsonArray { "$service_id", "$serviceId", "" })},
                         {"serviceTypeId", new BsonDocument("$ifNull", new BsonArray { "$service_type_id", "$serviceTypeId", "" })},
                         {"barberId", new BsonDocument("$ifNull", new BsonArray { "$barber_id", "$barberId", "" })},
                         {"customerId", new BsonDocument("$ifNull", new BsonArray { "$customer_id", "$customerId", "" })},
                         {"barbershopId", new BsonDocument("$ifNull", new BsonArray { "$barbershop_id", "$barbershopId", "" })},
                         {"value", new BsonDocument("$toDouble", "$value")},
+                        {"price", new BsonDocument("$toDouble", "$price")},
                         {"status", 1},
                         {"notes", 1},
                         {"cancelNotes", new BsonDocument("$ifNull", new BsonArray { "$cancel_notes", "$cancelNotes", "" })},
@@ -100,9 +100,8 @@ namespace api_barber.Services
                     new("$sort", new BsonDocument { { "date", 1 }, { "hour", 1 } } )
                 ];
 
-                List<dynamic> list = await repository.GetAllAsync(pipeline);
-
-                return new(list, 200, "Agendamentos listados com sucesso");
+                List<dynamic> result = await repository.GetAllAsync(pipeline);
+                return new(result, 200, "Agendamentos listados com sucesso");
             }
             catch (Exception ex)
             {
@@ -114,9 +113,11 @@ namespace api_barber.Services
         {
             try
             {
-                Appointment entity = await repository.GetByIdAsync(id);
-                if (entity is null) return new(null, 404, "Agendamento não encontrado");
-
+                Appointment? entity = await repository.GetByIdAsync(id);
+                if (entity == null || entity.Deleted)
+                {
+                    return new(null, 404, "Agendamento não encontrado");
+                }
                 return new(entity, 200, "Agendamento buscado com sucesso");
             }
             catch (Exception ex)
@@ -135,7 +136,7 @@ namespace api_barber.Services
 
                 if (schedule == null) return new(new List<string>(), 200, "Nenhuma escala para este dia.");
 
-                int serviceDurationMinutes = schedule.IntervalMinutes > 0 ? schedule.IntervalMinutes : 30;
+                int serviceDurationMinutes = 30;
                 if (!string.IsNullOrWhiteSpace(serviceId))
                 {
                     var srvRes = await serviceService.GetByIdAsync(serviceId);
@@ -143,6 +144,25 @@ namespace api_barber.Services
                     {
                         serviceDurationMinutes = srvRes.Data.DurationMinutes.Value;
                     }
+                    else
+                    {
+                        var srvTypeRes = await serviceTypeService.GetByIdAsync(serviceId);
+                        if (srvTypeRes.Data != null)
+                        {
+                            if (srvTypeRes.Data.DurationMinutes.HasValue && srvTypeRes.Data.DurationMinutes.Value > 0)
+                            {
+                                serviceDurationMinutes = srvTypeRes.Data.DurationMinutes.Value;
+                            }
+                            else if (srvTypeRes.Data.Duration > 0)
+                            {
+                                serviceDurationMinutes = srvTypeRes.Data.Duration;
+                            }
+                        }
+                    }
+                }
+                else if (schedule.IntervalMinutes > 0)
+                {
+                    serviceDurationMinutes = schedule.IntervalMinutes;
                 }
 
                 var existingAppointments = await repository.GetByBarberAndDateAsync(barberId, date, barbershopId);
@@ -157,7 +177,7 @@ namespace api_barber.Services
 
                 var availableSlots = new List<string>();
                 var currentTime = schedule.StartHour;
-                int step = schedule.IntervalMinutes > 0 ? schedule.IntervalMinutes : 30;
+                int step = serviceDurationMinutes > 0 ? serviceDurationMinutes : 30;
                 TimeSpan serviceDuration = TimeSpan.FromMinutes(serviceDurationMinutes);
 
                 while (currentTime + serviceDuration <= schedule.EndHour)
@@ -186,6 +206,17 @@ namespace api_barber.Services
                                     if (srv.Data != null && srv.Data.DurationMinutes.HasValue && srv.Data.DurationMinutes.Value > 0)
                                     {
                                         aptDuration = TimeSpan.FromMinutes(srv.Data.DurationMinutes.Value);
+                                    }
+                                    else
+                                    {
+                                        var srvType = await serviceTypeService.GetByIdAsync(apt.ServiceId);
+                                        if (srvType.Data != null)
+                                        {
+                                            if (srvType.Data.DurationMinutes.HasValue && srvType.Data.DurationMinutes.Value > 0)
+                                                aptDuration = TimeSpan.FromMinutes(srvType.Data.DurationMinutes.Value);
+                                            else if (srvType.Data.Duration > 0)
+                                                aptDuration = TimeSpan.FromMinutes(srvType.Data.Duration);
+                                        }
                                     }
                                 }
                                 var aptEnd = aptStart + aptDuration;
@@ -216,6 +247,17 @@ namespace api_barber.Services
                                     if (srv.Data != null && srv.Data.DurationMinutes.HasValue && srv.Data.DurationMinutes.Value > 0)
                                     {
                                         custAptDuration = TimeSpan.FromMinutes(srv.Data.DurationMinutes.Value);
+                                    }
+                                    else
+                                    {
+                                        var srvType = await serviceTypeService.GetByIdAsync(custApt.ServiceId);
+                                        if (srvType.Data != null)
+                                        {
+                                            if (srvType.Data.DurationMinutes.HasValue && srvType.Data.DurationMinutes.Value > 0)
+                                                custAptDuration = TimeSpan.FromMinutes(srvType.Data.DurationMinutes.Value);
+                                            else if (srvType.Data.Duration > 0)
+                                                custAptDuration = TimeSpan.FromMinutes(srvType.Data.Duration);
+                                        }
                                     }
                                 }
                                 var custAptEnd = custAptStart + custAptDuration;
