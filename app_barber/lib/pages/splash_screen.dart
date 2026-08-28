@@ -42,7 +42,8 @@ class _SplashScreenState extends State<SplashScreen> {
     final authBox = Hive.box('auth');
     final String token = authBox.get('token') ?? "";
     final String role = authBox.get('role') ?? "";
-    final bool useBiometrics = authBox.get('useBiometrics', defaultValue: false);
+    final bool useBiometrics = authBox.get('useBiometrics', defaultValue: false) ||
+        Hive.box('settings').get('biometrics', defaultValue: false);
     final String barbershopId = authBox.get('barbershopId') ?? "";
 
     if (!mounted) return;

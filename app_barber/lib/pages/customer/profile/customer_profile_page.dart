@@ -137,7 +137,6 @@ class _CustomerProfilePageState extends ConsumerState<CustomerProfilePage> {
     await authBox.delete('refreshToken');
     await authBox.delete('role');
     await authBox.delete('photo');
-    await authBox.delete('useBiometrics');
     
     if (mounted) {
       Navigator.of(context).pushAndRemoveUntil(

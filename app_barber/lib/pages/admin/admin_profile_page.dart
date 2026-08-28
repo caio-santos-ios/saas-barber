@@ -194,7 +194,6 @@ class _AdminProfilePageState extends ConsumerState<AdminProfilePage> {
     await authBox.delete('refreshToken');
     await authBox.delete('role');
     await authBox.delete('photo');
-    await authBox.delete('useBiometrics');
     if (mounted) {
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const LoginPage()),

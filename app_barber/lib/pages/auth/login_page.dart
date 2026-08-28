@@ -44,11 +44,7 @@ class _LoginPageState extends State<LoginPage> {
 
   void _loadSavedData() {
     final authBox = Hive.box('auth');
-    final savedEmail = authBox.get('savedEmail', defaultValue: '') as String;
     final savedRole = authBox.get('savedRole', defaultValue: 'Customer') as String;
-    if (savedEmail.isNotEmpty) {
-      _emailController.text = savedEmail;
-    }
     if (savedRole.isNotEmpty) {
       _selectedRole = savedRole;
     }
@@ -59,9 +55,11 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _checkAutoBiometrics() async {
     final authBox = Hive.box('auth');
-    final useBiometrics = authBox.get('useBiometrics', defaultValue: false) as bool;
+    final useBiometrics = (authBox.get('useBiometrics', defaultValue: false) as bool) ||
+        (Hive.box('settings').get('biometrics', defaultValue: false) as bool);
     final savedPassword = authBox.get('savedPassword', defaultValue: '') as String;
     final savedEmail = authBox.get('savedEmail', defaultValue: '') as String;
+    final savedRole = authBox.get('savedRole', defaultValue: _selectedRole) as String;
 
     if (useBiometrics && savedPassword.isNotEmpty && savedEmail.isNotEmpty) {
       try {
@@ -76,6 +74,7 @@ class _LoginPageState extends State<LoginPage> {
           if (didAuthenticate && mounted) {
             _passwordController.text = savedPassword;
             _emailController.text = savedEmail;
+            _selectedRole = savedRole;
             _doLogin();
           }
         }
@@ -187,9 +186,7 @@ class _LoginPageState extends State<LoginPage> {
         if (session != null) {
           await authBox.put('savedEmail', _emailController.text.trim());
           await authBox.put('savedRole', _selectedRole);
-          if (authBox.get('useBiometrics', defaultValue: false) == true) {
-            await authBox.put('savedPassword', _passwordController.text);
-          }
+          await authBox.put('savedPassword', _passwordController.text);
           await _askForBiometrics();
           
           if (!mounted) return;
@@ -432,7 +429,7 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                         ),
                       ),
-                      if (authBox.get('useBiometrics', defaultValue: false) == true && (authBox.get('savedPassword', defaultValue: '') as String).isNotEmpty) ...[
+                      if (((authBox.get('useBiometrics', defaultValue: false) == true) || (Hive.box('settings').get('biometrics', defaultValue: false) == true)) && (authBox.get('savedPassword', defaultValue: '') as String).isNotEmpty) ...[
                         const SizedBox(width: 12),
                         SizedBox(
                           height: 56,
