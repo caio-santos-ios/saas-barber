@@ -49,7 +49,14 @@ export class Agenda implements OnInit {
       );
 
       const dateString = this.selectedDate.toISOString().split('T')[0];
-      const statusMap: any = { 0: 'Agendado', 1: 'Agendado', 2: 'Cancelado', 3: 'Concluído' };
+      const statusMap: any = {
+        0: 'Agendado',
+        1: 'Cancelado',
+        2: 'Concluído',
+        'Marcado': 'Agendado',
+        'Cancelado': 'Cancelado',
+        'Finalizado': 'Concluído'
+      };
 
       this.appointments = (aptsRes.data.data || [])
         .filter((apt: any) => apt.date.startsWith(dateString))

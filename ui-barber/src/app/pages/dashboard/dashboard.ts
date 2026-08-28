@@ -77,7 +77,14 @@ export class Dashboard implements OnInit, OnDestroy {
           users.map((u: any) => [u.id, u.name])
         );
 
-        const statusMap: any = { 0: 'Agendado', 1: 'Agendado', 2: 'Cancelado', 3: 'Concluído' };
+        const statusMap: any = {
+          0: 'Agendado',
+          1: 'Cancelado',
+          2: 'Concluído',
+          'Marcado': 'Agendado',
+          'Cancelado': 'Cancelado',
+          'Finalizado': 'Concluído'
+        };
         const rawApts: any[] = appointmentsRes.data?.data || [];
         this.appointments = rawApts.map((apt: any) => ({...apt, statusLabel: statusMap[apt.status] ?? apt.status, statusRaw: apt.status}));
 
@@ -253,9 +260,9 @@ export class Dashboard implements OnInit, OnDestroy {
     const ctx = document.getElementById('statusChart') as HTMLCanvasElement;
     if (!ctx) return;
 
-    const completed = this.metrics?.completedAppointments || this.appointments.filter(a => a.statusRaw === 2 || a.statusRaw === 3 || a.statusLabel === 'Concluído').length;
-    const scheduled = this.metrics?.scheduledAppointments ?? this.metrics?.confirmedAppointments ?? this.appointments.filter(a => a.statusRaw === 0 || a.statusRaw === 1 || a.statusLabel === 'Agendado').length;
-    const canceled = this.metrics?.canceledAppointments || this.appointments.filter(a => a.statusRaw === 2 && a.statusLabel === 'Cancelado').length;
+    const completed = this.metrics?.completedAppointments ?? 0;
+    const scheduled = (this.metrics?.scheduledAppointments ?? this.metrics?.confirmedAppointments) ?? 0;
+    const canceled = this.metrics?.canceledAppointments ?? 0;
 
     const hasData = completed > 0 || scheduled > 0 || canceled > 0;
 
