@@ -43,6 +43,7 @@ namespace api_barber.Services
 
             Claim[] claims = [
                 new Claim(JwtRegisteredClaimNames.Sub, userId),
+                new Claim("userId", userId),
                 new Claim("role", role),
                 new Claim("barbershopId", barbershopId),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())                

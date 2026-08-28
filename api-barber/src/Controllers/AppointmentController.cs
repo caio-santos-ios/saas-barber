@@ -12,16 +12,22 @@ namespace api_barber.Controllers
     [Route("appointments")]
     public class AppointmentController(IAppointmentService service) : ControllerBase
     {
+        private string GetUserId()
+        {
+            return User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value 
+                ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
+                ?? User.FindFirst("userId")?.Value 
+                ?? User.FindFirst("sub")?.Value 
+                ?? "";
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] string? customerId, [FromQuery] string? barberId)
         {
             string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
 
             string role = User.FindFirst("role")?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "";
-            string userId = User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value 
-                ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
-                ?? User.FindFirst("userId")?.Value 
-                ?? "";
+            string userId = GetUserId();
 
             string effectiveCustomerId = !string.IsNullOrEmpty(customerId) ? customerId : (role == "Customer" ? userId : "");
             string effectiveBarberId = !string.IsNullOrEmpty(barberId) ? barberId : (role == "Barber" ? userId : "");
@@ -41,7 +47,7 @@ namespace api_barber.Controllers
         public async Task<IActionResult> GetAvailability([FromQuery] string barberId, [FromQuery] System.DateTime date, [FromQuery] string? serviceId, [FromQuery] string? customerId)
         {
             string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
-            string effectiveCustomerId = !string.IsNullOrEmpty(customerId) ? customerId : (User.FindFirst("userId")?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "");
+            string effectiveCustomerId = !string.IsNullOrEmpty(customerId) ? customerId : GetUserId();
             ResponseApi<List<string>> response = await service.GetAvailableSlotsAsync(barberId, date, barbershopId, serviceId, effectiveCustomerId);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
@@ -50,7 +56,7 @@ namespace api_barber.Controllers
         public async Task<IActionResult> Create([FromBody] CreateAppointmentRequest request)
         {
             request.BarbershopId = User.FindFirst("barbershopId")?.Value ?? "";
-            request.CreatedBy = User.FindFirst("userId")?.Value ?? "";
+            request.CreatedBy = GetUserId();
             ResponseApi<Appointment> response = await service.CreateAsync(request);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
@@ -59,7 +65,7 @@ namespace api_barber.Controllers
         public async Task<IActionResult> Update([FromBody] UpdateAppointmentRequest request)
         {
             request.BarbershopId = User.FindFirst("barbershopId")?.Value ?? "";
-            request.UpdatedBy = User.FindFirst("userId")?.Value ?? "";
+            request.UpdatedBy = GetUserId();
             ResponseApi<Appointment> response = await service.UpdateAsync(request);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
@@ -67,7 +73,7 @@ namespace api_barber.Controllers
         [HttpPut("status")]
         public async Task<IActionResult> UpdateStatus([FromBody] UpdateAppointmentStatusRequest request)
         {
-            request.UpdatedBy = User.FindFirst("userId")?.Value ?? "";
+            request.UpdatedBy = GetUserId();
             ResponseApi<Appointment> response = await service.UpdateStatusAsync(request);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
@@ -75,7 +81,7 @@ namespace api_barber.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            string userId = User.FindFirst("userId")?.Value ?? "";
+            string userId = GetUserId();
             DeleteRequest request = new()
             {
                 Id = id,

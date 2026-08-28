@@ -351,11 +351,16 @@ namespace api_barber.Services
             try
             {
                 Appointment entity = ObjectMapper.Map<CreateAppointmentRequest, Appointment>(request);
+                if (string.IsNullOrEmpty(entity.CreatedBy))
+                {
+                    entity.CreatedBy = !string.IsNullOrEmpty(request.CreatedBy) ? request.CreatedBy : request.CustomerId;
+                }
                 if (entity.Status == 0) entity.Status = AppointmentStatusEnum.Marcado;
                 Appointment created = await repository.CreateAsync(entity);
                 if (created is null) return new(null, 400, "Falha ao criar agendamento");
 
-                ResponseApi<User> createdBy = await userService.GetByIdAsync(request.CreatedBy);
+                string effectiveCreatedBy = !string.IsNullOrEmpty(request.CreatedBy) ? request.CreatedBy : (!string.IsNullOrEmpty(entity.CreatedBy) ? entity.CreatedBy : request.CustomerId);
+                ResponseApi<User> createdBy = await userService.GetByIdAsync(effectiveCreatedBy);
                 if (createdBy.Data is not null)
                 {
                     DateTime appointmentDateTime = entity.Date;
