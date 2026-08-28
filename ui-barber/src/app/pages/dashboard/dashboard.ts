@@ -77,17 +77,30 @@ export class Dashboard implements OnInit, OnDestroy {
           users.map((u: any) => [u.id, u.name])
         );
 
-        const statusMap: any = {
-          0: 'Agendado',
-          1: 'Cancelado',
-          2: 'Concluído',
-          3: 'Cancelado',
-          'Marcado': 'Agendado',
-          'Cancelado': 'Cancelado',
-          'Finalizado': 'Concluído'
+        const getStatusInfo = (status: any) => {
+          const s = typeof status === 'string' ? status.trim().toLowerCase() : status;
+          if (s === 0 || s === '0' || s === 'marcado' || s === 'agendado') {
+            return { label: 'AGENDADO', code: 'scheduled' };
+          }
+          if (s === 2 || s === '2' || s === 'finalizado' || s === 'concluído' || s === 'concluido') {
+            return { label: 'CONCLUÍDO', code: 'completed' };
+          }
+          if (s === 1 || s === '1' || s === 3 || s === '3' || s === 'cancelado') {
+            return { label: 'CANCELADO', code: 'cancelled' };
+          }
+          return { label: 'AGENDADO', code: 'scheduled' };
         };
+
         const rawApts: any[] = appointmentsRes.data?.data || [];
-        this.appointments = rawApts.map((apt: any) => ({...apt, statusLabel: statusMap[apt.status] ?? apt.status, statusRaw: apt.status}));
+        this.appointments = rawApts.map((apt: any) => {
+          const st = getStatusInfo(apt.status);
+          return {
+            ...apt,
+            statusLabel: st.label,
+            statusCode: st.code,
+            statusRaw: apt.status
+          };
+        });
 
         this.metrics = metricsRes.data?.data || null;
         this.error = '';
