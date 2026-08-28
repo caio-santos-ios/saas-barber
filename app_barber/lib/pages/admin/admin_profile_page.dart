@@ -10,7 +10,6 @@ import 'package:app_barber/pages/auth/login_page.dart';
 import 'package:app_barber/pages/services/barber_service.dart';
 import 'package:app_barber/providers/theme_provider.dart';
 import 'package:brasil_fields/brasil_fields.dart';
-import 'package:dio/dio.dart';
 
 class AdminProfilePage extends ConsumerStatefulWidget {
   const AdminProfilePage({super.key});

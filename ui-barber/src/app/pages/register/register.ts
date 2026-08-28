@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -35,7 +35,8 @@ export class Register {
   constructor(
     private auth: Auth, 
     private router: Router,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   togglePassword() {
@@ -67,6 +68,8 @@ export class Register {
     }
 
     this.loading = true;
+    this.cdr.detectChanges();
+
     try {
       const payload = {
         name: this.formData.name,
@@ -82,13 +85,15 @@ export class Register {
       setTimeout(() => this.router.navigate(['/login']), 2000);
     } catch (err: any) {
       console.error(err);
-      const apiError = err.response?.data?.error || err.response?.data?.title;
+      const apiError = err.response?.data?.message || err.response?.data?.error || err.response?.data?.title;
       if (apiError) {
-         this.toastr.error(`Erro na API: ${apiError}`, 'Falha no Cadastro');
+         this.toastr.error(`Erro no cadastro: ${apiError}`, 'Falha no Cadastro');
       } else {
          this.toastr.error('Erro ao processar cadastro na API.', 'Erro');
       }
+    } finally {
       this.loading = false;
+      this.cdr.detectChanges();
     }
   }
 }

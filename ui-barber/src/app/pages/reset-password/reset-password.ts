@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -22,7 +22,8 @@ export class ResetPassword implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -51,6 +52,8 @@ export class ResetPassword implements OnInit {
     }
 
     this.loading = true;
+    this.cdr.detectChanges();
+
     try {
       await api.post('/auth/confirm-reset-password', { 
         code: this.code, 
@@ -65,6 +68,7 @@ export class ResetPassword implements OnInit {
       this.toastr.error(apiError, 'Falha');
     } finally {
       this.loading = false;
+      this.cdr.detectChanges();
     }
   }
 }
