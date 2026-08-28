@@ -3,6 +3,7 @@ import 'package:app_barber/pages/admin/admin_dashboard_page.dart';
 import 'package:app_barber/pages/admin/admin_team_page.dart';
 import 'package:app_barber/pages/admin/admin_finance_page.dart';
 import 'package:app_barber/pages/admin/admin_settings_page.dart';
+import 'package:app_barber/pages/admin/admin_profile_page.dart';
 
 class AdminHomePage extends StatefulWidget {
   const AdminHomePage({super.key});
@@ -19,6 +20,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
     AdminTeamPage(),
     AdminFinancePage(),
     AdminSettingsPage(),
+    AdminProfilePage(),
   ];
 
   @override
@@ -47,8 +49,12 @@ class _AdminHomePageState extends State<AdminHomePage> {
             label: 'Caixa',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Config',
+            icon: Icon(Icons.storefront),
+            label: 'Barbearia',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Perfil',
           ),
         ],
       ),

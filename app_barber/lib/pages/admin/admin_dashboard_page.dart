@@ -4,6 +4,7 @@ import 'package:app_barber/api/api_client.dart';
 import 'package:app_barber/models/appointment.dart';
 import 'package:app_barber/repositories/appointment_repository.dart';
 import 'package:intl/intl.dart';
+import 'package:app_barber/pages/admin/notification/admin_notifications_page.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -116,6 +117,18 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> {
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_none, size: 28),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AdminNotificationsPage()),
+              );
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
