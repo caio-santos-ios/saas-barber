@@ -47,7 +47,8 @@ export class Services implements OnInit {
     this.loading = true;
     this.cdr.detectChanges();
     try {
-      const response = await api.get(`/services_types?deleted=false`);
+      const barbershopId = localStorage.getItem('barbershopId') || '';
+      const response = await api.get(`/services_types?deleted=false&barbershopId=${barbershopId}`);
       this.services = response.data.data || [];
     } catch (err) {
       console.error('Erro ao carregar serviços', err);

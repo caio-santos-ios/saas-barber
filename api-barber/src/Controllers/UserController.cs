@@ -12,10 +12,10 @@ namespace api_barber.Controllers
     public class UserController(IUserService service) : ControllerBase
     {
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] string? barbershopId)
         {
-            string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
-            ResponseApi<List<dynamic>> response = await service.GetAllAsync(barbershopId);
+            string bId = !string.IsNullOrEmpty(barbershopId) ? barbershopId : (User.FindFirst("barbershopId")?.Value ?? "");
+            ResponseApi<List<dynamic>> response = await service.GetAllAsync(bId);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
         [HttpGet("{id}")]
@@ -25,17 +25,17 @@ namespace api_barber.Controllers
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
         [HttpGet("barbers")]
-        public async Task<IActionResult> GetBarbers()
+        public async Task<IActionResult> GetBarbers([FromQuery] string? barbershopId)
         {
-            string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
-            ResponseApi<List<dynamic>> response = await service.GetBarbersAsync(barbershopId);
+            string bId = !string.IsNullOrEmpty(barbershopId) ? barbershopId : (User.FindFirst("barbershopId")?.Value ?? "");
+            ResponseApi<List<dynamic>> response = await service.GetBarbersAsync(bId);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
         [HttpGet("customers")]
-        public async Task<IActionResult> GetCustomer()
+        public async Task<IActionResult> GetCustomer([FromQuery] string? barbershopId)
         {
-            string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
-            ResponseApi<List<dynamic>> response = await service.GetCustomersAsync(barbershopId);
+            string bId = !string.IsNullOrEmpty(barbershopId) ? barbershopId : (User.FindFirst("barbershopId")?.Value ?? "");
+            ResponseApi<List<dynamic>> response = await service.GetCustomersAsync(bId);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
         [HttpPost]

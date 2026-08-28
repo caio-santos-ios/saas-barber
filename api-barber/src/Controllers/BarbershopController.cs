@@ -9,10 +9,10 @@ namespace api_barber.Controllers
     public class BarbershopController(IBarbershopService service) : ControllerBase
     {
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] string? barbershopId)
         {
-            string barbershopId = User.FindFirst("barbershopId")?.Value ?? "";
-            var response = await service.GetAllAsync(barbershopId);
+            string bId = !string.IsNullOrEmpty(barbershopId) ? barbershopId : (User.FindFirst("barbershopId")?.Value ?? "");
+            var response = await service.GetAllAsync(bId);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
         [HttpGet("{id}")]

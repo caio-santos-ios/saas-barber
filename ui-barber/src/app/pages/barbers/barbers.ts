@@ -51,7 +51,8 @@ export class Barbers extends GlobalService implements OnInit {
     this.loading = true;
     this.cdr.detectChanges();
     try {
-      const response = await api.get(`/users/barbers?deleted=false`);
+      const barbershopId = localStorage.getItem('barbershopId') || '';
+      const response = await api.get(`/users/barbers?deleted=false&barbershopId=${barbershopId}`);
       this.barbers = response.data.data || [];
     } catch (err) {
       this.errorNotification(err);

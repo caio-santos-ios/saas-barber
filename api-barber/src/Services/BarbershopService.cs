@@ -15,13 +15,15 @@ namespace api_barber.Services
         {
             try
             {
+                var matchDoc = new BsonDocument { { "deleted", false } };
+                if (!string.IsNullOrWhiteSpace(barbershopId) && ObjectId.TryParse(barbershopId, out var objId))
+                {
+                    matchDoc.Add("_id", objId);
+                }
+
                 List<BsonDocument> pipeline =
                 [
-                    new("$match", new BsonDocument
-                    {
-                        {"deleted", false},
-                        {"barbershop_id", barbershopId}
-                    }),
+                    new("$match", matchDoc),
                     new("$project", new BsonDocument
                     {
                         {"_id", 0},
@@ -31,14 +33,10 @@ namespace api_barber.Services
                         {"phone", 1},
                         {"document", 1},
                         {"logo", 1},
-                        {"cep", 1},
-                        {"street", 1},
-                        {"number", 1},
-                        {"complement", 1},
-                        {"neighborhood", 1},
-                        {"city", 1},
-                        {"state", 1},
-                        {"planId", 1},
+                        {"address", 1},
+                        {"planId", new BsonDocument("$ifNull", new BsonArray { "$planId", "$plan_id" })},
+                        {"subscriptionStatus", new BsonDocument("$ifNull", new BsonArray { "$subscriptionStatus", "$subscription_status" })},
+                        {"code", 1},
                         {"createdAt", 1}
                     }),
                     new("$sort", new BsonDocument { { "createdAt", -1 } } )

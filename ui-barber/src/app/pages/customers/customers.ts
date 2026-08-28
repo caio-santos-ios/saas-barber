@@ -44,7 +44,8 @@ export class Customers implements OnInit {
     this.loading = true;
     this.cdr.detectChanges();
     try {
-      const response = await api.get(`/users/customers?deleted=false`);
+      const barbershopId = localStorage.getItem('barbershopId') || '';
+      const response = await api.get(`/users/customers?deleted=false&barbershopId=${barbershopId}`);
       this.customers = response.data.data || [];
     } catch (err) {
       console.error('Erro ao carregar clientes', err);

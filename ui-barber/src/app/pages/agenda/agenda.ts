@@ -39,9 +39,10 @@ export class Agenda implements OnInit {
 
   async loadAppointments() {
     try {
+      const barbershopId = localStorage.getItem('barbershopId') || '';
       const [aptsRes, usersRes] = await Promise.all([
-        api.get(`/appointments`),
-        api.get(`/users`)
+        api.get(`/appointments?deleted=false&barbershopId=${barbershopId}`),
+        api.get(`/users?deleted=false&barbershopId=${barbershopId}`)
       ]);
 
       const users: any[] = usersRes.data.data || [];
@@ -90,12 +91,13 @@ export class Agenda implements OnInit {
 
   async loadSelectOptions() {
     try {
-      const usersRes = await api.get(`/users`);
+      const barbershopId = localStorage.getItem('barbershopId') || '';
+      const usersRes = await api.get(`/users?deleted=false&barbershopId=${barbershopId}`);
       const users = usersRes.data.data || [];
       this.barbers = users.filter((u: any) => u.role === 'Barber' || u.role === 1);
       this.customers = users.filter((u: any) => u.role === 'Customer' || u.role === 2);
 
-      const servicesRes = await api.get(`/services_types`);
+      const servicesRes = await api.get(`/services_types?deleted=false&barbershopId=${barbershopId}`);
       this.services = servicesRes.data.data || [];
     } catch (err) {
       console.error('Erro ao carregar opções', err);

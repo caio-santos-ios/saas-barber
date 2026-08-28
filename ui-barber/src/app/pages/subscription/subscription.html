@@ -178,8 +178,8 @@
 
   <div class="card checkout-container" *ngIf="pixResult" style="max-width: 500px; text-align: center;">
     <div style="font-size: 48px; margin-bottom: 16px;">⚡</div>
-    <h2 style="margin-bottom: 8px;">PIX Gerado!</h2>
-    <p style="color: var(--text-muted); margin-bottom: 24px;">Escaneie o QR Code ou copie a chave PIX para pagar.</p>
+    <h2 style="margin-bottom: 8px;">PIX Gerado com Sucesso!</h2>
+    <p style="color: var(--text-muted); margin-bottom: 20px;">Escaneie o QR Code ou copie a chave PIX para realizar o pagamento.</p>
 
     <div *ngIf="pixResult.pixQrCode" style="margin-bottom: 20px;">
       <img [src]="'data:image/png;base64,' + pixResult.pixQrCode" alt="QR Code PIX" style="width: 220px; height: 220px; border: 1px solid var(--border-color); border-radius: 8px;" />
@@ -189,25 +189,33 @@
       {{ pixResult.pixKey }}
     </div>
 
+    <div style="background: color-mix(in srgb, var(--primary-color) 10%, transparent); border: 1px solid var(--primary-color); border-radius: 8px; padding: 12px; margin-bottom: 20px; font-size: 13px; color: var(--text-main); text-align: left;">
+      ⚡ <strong>Liberação Automática:</strong> O acesso ao sistema será liberado automaticamente em poucos minutos após o pagamento.
+    </div>
+
     <button type="button" class="btn-primary w-100" style="margin-bottom: 12px;" (click)="copyPixKey()">Copiar Chave PIX</button>
-    <button type="button" class="btn-secondary w-100" (click)="goToDashboard()">Ir para o Dashboard</button>
+    <button type="button" class="btn-secondary w-100" (click)="cancelCheckout()">Voltar aos Planos</button>
     <p *ngIf="pixResult.expirationDate" style="font-size: 12px; color: var(--text-muted); margin-top: 12px;">Expira em: {{ pixResult.expirationDate | date:'dd/MM/yyyy HH:mm' }}</p>
   </div>
 
   <div class="card checkout-container" *ngIf="boletoResult" style="max-width: 500px; text-align: center;">
     <div style="font-size: 48px; margin-bottom: 16px;">🧾</div>
-    <h2 style="margin-bottom: 8px;">Boleto Gerado!</h2>
-    <p style="color: var(--text-muted); margin-bottom: 24px;">Seu boleto foi emitido. Pague até o vencimento para ativar sua assinatura.</p>
+    <h2 style="margin-bottom: 8px;">Boleto Gerado com Sucesso!</h2>
+    <p style="color: var(--text-muted); margin-bottom: 20px;">Seu boleto bancário foi emitido para pagamento.</p>
 
     <div *ngIf="boletoResult.dueDate" style="margin-bottom: 16px;">
       <span style="font-size: 14px; color: var(--text-muted);">Vencimento: </span>
       <strong>{{ boletoResult.dueDate | date:'dd/MM/yyyy' }}</strong>
     </div>
 
+    <div style="background: rgba(245, 158, 11, 0.12); border: 1px solid #f59e0b; border-radius: 8px; padding: 14px; margin-bottom: 20px; font-size: 13px; color: var(--text-main); text-align: left;">
+      ⚠️ <strong>Importante:</strong> Com a assinatura via boleto, o acesso ao sistema será liberado automaticamente após a compensação bancária (prazo de até 3 dias úteis).
+    </div>
+
     <a *ngIf="boletoResult.boletoUrl" [href]="boletoResult.boletoUrl" target="_blank" class="btn-primary w-100" style="display: block; margin-bottom: 12px; text-decoration: none; padding: 12px; border-radius: 8px; text-align: center;">
       Abrir Boleto PDF
     </a>
-    <button type="button" class="btn-secondary w-100" (click)="goToDashboard()">Ir para o Dashboard</button>
+    <button type="button" class="btn-secondary w-100" (click)="cancelCheckout()">Voltar aos Planos</button>
   </div>
 </div>
 
