@@ -290,6 +290,10 @@ namespace api_barber.Services
                 }
 
                 User entity = ObjectMapper.Map<CreateUserRequest, User>(request);
+                if (!string.IsNullOrWhiteSpace(entity.Email))
+                {
+                    entity.Email = entity.Email.Trim();
+                }
                 if (!string.IsNullOrEmpty(entity.Password) && !entity.Password.StartsWith("$2a$") && !entity.Password.StartsWith("$2b$"))
                 {
                     entity.Password = BCrypt.Net.BCrypt.HashPassword(entity.Password);
