@@ -373,7 +373,7 @@ export default function Home() {
             <figure className="screen-shot screen-shot-feature">
               <div className="screen-shot-frame">
                 <Image
-                  src="/screens/painel-dashboard.png"
+                  src="/screens/projeto-14-1.png.png"
                   alt="Dashboard real do painel Web do SaaS Barbearia"
                   width={1573}
                   height={890}
@@ -385,7 +385,7 @@ export default function Home() {
             <figure className="screen-shot">
               <div className="screen-shot-frame">
                 <Image
-                  src="/screens/painel-agenda.png"
+                  src="/screens/projeto-14-2.png.png"
                   alt="Tela de agenda do painel Web do SaaS Barbearia"
                   width={1587}
                   height={890}
@@ -397,7 +397,7 @@ export default function Home() {
             <figure className="screen-shot">
               <div className="screen-shot-frame">
                 <Image
-                  src="/screens/painel-clientes.png"
+                  src="/screens/projeto-14-3.png.png"
                   alt="Tela de clientes do painel Web do SaaS Barbearia"
                   width={1585}
                   height={887}
@@ -409,7 +409,7 @@ export default function Home() {
             <figure className="screen-shot">
               <div className="screen-shot-frame">
                 <Image
-                  src="/screens/painel-profissionais.png"
+                  src="/screens/projeto-14-4.png.png"
                   alt="Tela de profissionais do painel Web do SaaS Barbearia"
                   width={1588}
                   height={889}
@@ -417,6 +417,66 @@ export default function Home() {
                 />
               </div>
               <figcaption><strong>Profissionais</strong><span>Equipe, contatos, status e gestão dos barbeiros da barbearia.</span></figcaption>
+            </figure>
+            <figure className="screen-shot">
+              <div className="screen-shot-frame">
+                <Image
+                  src="/screens/projeto-14-5.png.png"
+                  alt="Tela de serviços do painel Web do SaaS Barbearia"
+                  width={1570}
+                  height={884}
+                  sizes="(max-width: 760px) 100vw, 50vw"
+                />
+              </div>
+              <figcaption><strong>Serviços</strong><span>Catálogo de serviços, duração, preços e ações para manter a oferta organizada.</span></figcaption>
+            </figure>
+            <figure className="screen-shot">
+              <div className="screen-shot-frame">
+                <Image
+                  src="/screens/projeto-14-6.png.png"
+                  alt="Tela de escalas de trabalho do painel Web do SaaS Barbearia"
+                  width={1584}
+                  height={887}
+                  sizes="(max-width: 760px) 100vw, 50vw"
+                />
+              </div>
+              <figcaption><strong>Escalas de trabalho</strong><span>Horários e disponibilidade da equipe organizados por dia da semana.</span></figcaption>
+            </figure>
+            <figure className="screen-shot">
+              <div className="screen-shot-frame">
+                <Image
+                  src="/screens/projeto-14-7.png.png"
+                  alt="Tela de divulgação e código da barbearia no painel Web"
+                  width={1567}
+                  height={887}
+                  sizes="(max-width: 760px) 100vw, 50vw"
+                />
+              </div>
+              <figcaption><strong>Divulgação do app</strong><span>Recursos para compartilhar o acesso da barbearia e facilitar a chegada dos clientes.</span></figcaption>
+            </figure>
+            <figure className="screen-shot">
+              <div className="screen-shot-frame">
+                <Image
+                  src="/screens/projeto-14-8.png.png"
+                  alt="Tela de assinatura e planos do painel Web do SaaS Barbearia"
+                  width={1588}
+                  height={890}
+                  sizes="(max-width: 760px) 100vw, 50vw"
+                />
+              </div>
+              <figcaption><strong>Assinatura e planos</strong><span>Acompanhe o plano contratado, cobranças e situação da assinatura.</span></figcaption>
+            </figure>
+            <figure className="screen-shot">
+              <div className="screen-shot-frame">
+                <Image
+                  src="/screens/projeto-14-9.png.png"
+                  alt="Tela de configurações da barbearia no painel Web"
+                  width={1592}
+                  height={888}
+                  sizes="(max-width: 760px) 100vw, 50vw"
+                />
+              </div>
+              <figcaption><strong>Configurações</strong><span>Dados da barbearia, contatos e informações operacionais em um só lugar.</span></figcaption>
             </figure>
           </div>
         </section>
