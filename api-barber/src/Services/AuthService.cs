@@ -113,7 +113,7 @@ namespace api_barber.Services
 
                 var barbershopResponse = await _barbershopService.GetByIdAsync(user.BarbershopId);
                 var barbershop = barbershopResponse.Data;
-                var subscriptionStatus = barbershop != null ? barbershop.SubscriptionStatus.ToString() : "Ativa";
+                var subscriptionStatus = barbershop != null ? barbershop.SubscriptionStatus.ToString() : "Bloqueada";
 
                 var jwt = GenerateJwtToken(user.Id, user.Role.ToString(), user.BarbershopId);
                 var authResponse = new AuthResponse
