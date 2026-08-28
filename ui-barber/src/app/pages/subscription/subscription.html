@@ -53,6 +53,23 @@
     <p class="page-subtitle">Escolha o plano ideal para alavancar sua barbearia</p>
   </div>
 
+  <div class="card" *ngIf="pendingInvoices.length > 0 && !selectedPlan && !pixResult && !boletoResult" style="max-width: 800px; margin: 0 auto 24px auto; padding: 20px; border-left: 4px solid #f59e0b;">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+          <span style="font-size: 20px;">⚠️</span>
+          <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--text-main);">Assinatura Pendente de Pagamento</h3>
+        </div>
+        <p style="margin: 0; font-size: 13px; color: var(--text-muted);">
+          Existe uma fatura de <strong>R$ {{ pendingInvoices[0].value | number:'1.2-2' }}</strong> com vencimento em <strong>{{ pendingInvoices[0].dueDate | date:'dd/MM/yyyy' }}</strong> ({{ translateBillingType(pendingInvoices[0].billingType) }}).
+        </p>
+      </div>
+      <button class="btn-primary" style="padding: 8px 18px; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px;" (click)="openPayModal(pendingInvoices[0])">
+        <i class="fa-solid fa-credit-card"></i> Pagar Agora
+      </button>
+    </div>
+  </div>
+
   <div *ngIf="loading" class="text-center py-4 text-muted">Carregando planos...</div>
 
   <div class="plans-grid" *ngIf="!loading && !selectedPlan">

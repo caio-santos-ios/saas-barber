@@ -53,14 +53,17 @@ export class Subscription implements OnInit {
       const response = await api.get(`/plans?deleted=false`);
       this.plans = response.data.data || [];
 
+      const barbershopId = localStorage.getItem('barbershopId');
       const shopRes = await api.get(`/barbershops?deleted=false`);
       if (shopRes.data.data && shopRes.data.data.length > 0) {
-        this.currentPlanId = shopRes.data.data[0].planId;
+        const myShop = shopRes.data.data.find((s: any) => s.id === barbershopId) || shopRes.data.data[0];
+        this.currentPlanId = myShop.planId;
+        if (myShop.subscriptionStatus) {
+          this.auth.setSubscriptionStatus(myShop.subscriptionStatus);
+        }
       }
 
-      if (this.auth.hasActiveSubscription()) {
-        await this.loadInvoices();
-      }
+      await this.loadInvoices();
     } catch (err) {
       console.error('Erro ao carregar planos', err);
     } finally {
@@ -77,6 +80,10 @@ export class Subscription implements OnInit {
     } catch (err) {
       console.error('Erro ao carregar faturas', err);
     }
+  }
+
+  get pendingInvoices(): any[] {
+    return this.invoices.filter(i => i.status === 'PENDING' || i.status === 'OVERDUE');
   }
 
   selectPlan(plan: any) {
@@ -150,16 +157,20 @@ export class Subscription implements OnInit {
       const res = await api.post(`/subscriptions/checkout?barbershopId=${barbershopId}`, payload);
       const data = res.data?.data || res.data;
 
-      this.auth.setSubscriptionStatus('Ativa');
       this.currentPlanId = this.selectedPlan.id;
 
       if (this.billingType === 'PIX' && data?.pixKey) {
+        this.auth.setSubscriptionStatus('Bloqueada');
         this.pixResult = data;
         this.toastr.success('Assinatura gerada! Pague via PIX para ativar.', 'PIX Gerado');
+        await this.loadInvoices();
       } else if (this.billingType === 'BOLETO' && data?.boletoUrl) {
+        this.auth.setSubscriptionStatus('Bloqueada');
         this.boletoResult = data;
         this.toastr.success('Boleto gerado! Pague para ativar sua assinatura.', 'Boleto Gerado');
+        await this.loadInvoices();
       } else {
+        this.auth.setSubscriptionStatus('Ativa');
         this.toastr.success('Pagamento aprovado e assinatura ativada com sucesso!', 'Sucesso');
         this.selectedPlan = null;
         setTimeout(() => this.router.navigate(['/dashboard']), 1500);

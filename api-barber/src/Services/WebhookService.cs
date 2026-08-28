@@ -17,7 +17,7 @@ namespace api_barber.Services
                 var barbershop = barbershopsResponse.Data?.FirstOrDefault(b => b.AsaasCustomerId == customerId);
                 if (barbershop != null)
                 {
-                    if (eventObj == "PAYMENT_RECEIVED")
+                    if (eventObj == "PAYMENT_RECEIVED" || eventObj == "PAYMENT_CONFIRMED")
                     {
                         barbershop.SubscriptionStatus = SubscriptionStatusEnum.Ativa;
                         await barbershopService.UpdateEntityAsync(barbershop);

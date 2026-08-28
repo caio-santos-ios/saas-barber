@@ -66,11 +66,11 @@ namespace api_barber.Services
                 return new(null, 400, $"Erro do Asaas: {ex.Message}");
             }
 
-            barbershop.SubscriptionStatus = SubscriptionStatusEnum.Ativa;
+            barbershop.SubscriptionStatus = billingType == "CREDIT_CARD" ? SubscriptionStatusEnum.Ativa : SubscriptionStatusEnum.Bloqueada;
             barbershop.PlanId = plan.Id;
             await barbershopService.UpdateEntityAsync(barbershop);
 
-            return new(paymentResult, 200, "Assinatura ativada com sucesso");
+            return new(paymentResult, 200, billingType == "CREDIT_CARD" ? "Assinatura ativada com sucesso" : "Assinatura gerada. Aguardando confirmação do pagamento");
         }
 
         public async Task<ResponseApi<object>> GetHistoryAsync(string barbershopId)
