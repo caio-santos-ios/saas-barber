@@ -68,7 +68,8 @@
       </div>
 
       <button type="submit" class="btn-primary auth-btn" [disabled]="loading">
-        {{ loading ? 'Cadastrando...' : 'Criar Conta' }}
+        <i *ngIf="loading" class="fa-solid fa-spinner fa-spin"></i>
+        <span>{{ loading ? 'Cadastrando...' : 'Criar Conta' }}</span>
       </button>
     </form>
 

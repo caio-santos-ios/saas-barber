@@ -6,6 +6,8 @@ namespace api_barber.Requests.Auth
         public string Role { get; set; } = string.Empty;
         public string BarbershopId { get; set; } = string.Empty;
         public string SubscriptionStatus { get; set; } = string.Empty;
+        public string Name { get; set; } = string.Empty;
+        public string Photo { get; set; } = string.Empty;
     }
 
     public class ResetPasswordResponse

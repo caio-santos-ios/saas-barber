@@ -31,6 +31,8 @@ namespace api_barber.Models
         public string BarbershopId { get; set; } = string.Empty;
         [BsonElement("password_reset_required")]
         public bool PasswordResetRequired { get; set; } = false;
+        [BsonElement("email_confirmed")]
+        public bool EmailConfirmed { get; set; } = false;
         [BsonElement("active")]
         public bool Active { get; set; } = true;
     }

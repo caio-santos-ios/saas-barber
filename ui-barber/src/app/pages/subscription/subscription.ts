@@ -18,6 +18,7 @@ export class Subscription implements OnInit {
   plans: any[] = [];
   loading = true;
   processing = false;
+  canceling = false;
   isCancelModalOpen = false;
   currentPlanId = '';
   selectedPlan: any = null;
@@ -110,6 +111,9 @@ export class Subscription implements OnInit {
   closeCancelModal() { this.isCancelModalOpen = false; }
 
   async confirmCancelSubscription() {
+    if (this.canceling) return;
+    this.canceling = true;
+    this.cdr.detectChanges();
     try {
       const barbershopId = localStorage.getItem('barbershopId');
       await api.delete(`/subscriptions/cancel?barbershopId=${barbershopId}`);
@@ -119,11 +123,14 @@ export class Subscription implements OnInit {
       this.router.navigate(['/']);
     } catch (err) {
       this.toastr.error('Erro ao cancelar assinatura. Tente novamente.', 'Erro');
+    } finally {
+      this.canceling = false;
+      this.cdr.detectChanges();
     }
   }
 
   async processPayment() {
-    if (!this.selectedPlan) return;
+    if (this.processing || !this.selectedPlan) return;
 
     if (this.billingType === 'CREDIT_CARD') {
       if (!this.paymentData.holderName || !this.paymentData.number || !this.paymentData.expiryMonth || !this.paymentData.expiryYear || !this.paymentData.ccv) {
@@ -256,7 +263,7 @@ export class Subscription implements OnInit {
   }
 
   async payInvoiceWithCard() {
-    if (!this.selectedInvoice) return;
+    if (this.payingInvoice || !this.selectedInvoice) return;
     if (!this.invoiceCardData.holderName || !this.invoiceCardData.number || !this.invoiceCardData.expiryMonth || !this.invoiceCardData.expiryYear || !this.invoiceCardData.ccv) {
       this.toastr.warning('Preencha todos os campos do cartão.', 'Campos Obrigatórios');
       return;

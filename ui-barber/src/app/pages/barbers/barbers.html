@@ -149,8 +149,11 @@
       </div>
 
       <div class="modal-footer">
-        <button type="button" class="btn-secondary" (click)="closeModal()">Cancelar</button>
-        <button type="button" class="btn-primary" (click)="saveBarber()">Salvar</button>
+        <button type="button" class="btn-secondary" (click)="closeModal()" [disabled]="isSaving">Cancelar</button>
+        <button type="button" class="btn-primary" (click)="saveBarber()" [disabled]="isSaving || !isFormValid()">
+          <i *ngIf="isSaving" class="fa-solid fa-spinner fa-spin"></i>
+          <span>{{ isSaving ? 'Salvando...' : 'Salvar' }}</span>
+        </button>
       </div>
     </div>
   </div>
@@ -166,8 +169,11 @@
       <p style="color: var(--text-muted); margin-bottom: 24px;">Tem certeza que deseja excluir o profissional <strong>{{ barberToDelete?.name }}</strong>? Esta ação não pode ser desfeita.</p>
       
       <div class="modal-footer" style="justify-content: center;">
-        <button type="button" class="btn-secondary" (click)="closeDeleteModal()">Cancelar</button>
-        <button type="button" class="btn-primary" style="background-color: #ef4444;" (click)="confirmDelete()">Excluir</button>
+        <button type="button" class="btn-secondary" (click)="closeDeleteModal()" [disabled]="isDeleting">Cancelar</button>
+        <button type="button" class="btn-primary" style="background-color: #ef4444;" (click)="confirmDelete()" [disabled]="isDeleting">
+          <i *ngIf="isDeleting" class="fa-solid fa-spinner fa-spin"></i>
+          <span>{{ isDeleting ? 'Excluindo...' : 'Excluir' }}</span>
+        </button>
       </div>
     </div>
   </div>
@@ -202,8 +208,11 @@
       </div>
       
       <div class="modal-footer">
-        <button type="button" class="btn-secondary" (click)="closePasswordModal()">Cancelar</button>
-        <button type="button" class="btn-primary" (click)="savePassword()">Salvar Senha</button>
+        <button type="button" class="btn-secondary" (click)="closePasswordModal()" [disabled]="isChangingPassword">Cancelar</button>
+        <button type="button" class="btn-primary" (click)="savePassword()" [disabled]="isChangingPassword || newPassword.length < 6">
+          <i *ngIf="isChangingPassword" class="fa-solid fa-spinner fa-spin"></i>
+          <span>{{ isChangingPassword ? 'Salvando...' : 'Salvar Senha' }}</span>
+        </button>
       </div>
     </div>
   </div>

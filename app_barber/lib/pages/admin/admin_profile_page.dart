@@ -54,10 +54,19 @@ class _AdminProfilePageState extends ConsumerState<AdminProfilePage> {
 
     try {
       final response = await _apiClient.dio.get('/users/${_barberService.getUserId()}');
-      final user = User.fromJson(response.data['data']);
-      _nameCtrl.text = user.name;
-      _emailCtrl.text = user.email;
-      _whatsCtrl.text = user.whatsapp;
+      if (response.statusCode == 200 && response.data['data'] != null) {
+        final user = User.fromJson(response.data['data']);
+        _nameCtrl.text = user.name;
+        _emailCtrl.text = user.email;
+        _whatsCtrl.text = user.whatsapp;
+        if (user.photo.isNotEmpty) {
+          _photo = user.photo;
+          await authBox.put('photo', _photo);
+        }
+        if (user.name.isNotEmpty) {
+          await authBox.put('name', user.name);
+        }
+      }
     } catch (_) {}
 
     if (mounted) setState(() => _isLoading = false);
@@ -66,16 +75,29 @@ class _AdminProfilePageState extends ConsumerState<AdminProfilePage> {
   Future<void> _saveProfile() async {
     setState(() => _isSaving = true);
     try {
-      await _apiClient.dio.put('/users', data: {
+      final response = await _apiClient.dio.put('/users', data: {
         'id': _barberService.getUserId(),
-        'name': _nameCtrl.text,
-        'email': _emailCtrl.text,
+        'name': _nameCtrl.text.trim(),
+        'email': _emailCtrl.text.trim(),
         'whatsapp': _whatsCtrl.text.replaceAll(RegExp(r'\D'), ''),
+        'photo': _photo,
+        'barbershopId': _barberService.getBarbershopId()
       });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Perfil atualizado com sucesso!'), backgroundColor: Colors.green),
-        );
+      if (response.statusCode == 200) {
+        final authBox = Hive.box('auth');
+        await authBox.put('photo', _photo);
+        await authBox.put('name', _nameCtrl.text.trim());
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Perfil atualizado com sucesso!'), backgroundColor: Colors.green),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Erro ao atualizar perfil: ${response.statusCode}'), backgroundColor: Colors.red),
+          );
+        }
       }
     } catch (_) {
       if (mounted) {
@@ -88,16 +110,55 @@ class _AdminProfilePageState extends ConsumerState<AdminProfilePage> {
     }
   }
 
-  Future<void> _pickImage() async {
+  Future<void> _showImageSourceDialog() async {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Foto de Perfil',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.camera_alt, color: Colors.blue),
+                title: const Text('Tirar Foto (Câmera)'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library, color: Colors.green),
+                title: const Text('Escolher da Galeria'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
     final picker = ImagePicker();
     try {
-      final picked = await picker.pickImage(source: ImageSource.gallery, maxWidth: 512, maxHeight: 512, imageQuality: 70);
+      final picked = await picker.pickImage(source: source, maxWidth: 512, maxHeight: 512, imageQuality: 70);
       if (picked != null) {
         final bytes = await picked.readAsBytes();
         final b64 = 'data:image/jpeg;base64,${base64Encode(bytes)}';
         setState(() => _photo = b64);
         await _saveProfile();
-        Hive.box('auth').put('photo', _photo);
       }
     } catch (e) {
       if (mounted) {
@@ -221,7 +282,7 @@ class _AdminProfilePageState extends ConsumerState<AdminProfilePage> {
                 children: [
                   Center(
                     child: GestureDetector(
-                      onTap: _pickImage,
+                      onTap: _showImageSourceDialog,
                       child: Stack(
                         children: [
                           CircleAvatar(

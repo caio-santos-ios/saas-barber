@@ -11,7 +11,7 @@ using System.Security.Claims;
 using System.Text;
 namespace api_barber.Services
 {
-    public class AuthService(IConfiguration _config, IBarbershopService _barbershopService, IAsaasService _asaasService, IUserService _userService, IHandlerMail handlerMail) : IAuthService
+    public class AuthService(IConfiguration _config, IBarbershopService _barbershopService, IAsaasService _asaasService, IUserService _userService, MailHandler MailHandler) : IAuthService
     {
         public string GenerateJwtToken(string userId, string role, string barbershopId, string name = "")
         {
@@ -159,6 +159,16 @@ namespace api_barber.Services
 
                 string userId = createdUserRes.Data?.Id ?? user.Id;
 
+                string confirmToken = GenerateEmailConfirmationToken(userId, user.Email);
+                try
+                {
+                    await SendWelcomeConfirmationEmailAsync(user.Email, user.Name, confirmToken, request.OriginUrl);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Erro ao enviar e-mail de confirmação: {ex.Message}");
+                }
+
                 var barbershopResponse = await _barbershopService.GetByIdAsync(user.BarbershopId);
                 var barbershop = barbershopResponse.Data;
                 var subscriptionStatus = barbershop != null ? barbershop.SubscriptionStatus.ToString() : "Ativa";
@@ -261,6 +271,17 @@ namespace api_barber.Services
                 });
 
                 string adminUserId = createdAdminRes.Data?.Id ?? user.Id;
+
+                string confirmToken = GenerateEmailConfirmationToken(adminUserId, user.Email);
+                try
+                {
+                    await SendWelcomeConfirmationEmailAsync(user.Email, user.Name, confirmToken, request.OriginUrl);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Erro ao enviar e-mail de confirmação: {ex.Message}");
+                }
+
                 string jwt = GenerateJwtToken(adminUserId, user.Role.ToString(), user.BarbershopId, user.Name);
                 AuthResponse authResponse = new()
                 {
@@ -325,7 +346,7 @@ namespace api_barber.Services
                     </div>
                 """;
 
-                await handlerMail.SendAsync(user.Email, user.Name, "Redefinição de Senha - Na Régua", html);
+                await MailHandler.SendAsync(user.Email, user.Name, "Redefinição de Senha - Na Régua", html);
 
                 return new(null, 200, "Link de redefinição enviado para o seu e-mail.");
             }
@@ -381,6 +402,162 @@ namespace api_barber.Services
             catch (Exception ex)
             {
                 return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde. {ex.Message}");
+            }
+        }
+
+        private string GenerateEmailConfirmationToken(string userId, string email)
+        {
+            var secret = Environment.GetEnvironmentVariable("JWT_KEY") ?? _config["Jwt:Key"] ?? "MinhaChaveSuperSecretaDePeloMenos32Caracteres!";
+            var issuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? _config["Jwt:Issuer"] ?? "SaasBarbeariaIssuer";
+            var audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? _config["Jwt:Audience"] ?? "SaasBarbeariaAudience";
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            var claims = new[]
+            {
+                new Claim("userId", userId),
+                new Claim("email", email),
+                new Claim("confirm_email", "true"),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.UtcNow.AddDays(3),
+                SigningCredentials = credentials,
+                Issuer = issuer,
+                Audience = audience
+            };
+            var handler = new JwtSecurityTokenHandler();
+            var token = handler.CreateToken(tokenDescriptor);
+            return handler.WriteToken(token);
+        }
+
+        private async Task SendWelcomeConfirmationEmailAsync(string email, string name, string token, string originUrl)
+        {
+            string origin = string.IsNullOrWhiteSpace(originUrl) ? "https://saas-barber-k7nn.vercel.app" : originUrl.TrimEnd('/');
+            string link = $"{origin}/confirm-email?code={token}";
+
+            string html = $"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Bem-vindo ao Na Régua</title>
+            </head>
+            <body style="margin:0;padding:0;background-color:#0f172a;font-family:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#f8fafc;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#0f172a;padding:40px 16px;">
+                <tr>
+                  <td align="center">
+                    <table role="presentation" width="100%" style="max-width:540px;background-color:#1e293b;border-radius:16px;border:1px solid #334155;overflow:hidden;box-shadow:0 10px 25px -5px rgba(0,0,0,0.3);" cellspacing="0" cellpadding="0">
+                      <tr>
+                        <td style="padding:32px 32px 20px 32px;text-align:center;background:linear-gradient(180deg,#1e293b 0%,#0f172a 100%);border-bottom:1px solid #334155;">
+                          <h1 style="margin:0;font-size:26px;font-weight:800;color:#d4af37;letter-spacing:-0.5px;">Na Régua</h1>
+                          <p style="margin:6px 0 0 0;font-size:14px;color:#94a3b8;">Sistema de Gestão para Barbearias</p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:32px;">
+                          <h2 style="margin:0 0 16px 0;font-size:20px;font-weight:700;color:#f8fafc;">Olá, {name}! 👋</h2>
+                          <p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;color:#cbd5e1;">
+                            Seja muito bem-vindo ao <strong>Na Régua</strong>! Estamos felizes em ter você conosco.
+                          </p>
+                          <p style="margin:0 0 24px 0;font-size:15px;line-height:1.6;color:#cbd5e1;">
+                            Para começar a aproveitar todos os recursos e garantir a segurança da sua conta, por favor confirme seu endereço de e-mail clicando no botão abaixo:
+                          </p>
+                          <div style="text-align:center;margin:32px 0;">
+                            <a href="{link}" style="display:inline-block;background-color:#d4af37;color:#000000;padding:14px 32px;text-decoration:none;border-radius:8px;font-weight:700;font-size:15px;box-shadow:0 4px 12px rgba(212,175,55,0.25);">
+                              Confirmar Minha Conta
+                            </a>
+                          </div>
+                          <p style="margin:24px 0 0 0;font-size:13px;line-height:1.5;color:#94a3b8;">
+                            Se o botão acima não funcionar, copie e cole o link a seguir no seu navegador:
+                          </p>
+                          <p style="margin:6px 0 0 0;font-size:12px;line-height:1.4;word-break:break-all;color:#38bdf8;">
+                            <a href="{link}" style="color:#38bdf8;text-decoration:none;">{link}</a>
+                          </p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:20px 32px;background-color:#0f172a;border-top:1px solid #334155;text-align:center;">
+                          <p style="margin:0;font-size:12px;color:#64748b;">
+                            Se você não solicitou este cadastro, pode desconsiderar este e-mail.
+                          </p>
+                          <p style="margin:6px 0 0 0;font-size:12px;color:#64748b;">
+                            © {DateTime.UtcNow.Year} Na Régua. Todos os direitos reservados.
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </body>
+            </html>
+            """;
+
+            await MailHandler.SendAsync(email, name, "Bem-vindo ao Na Régua - Confirme seu E-mail", html);
+        }
+
+        public async Task<ResponseApi<object>> ConfirmEmailAsync(ConfirmEmailRequest request)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request.Code))
+                    return new(null, 400, "Código de confirmação não informado.");
+
+                var secret = Environment.GetEnvironmentVariable("JWT_KEY") ?? _config["Jwt:Key"] ?? "MinhaChaveSuperSecretaDePeloMenos32Caracteres!";
+                var handler = new JwtSecurityTokenHandler();
+                var validationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ClockSkew = TimeSpan.Zero
+                };
+
+                ClaimsPrincipal principal;
+                try
+                {
+                    principal = handler.ValidateToken(request.Code, validationParameters, out _);
+                }
+                catch
+                {
+                    return new(null, 400, "O link de confirmação é inválido ou expirou.");
+                }
+
+                var isConfirm = principal.FindFirst("confirm_email")?.Value;
+                var userId = principal.FindFirst("userId")?.Value;
+                var email = principal.FindFirst("email")?.Value;
+
+                if (isConfirm != "true" || (string.IsNullOrEmpty(userId) && string.IsNullOrEmpty(email)))
+                    return new(null, 400, "Token de confirmação inválido.");
+
+                ResponseApi<User> userRes = null!;
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    userRes = await _userService.GetByIdAsync(userId);
+                }
+                if (userRes?.Data == null && !string.IsNullOrEmpty(email))
+                {
+                    userRes = await _userService.GetByEmailAsync(email, "", null);
+                    if (userRes?.Data == null)
+                    {
+                        userRes = await _userService.GetByEmailAdminAsync(email);
+                    }
+                }
+
+                if (userRes?.Data == null)
+                    return new(null, 404, "Usuário não encontrado.");
+
+                await _userService.ConfirmEmailAsync(userRes.Data.Id);
+
+                return new(null, 200, "Conta confirmada e ativada com sucesso!");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 500, $"Ocorreu um erro inesperado ao confirmar o e-mail: {ex.Message}");
             }
         }
     }

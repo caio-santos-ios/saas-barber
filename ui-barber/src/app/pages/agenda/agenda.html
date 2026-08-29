@@ -213,8 +213,11 @@
     </div>
 
     <div class="modal-footer">
-      <button type="button" class="btn-secondary" (click)="closeModal()">Cancelar</button>
-      <button type="button" class="btn-primary" (click)="saveAppointment()">Salvar</button>
+      <button type="button" class="btn-secondary" (click)="closeModal()" [disabled]="isSaving">Cancelar</button>
+      <button type="button" class="btn-primary" (click)="saveAppointment()" [disabled]="isSaving || !isFormValid()">
+        <i *ngIf="isSaving" class="fa-solid fa-spinner fa-spin"></i>
+        <span>{{ isSaving ? 'Salvando...' : 'Salvar' }}</span>
+      </button>
     </div>
   </div>
 </div>

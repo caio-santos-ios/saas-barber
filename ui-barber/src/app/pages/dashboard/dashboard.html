@@ -76,7 +76,19 @@
       </div>
     </div>
 
-    <div class="card full-width">
+    <div class="card">
+      <h3 style="margin: 0 0 0.75rem 0; font-size: 1rem; color: var(--text-main); display: flex; align-items: center; justify-content: space-between;">
+        <span style="display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-calendar-week" style="color: #3b82f6;"></i> Picos dos Dias da Semana</span>
+        <span style="font-size: 0.75rem; font-weight: 500; color: var(--text-muted);">Agendamentos</span>
+      </h3>
+      <div class="chart-scroll-container">
+        <div class="chart-wrapper" id="weekdayChartWrapper">
+          <canvas id="weekdayChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
       <h3 style="margin: 0 0 0.75rem 0; font-size: 1rem; color: var(--text-main); display: flex; align-items: center; justify-content: space-between;">
         <span style="display: flex; align-items: center; gap: 8px;"><i class="fa-solid fa-chart-column" style="color: #3b82f6;"></i> Picos de Horário</span>
         <span style="font-size: 0.75rem; font-weight: 500; color: var(--text-muted);">Agendamentos</span>
@@ -212,7 +224,7 @@
           </div>
           <div class="mobile-card-field">
             <span class="mobile-card-field-label">Serviço</span>
-            <span class="mobile-card-field-value">{{ apt.serviceName }}</span>
+            <span class="mobile-card-field-value">{{ apt.serviceTypeName || apt.serviceName || 'Serviço' }}</span>
           </div>
           <div class="mobile-card-field">
             <span class="mobile-card-field-label">Valor</span>

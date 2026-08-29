@@ -19,6 +19,7 @@ class AuthRepository {
       final token = data['token'] ?? '';
       final refreshToken = data['refreshToken'] ?? '';
       final photo = data['photo'] ?? '';
+      final name = data['name'] ?? '';
       final role = data['role'] ?? '';
       final barbershopId = data['barbershopId'] ?? '';
 
@@ -35,6 +36,9 @@ class AuthRepository {
       await authBox.put('token', token);
       await authBox.put('refreshToken', refreshToken);
       await authBox.put('photo', photo);
+      if (name.isNotEmpty) {
+        await authBox.put('name', name);
+      }
       if (barbershopId.isNotEmpty) {
         await authBox.put('barbershopId', barbershopId);
       }

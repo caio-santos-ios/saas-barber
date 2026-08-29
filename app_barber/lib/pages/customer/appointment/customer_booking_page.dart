@@ -393,23 +393,25 @@ class _CustomerBookingPageState extends State<CustomerBookingPage> {
       isActive: _currentStep >= 2,
       state: _selectedDate != null ? StepState.complete : StepState.indexed,
       content: SizedBox(
-        height: 80,
+        height: 90,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
-          itemCount: 15, // Next 15 days
+          itemCount: 35,
           itemBuilder: (context, index) {
             final date = DateTime.now().add(Duration(days: index));
             final isSelected = _selectedDate != null && 
                                _selectedDate!.day == date.day && 
-                               _selectedDate!.month == date.month;
+                               _selectedDate!.month == date.month &&
+                               _selectedDate!.year == date.year;
             
-            final dayName = DateFormat('E', 'pt_BR').format(date).replaceAll('.', ''); // seg, ter, etc
+            final dayName = DateFormat('E', 'pt_BR').format(date).replaceAll('.', '');
+            final monthName = DateFormat('MMM', 'pt_BR').format(date).replaceAll('.', '').toUpperCase();
             
             return GestureDetector(
               onTap: () {
                 setState(() {
                   _selectedDate = date;
-                  _selectedHour = null; // reset hour
+                  _selectedHour = null;
                 });
                 _loadSlots();
                 Future.delayed(const Duration(milliseconds: 300), () {
@@ -417,8 +419,8 @@ class _CustomerBookingPageState extends State<CustomerBookingPage> {
                 });
               },
               child: Container(
-                width: 60,
-                margin: const EdgeInsets.only(right: 12),
+                width: 68,
+                margin: const EdgeInsets.only(right: 10),
                 decoration: BoxDecoration(
                   color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).cardColor,
                   border: Border.all(color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey[300]!),
@@ -430,18 +432,27 @@ class _CustomerBookingPageState extends State<CustomerBookingPage> {
                     Text(
                       dayName.toUpperCase(),
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 11,
                         color: isSelected ? Colors.white70 : Colors.grey[600],
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
                       date.day.toString(),
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: isSelected ? Colors.white : Theme.of(context).textTheme.bodyMedium?.color,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      monthName,
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: isSelected ? Colors.white70 : Theme.of(context).colorScheme.primary,
                       ),
                     ),
                   ],

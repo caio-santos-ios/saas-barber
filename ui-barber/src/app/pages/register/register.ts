@@ -52,6 +52,7 @@ export class Register {
   }
 
   async onSubmit() {
+    if (this.loading) return;
     if (!this.formData.name || !this.formData.barbershopName || !this.formData.document || !this.formData.whatsApp || !this.formData.email || !this.formData.password || !this.formData.passwordConfirm) {
       this.toastr.warning('Por favor, preencha todos os campos obrigatórios.', 'Atenção');
       return;
@@ -78,11 +79,12 @@ export class Register {
         document: this.formData.document.replace(/\D/g, ''),
         whatsApp: this.formData.whatsApp.replace(/\D/g, ''),
         email: this.formData.email,
-        password: this.formData.password
+        password: this.formData.password,
+        originUrl: window.location.origin
       };
       await api.post('/auth/admins/register', payload);
-      this.toastr.success('Cadastro realizado com sucesso!', 'Sucesso');
-      setTimeout(() => this.router.navigate(['/login']), 2000);
+      this.toastr.success('Cadastro realizado! Enviamos um link de confirmação para o seu e-mail.', 'Sucesso', { timeOut: 6000 });
+      setTimeout(() => this.router.navigate(['/login']), 2500);
     } catch (err: any) {
       console.error(err);
       const apiError = err.response?.data?.message || err.response?.data?.error || err.response?.data?.title;

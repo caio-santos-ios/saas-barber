@@ -179,11 +179,14 @@
       
       <div class="modal-footer" style="display: flex; justify-content: space-between;">
         <div>
-          <button *ngIf="isEditing" type="button" class="btn-secondary" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);" (click)="closeModal(); openDeleteModal(formData)">Excluir</button>
+          <button *ngIf="isEditing" type="button" class="btn-secondary" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);" (click)="closeModal(); openDeleteModal(formData)" [disabled]="isSaving">Excluir</button>
         </div>
         <div style="display: flex; gap: 8px;">
-          <button type="button" class="btn-secondary" (click)="closeModal()">Cancelar</button>
-          <button type="button" class="btn-primary" (click)="saveSchedule()">Salvar Horário</button>
+          <button type="button" class="btn-secondary" (click)="closeModal()" [disabled]="isSaving">Cancelar</button>
+          <button type="button" class="btn-primary" (click)="saveSchedule()" [disabled]="isSaving || !isFormValid()">
+            <i *ngIf="isSaving" class="fa-solid fa-spinner fa-spin"></i>
+            <span>{{ isSaving ? 'Salvando...' : 'Salvar Horário' }}</span>
+          </button>
         </div>
       </div>
     </div>
@@ -249,8 +252,11 @@
       </div>
       
       <div class="modal-footer">
-        <button type="button" class="btn-secondary" (click)="closeBatchModal()">Cancelar</button>
-        <button type="button" class="btn-primary" (click)="saveBatchSchedule()">Aplicar nos Dias Selecionados</button>
+        <button type="button" class="btn-secondary" (click)="closeBatchModal()" [disabled]="isSavingBatch">Cancelar</button>
+        <button type="button" class="btn-primary" (click)="saveBatchSchedule()" [disabled]="isSavingBatch || !batchFormData.barberId || batchFormData.selectedDays.length === 0">
+          <i *ngIf="isSavingBatch" class="fa-solid fa-spinner fa-spin"></i>
+          <span>{{ isSavingBatch ? 'Aplicando...' : 'Aplicar nos Dias Selecionados' }}</span>
+        </button>
       </div>
     </div>
   </div>
@@ -266,8 +272,11 @@
       <p style="color: var(--text-muted); margin-bottom: 24px;">Tem certeza que deseja remover este horário? O profissional ficará com folga neste dia.</p>
       
       <div class="modal-footer" style="justify-content: center;">
-        <button type="button" class="btn-secondary" (click)="closeDeleteModal()">Cancelar</button>
-        <button type="button" class="btn-primary" style="background-color: #ef4444;" (click)="confirmDelete()">Excluir</button>
+        <button type="button" class="btn-secondary" (click)="closeDeleteModal()" [disabled]="isDeleting">Cancelar</button>
+        <button type="button" class="btn-primary" style="background-color: #ef4444;" (click)="confirmDelete()" [disabled]="isDeleting">
+          <i *ngIf="isDeleting" class="fa-solid fa-spinner fa-spin"></i>
+          <span>{{ isDeleting ? 'Excluindo...' : 'Excluir' }}</span>
+        </button>
       </div>
     </div>
   </div>

@@ -44,6 +44,7 @@ export class Login {
   }
 
   async submitReset() {
+    if (this.resetLoading) return;
     if (!this.resetEmail) {
       this.toastr.warning('Informe seu e-mail.', 'Atenção');
       return;
@@ -67,6 +68,7 @@ export class Login {
   }
 
   async onSubmit() {
+    if (this.loading) return;
     if (!this.email || !this.password) {
       this.toastr.warning('Por favor, preencha e-mail e senha.', 'Atenção');
       return;

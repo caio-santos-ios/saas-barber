@@ -1,4 +1,4 @@
-﻿namespace api_barber.Requests.Auth
+namespace api_barber.Requests.Auth
 {
     public class CreateCustomerRequest
     {
@@ -7,6 +7,7 @@
         public string WhatsApp { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
         public string BarbershopId { get; set; } = string.Empty;
+        public string OriginUrl { get; set; } = string.Empty;
     }
 }
 

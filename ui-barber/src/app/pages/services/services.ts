@@ -22,6 +22,8 @@ export class Services implements OnInit {
   isModalOpen = false;
   isDeleteModalOpen = false;
   isEditing = false;
+  isSaving = false;
+  isDeleting = false;
   serviceToDelete: any = null;
   
   formData = {
@@ -110,10 +112,13 @@ export class Services implements OnInit {
   }
 
   async saveService() {
+    if (this.isSaving) return;
     if (!this.isFormValid()) {
       this.toastr.warning('Preencha todos os campos obrigatórios corretamente.', 'Atenção');
       return;
     }
+    this.isSaving = true;
+    this.cdr.detectChanges();
     try {
       const barbershopId = localStorage.getItem('barbershopId');
       
@@ -144,6 +149,7 @@ export class Services implements OnInit {
       this.globalService.errorNotification(err);
       this.toastr.error('Erro ao salvar serviço. Tente novamente.', 'Erro');
     } finally {
+      this.isSaving = false;
       this.cdr.detectChanges();
     }
   }
@@ -159,8 +165,9 @@ export class Services implements OnInit {
   }
 
   async confirmDelete() {
-    if (!this.serviceToDelete) return;
-    
+    if (this.isDeleting || !this.serviceToDelete) return;
+    this.isDeleting = true;
+    this.cdr.detectChanges();
     try {
       await api.delete(`/services_types/${this.serviceToDelete.id}`);
       
@@ -171,6 +178,7 @@ export class Services implements OnInit {
       console.error('Erro ao excluir serviço', err);
       this.toastr.error('Erro ao excluir serviço. Tente novamente.', 'Erro');
     } finally {
+      this.isDeleting = false;
       this.cdr.detectChanges();
     }
   }

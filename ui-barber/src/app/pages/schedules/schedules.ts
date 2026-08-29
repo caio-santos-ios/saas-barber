@@ -22,6 +22,9 @@ export class Schedules implements OnInit {
   isBatchModalOpen = false;
   isDeleteModalOpen = false;
   isEditing = false;
+  isSaving = false;
+  isSavingBatch = false;
+  isDeleting = false;
   scheduleToDelete: any = null;
 
   daysOfWeek = [
@@ -190,11 +193,14 @@ export class Schedules implements OnInit {
   }
 
   async saveSchedule() {
+    if (this.isSaving) return;
     if (!this.isFormValid()) {
       this.toastr.warning('Preencha todos os campos obrigatórios corretamente.', 'Atenção');
       return;
     }
 
+    this.isSaving = true;
+    this.cdr.detectChanges();
     try {
       const payload: any = {
         id: this.formData.id,
@@ -225,6 +231,7 @@ export class Schedules implements OnInit {
       console.error('Erro ao salvar escala', err);
       this.toastr.error('Erro ao salvar escala. Tente novamente.', 'Erro');
     } finally {
+      this.isSaving = false;
       this.cdr.detectChanges();
     }
   }
@@ -261,6 +268,7 @@ export class Schedules implements OnInit {
   }
 
   async saveBatchSchedule() {
+    if (this.isSavingBatch) return;
     if (!this.batchFormData.barberId) {
       this.toastr.warning('Selecione um profissional.', 'Atenção');
       return;
@@ -271,8 +279,9 @@ export class Schedules implements OnInit {
       return;
     }
 
+    this.isSavingBatch = true;
+    this.cdr.detectChanges();
     try {
-      this.loading = true;
       for (const day of this.batchFormData.selectedDays) {
         const existing = this.getScheduleForBarberAndDay(this.batchFormData.barberId, day);
         const payload: any = {
@@ -301,7 +310,7 @@ export class Schedules implements OnInit {
       console.error('Erro ao configurar escala semanal', err);
       this.toastr.error('Erro ao aplicar escalas.', 'Erro');
     } finally {
-      this.loading = false;
+      this.isSavingBatch = false;
       this.cdr.detectChanges();
     }
   }
@@ -317,7 +326,9 @@ export class Schedules implements OnInit {
   }
 
   async confirmDelete() {
-    if (!this.scheduleToDelete) return;
+    if (this.isDeleting || !this.scheduleToDelete) return;
+    this.isDeleting = true;
+    this.cdr.detectChanges();
     try {
       await api.delete(`/schedules/${this.scheduleToDelete.id}`);
       this.toastr.success('Horário removido com sucesso!', 'Sucesso');
@@ -327,6 +338,7 @@ export class Schedules implements OnInit {
       console.error('Erro ao deletar horário', err);
       this.toastr.error('Erro ao remover horário.', 'Erro');
     } finally {
+      this.isDeleting = false;
       this.cdr.detectChanges();
     }
   }

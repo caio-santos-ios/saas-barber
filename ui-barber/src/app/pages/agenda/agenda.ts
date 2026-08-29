@@ -17,6 +17,7 @@ export class Agenda implements OnInit {
   activeStatusDropdownId: string | null = null;
 
   isModalOpen = false;
+  isSaving = false;
   barbers: any[] = [];
   customers: any[] = [];
   services: any[] = [];
@@ -184,10 +185,13 @@ export class Agenda implements OnInit {
   }
 
   async saveAppointment() {
+    if (this.isSaving) return;
     if (!this.isFormValid()) {
       this.toastr.warning('Preencha todos os campos obrigatórios corretamente.', 'Atenção');
       return;
     }
+    this.isSaving = true;
+    this.cdr.detectChanges();
     try {
       const customer = this.customers.find(c => c.id === this.formData.customerId);
       const service = this.services.find(s => s.id === this.formData.serviceId);
@@ -209,12 +213,15 @@ export class Agenda implements OnInit {
       
       this.toastr.success('Agendamento salvo com sucesso!', 'Sucesso');
       this.closeModal();
-      this.loadAppointments();
+      await this.loadAppointments();
     } catch (error) {
       const err = error as any;
       console.error('Erro ao salvar agendamento', err);
       const msg = err.response?.data?.message || 'Horário indisponível ou erro ao agendar.';
       this.toastr.error(msg, 'Erro');
+    } finally {
+      this.isSaving = false;
+      this.cdr.detectChanges();
     }
   }
 

@@ -23,6 +23,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
   private revenueChartInstance: Chart | null = null;
   private hourlyChartInstance: Chart | null = null;
+  private weekdayChartInstance: Chart | null = null;
   private statusChartInstance: Chart | null = null;
   private barberChartInstance: Chart | null = null;
 
@@ -52,6 +53,10 @@ export class Dashboard implements OnInit, OnDestroy {
     if (this.hourlyChartInstance) {
       this.hourlyChartInstance.destroy();
       this.hourlyChartInstance = null;
+    }
+    if (this.weekdayChartInstance) {
+      this.weekdayChartInstance.destroy();
+      this.weekdayChartInstance = null;
     }
     if (this.statusChartInstance) {
       this.statusChartInstance.destroy();
@@ -132,8 +137,71 @@ export class Dashboard implements OnInit, OnDestroy {
 
     this.renderRevenueChart();
     this.renderHourlyChart();
+    this.renderWeekdayChart();
     this.renderStatusChart();
     this.renderBarberChart();
+  }
+
+  renderWeekdayChart() {
+    const ctx = document.getElementById('weekdayChart') as HTMLCanvasElement;
+    if (!ctx) return;
+
+    const dayMap = [
+      { dayIndex: 1, label: 'Segunda' },
+      { dayIndex: 2, label: 'Terça' },
+      { dayIndex: 3, label: 'Quarta' },
+      { dayIndex: 4, label: 'Quinta' },
+      { dayIndex: 5, label: 'Sexta' },
+      { dayIndex: 6, label: 'Sábado' },
+      { dayIndex: 0, label: 'Domingo' }
+    ];
+
+    const counts: Record<number, number> = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0 };
+    this.appointments.forEach((apt: any) => {
+      if (apt.date) {
+        const d = new Date(apt.date);
+        if (!isNaN(d.getTime())) {
+          const day = d.getDay();
+          counts[day] = (counts[day] || 0) + 1;
+        }
+      }
+    });
+
+    const labels = dayMap.map(d => d.label);
+    const data = dayMap.map(d => counts[d.dayIndex]);
+
+    this.weekdayChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Agendamentos',
+          data,
+          backgroundColor: '#3b82f6',
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: {
+              maxRotation: 0,
+              autoSkip: false
+            }
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { stepSize: 1 }
+          }
+        }
+      }
+    });
   }
 
   renderRevenueChart() {

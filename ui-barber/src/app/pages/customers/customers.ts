@@ -22,6 +22,8 @@ export class Customers implements OnInit {
   isModalOpen = false;
   isDeleteModalOpen = false;
   isEditing = false;
+  isSaving = false;
+  isDeleting = false;
   customerToDelete: any = null;
   
   formData = {
@@ -100,10 +102,13 @@ export class Customers implements OnInit {
   }
 
   async saveCustomer() {
+    if (this.isSaving) return;
     if (!this.isFormValid()) {
       this.toastr.warning('Preencha todos os campos obrigatórios corretamente.', 'Atenção');
       return;
     }
+    this.isSaving = true;
+    this.cdr.detectChanges();
     try {
       const payload: any = {
         ...this.formData,
@@ -126,6 +131,7 @@ export class Customers implements OnInit {
     } catch (err) {
       this.toastr.error('Erro ao salvar cliente. Tente novamente.', 'Erro');
     } finally {
+      this.isSaving = false;
       this.cdr.detectChanges();
     }
   }
@@ -141,8 +147,9 @@ export class Customers implements OnInit {
   }
 
   async confirmDelete() {
-    if (!this.customerToDelete) return;
-    
+    if (this.isDeleting || !this.customerToDelete) return;
+    this.isDeleting = true;
+    this.cdr.detectChanges();
     try {
       await api.delete(`/users/${this.customerToDelete.id}`);
       this.toastr.success('Cliente excluído com sucesso!', 'Sucesso');
@@ -151,6 +158,7 @@ export class Customers implements OnInit {
     } catch (err) {
       this.toastr.error('Erro ao excluir cliente. Tente novamente.', 'Erro');
     } finally {
+      this.isDeleting = false;
       this.cdr.detectChanges();
     }
   }

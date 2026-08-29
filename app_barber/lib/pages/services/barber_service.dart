@@ -6,9 +6,26 @@ class BarberService {
 
   String getUserId() {
     final String token = authBox.get('token', defaultValue: '');
-    Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+    if (token.isEmpty) return authBox.get('userId', defaultValue: '');
+    try {
+      Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+      return decodedToken["sub"] ?? decodedToken["userId"] ?? "";
+    } catch (_) {
+      return authBox.get('userId', defaultValue: '');
+    }
+  }
 
-    return decodedToken["sub"];
+  String getBarbershopId() {
+    final String barbershopId = authBox.get('barbershopId', defaultValue: '');
+    if (barbershopId.isNotEmpty) return barbershopId;
+    final String token = authBox.get('token', defaultValue: '');
+    if (token.isNotEmpty) {
+      try {
+        Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+        return decodedToken["barbershopId"] ?? "";
+      } catch (_) {}
+    }
+    return '';
   }
 
   String getUserToken() {

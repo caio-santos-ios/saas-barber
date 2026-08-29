@@ -44,11 +44,16 @@ class _CustomerDashboardPageState extends State<CustomerDashboardPage> {
     
     if (token.isNotEmpty) {
       try {
-        Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
-        _customerName = decodedToken['name'] ?? 
-                        decodedToken['unique_name'] ?? 
-                        decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] ?? 
-                        'Cliente';
+        final savedName = (authBox.get('name', defaultValue: '') as String).trim();
+        if (savedName.isNotEmpty) {
+          _customerName = savedName;
+        } else {
+          Map<String, dynamic> decodedToken = JwtDecoder.decode(token);
+          _customerName = decodedToken['name'] ?? 
+                          decodedToken['unique_name'] ?? 
+                          decodedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] ?? 
+                          'Cliente';
+        }
         _customerPhoto = authBox.get('photo', defaultValue: '');
         
         if (barbershopId.isNotEmpty) {

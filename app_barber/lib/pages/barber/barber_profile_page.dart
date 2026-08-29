@@ -50,10 +50,19 @@ class _BarberProfilePageState extends ConsumerState<BarberProfilePage> {
         '/users/${barberService.getUserId()}',
       );
 
-      final user = User.fromJson(response.data['data']);
-      _nameController.text = user.name;
-      _emailController.text = user.email;
-      _whatsappController.text = user.whatsapp;
+      if (response.statusCode == 200 && response.data['data'] != null) {
+        final user = User.fromJson(response.data['data']);
+        _nameController.text = user.name;
+        _emailController.text = user.email;
+        _whatsappController.text = user.whatsapp;
+        if (user.photo.isNotEmpty) {
+          _photo = user.photo;
+          await authBox.put('photo', _photo);
+        }
+        if (user.name.isNotEmpty) {
+          await authBox.put('name', user.name);
+        }
+      }
     } catch (e) {}
 
     if (mounted) setState(() => _isLoading = false);
@@ -64,9 +73,11 @@ class _BarberProfilePageState extends ConsumerState<BarberProfilePage> {
     try {
       Object body = {
         'id': barberService.getUserId(),
-        'name': _nameController.text,
-        'email': _emailController.text,
-        'whatsapp': _whatsappController.text
+        'name': _nameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'whatsapp': _whatsappController.text.trim(),
+        'photo': _photo,
+        'barbershopId': barberService.getBarbershopId()
       };
 
       final response = await _apiClient.dio.put(
@@ -75,6 +86,9 @@ class _BarberProfilePageState extends ConsumerState<BarberProfilePage> {
       );
 
       if (response.statusCode == 200) {
+        final authBox = Hive.box('auth');
+        await authBox.put('photo', _photo);
+        await authBox.put('name', _nameController.text.trim());
         if (mounted)
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -104,11 +118,51 @@ class _BarberProfilePageState extends ConsumerState<BarberProfilePage> {
     }
   }
 
-  Future<void> _pickImage() async {
+  Future<void> _showImageSourceDialog() async {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Foto de Perfil',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.camera_alt, color: Colors.blue),
+                title: const Text('Tirar Foto (Câmera)'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library, color: Colors.green),
+                title: const Text('Escolher da Galeria'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
     final picker = ImagePicker();
     try {
       final pickedFile = await picker.pickImage(
-        source: ImageSource.gallery,
+        source: source,
         maxWidth: 512,
         maxHeight: 512,
         imageQuality: 70,
@@ -122,7 +176,6 @@ class _BarberProfilePageState extends ConsumerState<BarberProfilePage> {
         });
 
         await _saveProfile();
-        Hive.box('auth').put('photo', _photo);
       }
     } catch (e) {
       if (mounted) {
@@ -302,7 +355,7 @@ class _BarberProfilePageState extends ConsumerState<BarberProfilePage> {
                 children: [
                   Center(
                     child: GestureDetector(
-                      onTap: _pickImage,
+                      onTap: _showImageSourceDialog,
                       child: Stack(
                         children: [
                           CircleAvatar(

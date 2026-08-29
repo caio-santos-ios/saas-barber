@@ -66,7 +66,8 @@
 
       <div class="modal-footer" style="margin-top: 32px; border-top: none; padding-top: 0; justify-content: flex-start;">
         <button type="submit" class="btn-primary" [disabled]="saving">
-          {{ saving ? 'Salvando...' : 'Salvar Alterações' }}
+          <i *ngIf="saving" class="fa-solid fa-spinner fa-spin"></i>
+          <span>{{ saving ? 'Salvando...' : 'Salvar Alterações' }}</span>
         </button>
       </div>
 

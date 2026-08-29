@@ -24,7 +24,8 @@
       </div>
 
       <button type="submit" class="btn-primary auth-btn" [disabled]="loading">
-        {{ loading ? 'Entrando...' : 'Entrar' }}
+        <i *ngIf="loading" class="fa-solid fa-spinner fa-spin"></i>
+        <span>{{ loading ? 'Entrando...' : 'Entrar' }}</span>
       </button>
     </form>
 
@@ -48,9 +49,10 @@
       </div>
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn-secondary" (click)="closeResetModal()">Cancelar</button>
+      <button type="button" class="btn-secondary" (click)="closeResetModal()" [disabled]="resetLoading">Cancelar</button>
       <button type="button" class="btn-primary" (click)="submitReset()" [disabled]="resetLoading">
-        {{ resetLoading ? 'Enviando...' : 'Gerar Nova Senha' }}
+        <i *ngIf="resetLoading" class="fa-solid fa-spinner fa-spin"></i>
+        <span>{{ resetLoading ? 'Enviando...' : 'Gerar Nova Senha' }}</span>
       </button>
     </div>
   </div>

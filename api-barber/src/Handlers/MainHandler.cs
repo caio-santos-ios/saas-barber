@@ -4,12 +4,7 @@ using MimeKit;
 
 namespace api_barber.Services
 {
-    public interface IEmailService
-    {
-        Task SendAsync(string toEmail, string toName, string subject, string htmlBody);
-    }
-
-    public class EmailService(IConfiguration config) : IEmailService
+    public class MailHandler(IConfiguration config)
     {
         public async Task SendAsync(string toEmail, string toName, string subject, string htmlBody)
         {

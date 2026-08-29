@@ -96,7 +96,7 @@ export class Settings implements OnInit {
   }
 
   async saveSettings() {
-    if (!this.formData.id) return;
+    if (this.saving || !this.formData.id) return;
     this.saving = true;
     this.cdr.detectChanges();
     

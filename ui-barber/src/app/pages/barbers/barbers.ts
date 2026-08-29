@@ -22,6 +22,9 @@ export class Barbers extends GlobalService implements OnInit {
   isDeleteModalOpen = false;
   isPasswordModalOpen = false;
   isEditing = false;
+  isSaving = false;
+  isDeleting = false;
+  isChangingPassword = false;
   barberToDelete: any = null;
   barberToChangePassword: any = null;
   newPassword = '';
@@ -116,10 +119,13 @@ export class Barbers extends GlobalService implements OnInit {
   }
 
   async saveBarber() {
+    if (this.isSaving) return;
     if (!this.isFormValid()) {
       this.toastrNotification.warning('Preencha todos os campos obrigatórios corretamente.', 'Atenção');
       return;
     }
+    this.isSaving = true;
+    this.cdr.detectChanges();
     try {
       const payload: any = {
         ...this.formData,
@@ -144,6 +150,7 @@ export class Barbers extends GlobalService implements OnInit {
       console.error('Erro ao salvar profissional', err);
       this.toastrNotification.error('Erro ao salvar profissional. Tente novamente.', 'Erro');
     } finally {
+      this.isSaving = false;
       this.cdr.detectChanges();
     }
   }
@@ -159,8 +166,9 @@ export class Barbers extends GlobalService implements OnInit {
   }
 
   async confirmDelete() {
-    if (!this.barberToDelete) return;
-    
+    if (this.isDeleting || !this.barberToDelete) return;
+    this.isDeleting = true;
+    this.cdr.detectChanges();
     try {
       await api.delete(`/users/${this.barberToDelete.id}`);
       
@@ -171,6 +179,7 @@ export class Barbers extends GlobalService implements OnInit {
       console.error('Erro ao excluir profissional', err);
       this.toastrNotification.error('Erro ao excluir profissional. Tente novamente.', 'Erro');
     } finally {
+      this.isDeleting = false;
       this.cdr.detectChanges();
     }
   }
@@ -190,10 +199,13 @@ export class Barbers extends GlobalService implements OnInit {
   }
 
   async savePassword() {
+    if (this.isChangingPassword) return;
     if (this.newPassword.length < 6) {
       this.toastrNotification.warning('A senha deve ter pelo menos 6 caracteres.', 'Atenção');
       return;
     }
+    this.isChangingPassword = true;
+    this.cdr.detectChanges();
     try {
       await api.patch(`/users/${this.barberToChangePassword.id}/password`, { password: this.newPassword });
       this.toastrNotification.success('Senha alterada com sucesso!', 'Sucesso');
@@ -202,6 +214,7 @@ export class Barbers extends GlobalService implements OnInit {
       console.error('Erro ao alterar senha', err);
       this.toastrNotification.error('Erro ao alterar senha. Tente novamente.', 'Erro');
     } finally {
+      this.isChangingPassword = false;
       this.cdr.detectChanges();
     }
   }

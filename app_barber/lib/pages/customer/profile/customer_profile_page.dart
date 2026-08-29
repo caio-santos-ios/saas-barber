@@ -38,25 +38,41 @@ class _CustomerProfilePageState extends ConsumerState<CustomerProfilePage> {
   @override
   void initState() {
     super.initState();
-    print(barberService.getUserId());
     _loadProfile();
   }
 
   void _loadProfile() async {
     final authBox = Hive.box('auth');
     _photo = authBox.get('photo', defaultValue: '');
+    _userId = barberService.getUserId();
+    _barbershopId = barberService.getBarbershopId();
+    if (_userId.isEmpty) {
+      _userId = authBox.get('userId', defaultValue: '') as String;
+    }
+    if (_barbershopId.isEmpty) {
+      _barbershopId = authBox.get('barbershopId', defaultValue: '') as String;
+    }
     
     _useBiometrics = authBox.get('useBiometrics', defaultValue: false) ||
         Hive.box('settings').get('biometrics', defaultValue: false);
 
-    try {        
-      final response = await _apiClient.dio.get('/users/${barberService.getUserId()}');
+    try {
+      if (_userId.isNotEmpty) {
+        final response = await _apiClient.dio.get('/users/$_userId');
 
-      if (response.statusCode == 200 && response.data['data'] != null) {
-        final user = User.fromJson(response.data['data']);
-        _nameController.text = user.name;
-        _emailController.text = user.email;
-        _whatsappController.text = user.whatsapp;
+        if (response.statusCode == 200 && response.data['data'] != null) {
+          final user = User.fromJson(response.data['data']);
+          _nameController.text = user.name;
+          _emailController.text = user.email;
+          _whatsappController.text = user.whatsapp;
+          if (user.photo.isNotEmpty) {
+            _photo = user.photo;
+            await authBox.put('photo', _photo);
+          }
+          if (user.name.isNotEmpty) {
+            await authBox.put('name', user.name);
+          }
+        }
       }
     } catch (e) {}
 
@@ -64,24 +80,38 @@ class _CustomerProfilePageState extends ConsumerState<CustomerProfilePage> {
   }
 
   Future<void> _saveProfile() async {
-    if (_userId.isEmpty || _barbershopId.isEmpty) return;
+    if (_userId.isEmpty) {
+      _userId = barberService.getUserId();
+      if (_userId.isEmpty) {
+        _userId = Hive.box('auth').get('userId', defaultValue: '') as String;
+      }
+    }
+    if (_barbershopId.isEmpty) {
+      _barbershopId = barberService.getBarbershopId();
+      if (_barbershopId.isEmpty) {
+        _barbershopId = Hive.box('auth').get('barbershopId', defaultValue: '') as String;
+      }
+    }
     
     setState(() => _isSaving = true);
     try {
-      final response = await _apiClient.dio.put('/users/$_userId?barbershopId=$_barbershopId', data: {
+      final response = await _apiClient.dio.put('/users', data: {
         'id': _userId,
-        'name': _nameController.text,
-        'email': _emailController.text,
-        'whatsapp': _whatsappController.text,
+        'name': _nameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'whatsapp': _whatsappController.text.trim(),
         'photo': _photo,
         'role': 'Customer',
         'barbershopId': _barbershopId
       });
       
       if (response.statusCode == 200) {
+        final authBox = Hive.box('auth');
+        await authBox.put('photo', _photo);
+        await authBox.put('name', _nameController.text.trim());
         if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Perfil atualizado com sucesso!'), backgroundColor: Colors.green));
       } else {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro ao atualizar perfil: ${response.statusCode} - ${response.data}'), backgroundColor: Colors.red));
+        if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro ao atualizar perfil: ${response.statusCode}'), backgroundColor: Colors.red));
       }
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Erro de conexão ao atualizar: $e'), backgroundColor: Colors.red));
@@ -90,11 +120,51 @@ class _CustomerProfilePageState extends ConsumerState<CustomerProfilePage> {
     }
   }
 
-  Future<void> _pickImage() async {
+  Future<void> _showImageSourceDialog() async {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Foto de Perfil',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              ListTile(
+                leading: const Icon(Icons.camera_alt, color: Colors.blue),
+                title: const Text('Tirar Foto (Câmera)'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library, color: Colors.green),
+                title: const Text('Escolher da Galeria'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
     final picker = ImagePicker();
     try {
       final pickedFile = await picker.pickImage(
-        source: ImageSource.gallery,
+        source: source,
         maxWidth: 512,
         maxHeight: 512,
         imageQuality: 70,
@@ -108,7 +178,6 @@ class _CustomerProfilePageState extends ConsumerState<CustomerProfilePage> {
         });
         
         await _saveProfile();
-        Hive.box('auth').put('photo', _photo);
       }
     } catch (e) {
       if (mounted) {
@@ -162,7 +231,7 @@ class _CustomerProfilePageState extends ConsumerState<CustomerProfilePage> {
           children: [
             Center(
               child: GestureDetector(
-                onTap: _pickImage,
+                onTap: _showImageSourceDialog,
                 child: Stack(
                   children: [
                     CircleAvatar(
