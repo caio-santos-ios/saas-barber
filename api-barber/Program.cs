@@ -111,6 +111,26 @@ builder.Services.AddHttpClient<IAsaasService, AsaasService>();
 builder.Services.AddScoped<IWebhookService, WebhookService>();
 builder.Services.AddSingleton<FirebaseAuthHandler>();
 builder.Services.AddSingleton<MailHandler>();
+
+var cloudinaryCloudName = Environment.GetEnvironmentVariable("CLOUDINARY_CLOUD_NAME") ?? "";
+var cloudinaryApiKey = Environment.GetEnvironmentVariable("CLOUDINARY_API_KEY") ?? "";
+var cloudinaryApiSecret = Environment.GetEnvironmentVariable("CLOUDINARY_API_SECRET") ?? "";
+
+if (!string.IsNullOrWhiteSpace(cloudinaryCloudName) && !string.IsNullOrWhiteSpace(cloudinaryApiKey) && !string.IsNullOrWhiteSpace(cloudinaryApiSecret))
+{
+    var account = new CloudinaryDotNet.Account(cloudinaryCloudName, cloudinaryApiKey, cloudinaryApiSecret);
+    var cloudinary = new CloudinaryDotNet.Cloudinary(account);
+    cloudinary.Api.Secure = true;
+    builder.Services.AddSingleton(cloudinary);
+}
+else
+{
+    var account = new CloudinaryDotNet.Account("dummy", "dummy", "dummy");
+    var cloudinary = new CloudinaryDotNet.Cloudinary(account);
+    builder.Services.AddSingleton(cloudinary);
+}
+
+builder.Services.AddScoped<api_barber.src.Handlers.UploadHandler>();
 builder.Services.AddControllers(options => { })
     .AddJsonOptions(options =>
     {

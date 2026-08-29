@@ -2,6 +2,7 @@ using api_barber.Interfaces;
 using api_barber.Models;
 using api_barber.Models.Enums;
 using api_barber.Requests.User;
+using api_barber.src.Handlers;
 using api_barber.src.Interfaces;
 using api_barber.src.Requests;
 using api_barber.src.Utils;
@@ -10,7 +11,7 @@ using MongoDB.Bson;
 
 namespace api_barber.Services
 {
-    public class UserService(IUserRepository repository) : IUserService
+    public class UserService(IUserRepository repository, UploadHandler uploadHandler) : IUserService
     {
         #region READ
         public async Task<ResponseApi<List<dynamic>>> GetAllAsync(string barbershopId)
@@ -464,6 +465,40 @@ namespace api_barber.Services
                 if (user is null) return new(null, 400, "Falha ao confirmar e-mail");
 
                 return new(user, 200, "E-mail confirmado com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
+            }
+        }
+        public async Task<ResponseApi<string>> UploadPhotoAsync(string userId, IFormFile file)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                {
+                    return new(null, 400, "Arquivo inválido ou não fornecido");
+                }
+
+                string photoUrl = await uploadHandler.UploadAttachment("users", file, "/users/upload-photo");
+
+                if (string.IsNullOrEmpty(photoUrl))
+                {
+                    return new(null, 500, "Falha ao realizar upload da foto para o Cloudinary");
+                }
+
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    User user = await repository.GetByIdAsync(userId);
+                    if (user != null)
+                    {
+                        user.Photo = photoUrl;
+                        user.UpdatedAt = DateTime.Now;
+                        await repository.UpdateAsync(user);
+                    }
+                }
+
+                return new(photoUrl, 200, "Foto enviada com sucesso");
             }
             catch (Exception ex)
             {

@@ -23,6 +23,7 @@ namespace api_barber.Interfaces
         Task<ResponseApi<User>> UpdatePasswordAsync(string userId, string newPassword);
         Task<ResponseApi<User>> UpdateTokenFcmAsync(string userId, string tokenFcm);
         Task<ResponseApi<User>> ConfirmEmailAsync(string userId);
+        Task<ResponseApi<string>> UploadPhotoAsync(string userId, IFormFile file);
         Task<ResponseApi<User>> DeleteAsync(DeleteRequest request);
     }
 }

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:app_barber/pages/services/barber_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -171,13 +172,48 @@ class _CustomerProfilePageState extends ConsumerState<CustomerProfilePage> {
       );
 
       if (pickedFile != null) {
-        final bytes = await pickedFile.readAsBytes();
-        final base64String = base64Encode(bytes);
-        setState(() {
-          _photo = 'data:image/jpeg;base64,$base64String';
-        });
-        
-        await _saveProfile();
+        setState(() => _isSaving = true);
+        try {
+          final formData = FormData.fromMap({
+            'file': await MultipartFile.fromFile(
+              pickedFile.path,
+              filename: pickedFile.name,
+            ),
+          });
+          final res = await _apiClient.dio.post(
+            '/users/upload-photo?userId=$_userId',
+            data: formData,
+          );
+          if (res.statusCode == 200 && res.data != null && res.data['data'] != null) {
+            final photoUrl = res.data['data'].toString();
+            setState(() {
+              _photo = photoUrl;
+            });
+            final authBox = Hive.box('auth');
+            await authBox.put('photo', photoUrl);
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Foto atualizada com sucesso!'), backgroundColor: Colors.green),
+              );
+            }
+          } else {
+            final bytes = await pickedFile.readAsBytes();
+            final base64String = base64Encode(bytes);
+            setState(() {
+              _photo = 'data:image/jpeg;base64,$base64String';
+            });
+            await _saveProfile();
+          }
+        } catch (_) {
+          final bytes = await pickedFile.readAsBytes();
+          final base64String = base64Encode(bytes);
+          setState(() {
+            _photo = 'data:image/jpeg;base64,$base64String';
+          });
+          await _saveProfile();
+        } finally {
+          if (mounted) setState(() => _isSaving = false);
+        }
       }
     } catch (e) {
       if (mounted) {

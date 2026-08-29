@@ -72,5 +72,12 @@ namespace api_barber.Controllers
             ResponseApi<User> response = await service.UpdatePasswordAsync(id, request.Password);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
+        [HttpPost("upload-photo")]
+        public async Task<IActionResult> UploadPhoto([FromForm] IFormFile file, [FromQuery] string? userId)
+        {
+            string targetUserId = !string.IsNullOrEmpty(userId) ? userId : (User.FindFirst("userId")?.Value ?? "");
+            ResponseApi<string> response = await service.UploadPhotoAsync(targetUserId, file);
+            return StatusCode(response.Status, new { response.Data, response.Message });
+        }
     }
 }
