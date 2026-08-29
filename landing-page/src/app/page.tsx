@@ -581,8 +581,8 @@ export default function Home() {
       <footer className="footer">
         <div className="footer-inner">
           <div><Brand /><p className="footer-tagline">Gestão simples para barbearias que querem crescer.</p></div>
-          <div className="footer-links"><a href="#produto">Produtos</a><a href="#beneficios">Benefícios</a><a href="#pricing">Planos</a><a href="#faq">FAQ</a><TrackedLink href={whatsappUrl("footer")} target="_blank" rel="noopener noreferrer" eventName="cta_click" eventParams={{ cta_location: "footer", cta_destination: "whatsapp" }}>Contato</TrackedLink></div>
-          <div className="footer-bottom"><span>© 2026 SaaS Barbearia. Todos os direitos reservados.</span><span>Desenvolvido por Caio Santos.</span></div>
+          <div className="footer-links"><a href="#produto">Produtos</a><a href="#beneficios">Benefícios</a><a href="#pricing">Planos</a><a href="#faq">FAQ</a><a href="/politica-de-privacidade">Privacidade</a><a href="/termos-de-uso">Termos de Uso</a><TrackedLink href={whatsappUrl("footer")} target="_blank" rel="noopener noreferrer" eventName="cta_click" eventParams={{ cta_location: "footer", cta_destination: "whatsapp" }}>Contato</TrackedLink></div>
+          <div className="footer-bottom"><span>© 2026 Na Régua. Todos os direitos reservados.</span><span>Desenvolvido por Caio Santos.</span></div>
         </div>
       </footer>
       <div className="mobile-sticky-cta">
