@@ -11,28 +11,9 @@ using System.Security.Claims;
 using System.Text;
 namespace api_barber.Services
 {
-    public class AuthService : IAuthService
+    public class AuthService(IConfiguration _config, IBarbershopService _barbershopService, IAsaasService _asaasService, IUserService _userService, IHandlerMail handlerMail) : IAuthService
     {
-        private readonly IConfiguration _config;
-        private readonly IBarbershopService _barbershopService;
-        private readonly IAsaasService _asaasService;
-        private readonly IUserService _userService;
-        private readonly IEmailService _emailService;
-
-        public AuthService(
-            IConfiguration config,
-            IBarbershopService barbershopService,
-            IAsaasService asaasService,
-            IUserService userService,
-            IEmailService emailService)
-        {
-            _config = config;
-            _barbershopService = barbershopService;
-            _asaasService = asaasService;
-            _userService = userService;
-            _emailService = emailService;
-        }
-        public string GenerateJwtToken(string userId, string role, string barbershopId)
+        public string GenerateJwtToken(string userId, string role, string barbershopId, string name = "")
         {
             string secret = Environment.GetEnvironmentVariable("JWT_KEY") ?? "";
             string issuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "";
@@ -44,9 +25,10 @@ namespace api_barber.Services
             Claim[] claims = [
                 new Claim(JwtRegisteredClaimNames.Sub, userId),
                 new Claim("userId", userId),
+                new Claim("name", name),
                 new Claim("role", role),
                 new Claim("barbershopId", barbershopId),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())                
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             ];
 
             JwtSecurityToken token = new(
@@ -76,7 +58,7 @@ namespace api_barber.Services
                     {
                         userResponse = await _userService.GetByEmailAsync(request.Email, request.BarbershopId, null);
                     }
-                    
+
                     if (userResponse.Data == null)
                     {
                         userResponse = await _userService.GetByEmailAdminAsync(request.Email);
@@ -115,13 +97,15 @@ namespace api_barber.Services
                 var barbershop = barbershopResponse.Data;
                 var subscriptionStatus = barbershop != null ? barbershop.SubscriptionStatus.ToString() : "Bloqueada";
 
-                var jwt = GenerateJwtToken(user.Id, user.Role.ToString(), user.BarbershopId);
+                var jwt = GenerateJwtToken(user.Id, user.Role.ToString(), user.BarbershopId, user.Name);
                 var authResponse = new AuthResponse
                 {
                     Token = jwt,
                     Role = user.Role.ToString(),
                     BarbershopId = user.BarbershopId,
-                    SubscriptionStatus = subscriptionStatus
+                    SubscriptionStatus = subscriptionStatus,
+                    Name = user.Name,
+                    Photo = user.Photo
                 };
                 return new(authResponse, 200, "Login realizado com sucesso");
             }
@@ -179,13 +163,15 @@ namespace api_barber.Services
                 var barbershop = barbershopResponse.Data;
                 var subscriptionStatus = barbershop != null ? barbershop.SubscriptionStatus.ToString() : "Ativa";
 
-                var jwt = GenerateJwtToken(userId, user.Role.ToString(), user.BarbershopId);
+                var jwt = GenerateJwtToken(userId, user.Role.ToString(), user.BarbershopId, user.Name);
                 var authResponse = new AuthResponse
                 {
                     Token = jwt,
                     Role = user.Role.ToString(),
                     BarbershopId = user.BarbershopId,
-                    SubscriptionStatus = subscriptionStatus
+                    SubscriptionStatus = subscriptionStatus,
+                    Name = user.Name,
+                    Photo = user.Photo
                 };
                 return new(authResponse, 201, "Cadastro realizado com sucesso");
             }
@@ -275,13 +261,15 @@ namespace api_barber.Services
                 });
 
                 string adminUserId = createdAdminRes.Data?.Id ?? user.Id;
-                string jwt = GenerateJwtToken(adminUserId, user.Role.ToString(), user.BarbershopId);
+                string jwt = GenerateJwtToken(adminUserId, user.Role.ToString(), user.BarbershopId, user.Name);
                 AuthResponse authResponse = new()
                 {
                     Token = jwt,
                     Role = user.Role.ToString(),
                     BarbershopId = user.BarbershopId,
-                    SubscriptionStatus = createdBarbershop.SubscriptionStatus.ToString()
+                    SubscriptionStatus = createdBarbershop.SubscriptionStatus.ToString(),
+                    Name = user.Name,
+                    Photo = user.Photo
                 };
 
                 return new(authResponse, 201, "Cadastro de barbearia realizado com sucesso");
@@ -337,7 +325,7 @@ namespace api_barber.Services
                     </div>
                 """;
 
-                await _emailService.SendAsync(user.Email, user.Name, "Redefinição de Senha - SaaS Barbearia", html);
+                await handlerMail.SendAsync(user.Email, user.Name, "Redefinição de Senha - Na Régua", html);
 
                 return new(null, 200, "Link de redefinição enviado para o seu e-mail.");
             }
