@@ -43,88 +43,134 @@ class _AdminTeamPageState extends State<AdminTeamPage> {
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setSheet) => Padding(
-          padding: EdgeInsets.only(
-            left: 24, right: 24, top: 24,
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      barber == null ? 'Novo Profissional' : 'Editar Profissional',
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(ctx)),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                _sheetField('Nome', nameCtrl),
-                const SizedBox(height: 12),
-                _sheetField('E-mail', emailCtrl, keyboardType: TextInputType.emailAddress),
-                const SizedBox(height: 12),
-                _sheetField('WhatsApp', whatsCtrl,
-                    keyboardType: TextInputType.phone,
-                    formatters: [FilteringTextInputFormatter.digitsOnly, TelefoneInputFormatter()]),
-                const SizedBox(height: 12),
-                _sheetField('CPF', docCtrl,
-                    keyboardType: TextInputType.number,
-                    formatters: [FilteringTextInputFormatter.digitsOnly, CpfInputFormatter()]),
-                if (barber == null) ...[
-                  const SizedBox(height: 12),
-                  _sheetField('Senha', passCtrl, obscure: true),
-                ],
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: isSaving
-                        ? null
-                        : () async {
-                            setSheet(() => isSaving = true);
-                            bool ok;
-                            if (barber == null) {
-                              ok = await _repo.createBarber({
-                                'name': nameCtrl.text,
-                                'email': emailCtrl.text,
-                                'whatsApp': whatsCtrl.text.replaceAll(RegExp(r'\D'), ''),
-                                'document': docCtrl.text.replaceAll(RegExp(r'\D'), ''),
-                                'password': passCtrl.text,
-                              });
-                            } else {
-                              ok = await _repo.updateBarber({
-                                'id': barber.id,
-                                'name': nameCtrl.text,
-                                'email': emailCtrl.text,
-                                'whatsApp': whatsCtrl.text.replaceAll(RegExp(r'\D'), ''),
-                                'document': docCtrl.text.replaceAll(RegExp(r'\D'), ''),
-                              });
-                            }
-                            setSheet(() => isSaving = false);
-                            if (mounted) {
-                              Navigator.pop(ctx);
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                                content: Text(ok ? 'Profissional salvo com sucesso!' : 'Erro ao salvar profissional.'),
-                                backgroundColor: ok ? Colors.green : Colors.red,
-                              ));
-                              _loadBarbers();
-                            }
-                          },
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: isSaving
-                        ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                        : const Text('Salvar'),
+        builder: (ctx, setSheet) => SafeArea(
+          top: false,
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: 24, right: 24, top: 24,
+              bottom: MediaQuery.of(ctx).viewInsets.bottom + 32,
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        barber == null ? 'Novo Profissional' : 'Editar Profissional',
+                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(ctx)),
+                    ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  _sheetField('Nome', nameCtrl),
+                  const SizedBox(height: 12),
+                  _sheetField('E-mail', emailCtrl, keyboardType: TextInputType.emailAddress),
+                  const SizedBox(height: 12),
+                  _sheetField('WhatsApp', whatsCtrl,
+                      keyboardType: TextInputType.phone,
+                      formatters: [FilteringTextInputFormatter.digitsOnly, TelefoneInputFormatter()]),
+                  const SizedBox(height: 12),
+                  _sheetField('CPF', docCtrl,
+                      keyboardType: TextInputType.number,
+                      formatters: [FilteringTextInputFormatter.digitsOnly, CpfInputFormatter()]),
+                  if (barber == null) ...[
+                    const SizedBox(height: 12),
+                    _sheetField('Senha', passCtrl, obscure: true),
+                  ],
+                  const SizedBox(height: 28),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: isSaving
+                          ? null
+                          : () async {
+                              final name = nameCtrl.text.trim();
+                              final email = emailCtrl.text.trim();
+                              final whatsClean = whatsCtrl.text.replaceAll(RegExp(r'\D'), '');
+                              final docClean = docCtrl.text.replaceAll(RegExp(r'\D'), '');
+                              final pass = passCtrl.text;
+
+                              if (name.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                                  content: Text('Informe o nome do profissional.'),
+                                  backgroundColor: Colors.red,
+                                ));
+                                return;
+                              }
+                              if (email.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                                  content: Text('Informe o e-mail do profissional.'),
+                                  backgroundColor: Colors.red,
+                                ));
+                                return;
+                              }
+                              if (docClean.isNotEmpty && !UtilBrasilFields.isCPFValido(docClean)) {
+                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                                  content: Text('CPF inválido. Por favor, verifique os dígitos digitados.'),
+                                  backgroundColor: Colors.red,
+                                ));
+                                return;
+                              }
+                              if (barber == null && pass.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                                  content: Text('Informe uma senha inicial para o profissional.'),
+                                  backgroundColor: Colors.red,
+                                ));
+                                return;
+                              }
+
+                              setSheet(() => isSaving = true);
+                              String? errorMsg;
+                              if (barber == null) {
+                                errorMsg = await _repo.createBarber({
+                                  'name': name,
+                                  'email': email,
+                                  'whatsApp': whatsClean,
+                                  'document': docClean,
+                                  'password': pass,
+                                });
+                              } else {
+                                errorMsg = await _repo.updateBarber({
+                                  'id': barber.id,
+                                  'name': name,
+                                  'email': email,
+                                  'whatsApp': whatsClean,
+                                  'document': docClean,
+                                });
+                              }
+                              setSheet(() => isSaving = false);
+
+                              if (mounted) {
+                                if (errorMsg == null) {
+                                  Navigator.pop(ctx);
+                                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                                    content: Text('Profissional salvo com sucesso!'),
+                                    backgroundColor: Colors.green,
+                                  ));
+                                  _loadBarbers();
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                    content: Text(errorMsg),
+                                    backgroundColor: Colors.red,
+                                  ));
+                                }
+                              }
+                            },
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 50),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: isSaving
+                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                          : const Text('Salvar'),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

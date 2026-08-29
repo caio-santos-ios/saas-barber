@@ -50,5 +50,12 @@ namespace api_barber.Controllers
             ResponseApi<object> response = await authService.ConfirmEmailAsync(request);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
+
+        [HttpPost("resend-confirmation")]
+        public async Task<IActionResult> ResendConfirmation([FromBody] ResetPasswordRequest request)
+        {
+            ResponseApi<object> response = await authService.ResendConfirmationEmailAsync(request.Email, request.OriginUrl);
+            return StatusCode(response.Status, new { response.Data, response.Message });
+        }
     }
 }

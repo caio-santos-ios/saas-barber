@@ -1,4 +1,4 @@
-﻿using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Bson.Serialization.Attributes;
 namespace api_barber.Models
 {
     public class Address
@@ -7,6 +7,8 @@ namespace api_barber.Models
         public string Street { get; set; } = string.Empty;
         [BsonElement("number")]
         public string Number { get; set; } = string.Empty;
+        [BsonElement("complement")]
+        public string Complement { get; set; } = string.Empty;
         [BsonElement("neighborhood")]
         public string Neighborhood { get; set; } = string.Empty;
         [BsonElement("city")]

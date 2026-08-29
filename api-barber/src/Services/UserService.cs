@@ -390,6 +390,10 @@ namespace api_barber.Services
                 entity.Email = request.Email;
                 entity.WhatsApp = request.WhatsApp;
                 entity.Document = request.Document;
+                if (!string.IsNullOrEmpty(request.Photo))
+                {
+                    entity.Photo = request.Photo;
+                }
 
                 User user = await repository.UpdateAsync(entity);
                 if (user is null) return new(null, 400, "Falha ao criar usuário");

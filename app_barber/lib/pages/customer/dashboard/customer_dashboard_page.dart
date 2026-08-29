@@ -122,17 +122,16 @@ class _CustomerDashboardPageState extends State<CustomerDashboardPage> {
   }
 
   ImageProvider? _getProfileImage() {
-    if (_customerPhoto.isEmpty) return null;
-    if (_customerPhoto.startsWith('http')) return NetworkImage(_customerPhoto);
-    if (_customerPhoto.startsWith('data:image')) {
-      try {
-        final base64Str = _customerPhoto.split(',').last;
-        return MemoryImage(base64Decode(base64Str));
-      } catch (e) {
-        return null;
-      }
+    final photo = _customerPhoto.trim();
+    if (photo.isEmpty) return null;
+    if (photo.startsWith('http')) return NetworkImage(photo);
+    try {
+      final base64Str = photo.contains(',') ? photo.split(',').last : photo;
+      final clean = base64Str.replaceAll(RegExp(r'\s+'), '');
+      return MemoryImage(base64Decode(clean));
+    } catch (_) {
+      return null;
     }
-    return null;
   }
 
   Widget _buildHeader() {
@@ -147,7 +146,7 @@ class _CustomerDashboardPageState extends State<CustomerDashboardPage> {
             radius: 24,
             backgroundColor: Theme.of(context).dividerColor,
             backgroundImage: _getProfileImage(),
-            child: _customerPhoto.isEmpty ? Icon(Icons.person, color: Theme.of(context).iconTheme.color) : null,
+            child: _getProfileImage() == null ? Icon(Icons.person, color: Theme.of(context).iconTheme.color) : null,
           ),
         ),
         IconButton(

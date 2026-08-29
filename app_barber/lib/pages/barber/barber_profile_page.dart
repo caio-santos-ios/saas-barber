@@ -190,17 +190,16 @@ class _BarberProfilePageState extends ConsumerState<BarberProfilePage> {
   }
 
   ImageProvider? _getProfileImage() {
-    if (_photo.isEmpty) return null;
-    if (_photo.startsWith('http')) return NetworkImage(_photo);
-    if (_photo.startsWith('data:image')) {
-      try {
-        final base64Str = _photo.split(',').last;
-        return MemoryImage(base64Decode(base64Str));
-      } catch (e) {
-        return null;
-      }
+    final photo = _photo.trim();
+    if (photo.isEmpty) return null;
+    if (photo.startsWith('http')) return NetworkImage(photo);
+    try {
+      final base64Str = photo.contains(',') ? photo.split(',').last : photo;
+      final clean = base64Str.replaceAll(RegExp(r'\s+'), '');
+      return MemoryImage(base64Decode(clean));
+    } catch (_) {
+      return null;
     }
-    return null;
   }
 
   Future<void> _logout() async {
@@ -362,7 +361,7 @@ class _BarberProfilePageState extends ConsumerState<BarberProfilePage> {
                             radius: 50,
                             backgroundColor: Theme.of(context).dividerColor,
                             backgroundImage: _getProfileImage(),
-                            child: _photo.isEmpty
+                            child: _getProfileImage() == null
                                 ? Icon(
                                     Icons.person,
                                     size: 50,

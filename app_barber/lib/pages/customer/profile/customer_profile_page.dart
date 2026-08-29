@@ -187,17 +187,16 @@ class _CustomerProfilePageState extends ConsumerState<CustomerProfilePage> {
   }
 
   ImageProvider? _getProfileImage() {
-    if (_photo.isEmpty) return null;
-    if (_photo.startsWith('http')) return NetworkImage(_photo);
-    if (_photo.startsWith('data:image')) {
-      try {
-        final base64Str = _photo.split(',').last;
-        return MemoryImage(base64Decode(base64Str));
-      } catch (e) {
-        return null;
-      }
+    final photo = _photo.trim();
+    if (photo.isEmpty) return null;
+    if (photo.startsWith('http')) return NetworkImage(photo);
+    try {
+      final base64Str = photo.contains(',') ? photo.split(',').last : photo;
+      final clean = base64Str.replaceAll(RegExp(r'\s+'), '');
+      return MemoryImage(base64Decode(clean));
+    } catch (_) {
+      return null;
     }
-    return null;
   }
 
   Future<void> _logout() async {
@@ -223,9 +222,10 @@ class _CustomerProfilePageState extends ConsumerState<CustomerProfilePage> {
         centerTitle: true,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: IconThemeData(color: Theme.of(context).iconTheme.color),
       ),
-      body: _isLoading ? const Center(child: CircularProgressIndicator()) : SingleChildScrollView(
+      body: _isLoading 
+        ? const Center(child: CircularProgressIndicator())
+        : SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
@@ -238,7 +238,7 @@ class _CustomerProfilePageState extends ConsumerState<CustomerProfilePage> {
                       radius: 50,
                       backgroundColor: Theme.of(context).dividerColor,
                       backgroundImage: _getProfileImage(),
-                      child: _photo.isEmpty ? Icon(Icons.person, size: 50, color: Theme.of(context).iconTheme.color) : null,
+                      child: _getProfileImage() == null ? Icon(Icons.person, size: 50, color: Theme.of(context).iconTheme.color) : null,
                     ),
                     Positioned(
                       bottom: 0,

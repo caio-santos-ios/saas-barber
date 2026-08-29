@@ -11,5 +11,6 @@ namespace api_barber.Interfaces
         Task<ResponseApi<ResetPasswordResponse>> ResetPasswordAsync(ResetPasswordRequest request);
         Task<ResponseApi<object>> ConfirmResetPasswordAsync(ConfirmResetPasswordRequest request);
         Task<ResponseApi<object>> ConfirmEmailAsync(ConfirmEmailRequest request);
+        Task<ResponseApi<object>> ResendConfirmationEmailAsync(string email, string originUrl);
     }
 }

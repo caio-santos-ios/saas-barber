@@ -496,7 +496,46 @@ namespace api_barber.Services
             </html>
             """;
 
-            await MailHandler.SendAsync(email, name, "Bem-vindo ao Na Régua - Confirme seu E-mail", html);
+            Console.WriteLine($"[EMAIL CONFIRMATION LINK] Link para {email}: {link}");
+            try
+            {
+                await MailHandler.SendAsync(email, name, "Bem-vindo ao Na Régua - Confirme seu E-mail", html);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[SMTP ERROR] Falha no envio SMTP para {email}: {ex.Message}");
+            }
+        }
+
+        public async Task<ResponseApi<object>> ResendConfirmationEmailAsync(string email, string originUrl)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(email))
+                    return new(null, 400, "E-mail não informado.");
+
+                var userRes = await _userService.GetByEmailAdminAsync(email.Trim());
+                if (userRes.Data == null)
+                {
+                    userRes = await _userService.GetByEmailAsync(email.Trim(), "", null);
+                }
+
+                if (userRes.Data == null)
+                    return new(null, 404, "Usuário não encontrado.");
+
+                var user = userRes.Data;
+                if (user.EmailConfirmed)
+                    return new(null, 200, "Este e-mail já foi confirmado.");
+
+                string confirmToken = GenerateEmailConfirmationToken(user.Id, user.Email);
+                await SendWelcomeConfirmationEmailAsync(user.Email, user.Name, confirmToken, originUrl);
+
+                return new(null, 200, "Link de confirmação reenviado para o seu e-mail.");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 500, $"Ocorreu um erro ao reenviar e-mail: {ex.Message}");
+            }
         }
 
         public async Task<ResponseApi<object>> ConfirmEmailAsync(ConfirmEmailRequest request)

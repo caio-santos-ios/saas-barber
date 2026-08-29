@@ -2,6 +2,7 @@ import 'package:app_barber/api/api_client.dart';
 import 'package:app_barber/models/barbershop.dart';
 import 'package:app_barber/models/service_type.dart';
 import 'package:app_barber/models/user.dart';
+import 'package:dio/dio.dart';
 import 'package:hive/hive.dart';
 
 class BarbershopRepository {
@@ -60,21 +61,27 @@ class BarbershopRepository {
     }
   }
 
-  Future<bool> createBarber(Map<String, dynamic> data) async {
+  Future<String?> createBarber(Map<String, dynamic> data) async {
     try {
       final response = await apiClient.dio.post('/users', data: {...data, 'role': 'Barber'});
-      return response.statusCode == 200 || response.statusCode == 201;
+      if (response.statusCode == 200 || response.statusCode == 201) return null;
+      return response.data?['message'] ?? 'Erro ao cadastrar profissional';
+    } on DioException catch (e) {
+      return e.response?.data?['message'] ?? e.response?.data?['errors']?[0]?['message'] ?? 'Erro ao cadastrar profissional';
     } catch (e) {
-      return false;
+      return 'Erro inesperado: $e';
     }
   }
 
-  Future<bool> updateBarber(Map<String, dynamic> data) async {
+  Future<String?> updateBarber(Map<String, dynamic> data) async {
     try {
       final response = await apiClient.dio.put('/users', data: data);
-      return response.statusCode == 200;
+      if (response.statusCode == 200) return null;
+      return response.data?['message'] ?? 'Erro ao atualizar profissional';
+    } on DioException catch (e) {
+      return e.response?.data?['message'] ?? e.response?.data?['errors']?[0]?['message'] ?? 'Erro ao atualizar profissional';
     } catch (e) {
-      return false;
+      return 'Erro inesperado: $e';
     }
   }
 
