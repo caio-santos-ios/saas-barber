@@ -1,6 +1,5 @@
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
-using SixLabors.ImageSharp;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -12,29 +11,13 @@ namespace api_barber.src.Handlers
         {
             try
             {
-                string extension = Path.GetExtension(attachment.FileName).ToLower();
-                bool isHeic = extension == ".heic" || extension == ".heif";
                 string fileName = Guid.NewGuid().ToString();
 
-                using var memoryStream = new MemoryStream();
+                using var stream = attachment.OpenReadStream();
 
-                if (isHeic)
+                var uploadParams = new ImageUploadParams
                 {
-                    using var inputStream = attachment.OpenReadStream();
-                    using var image = await Image.LoadAsync(inputStream);
-                    await image.SaveAsJpegAsync(memoryStream);
-                    memoryStream.Position = 0;
-                    extension = ".jpg";
-                }
-                else
-                {
-                    await attachment.CopyToAsync(memoryStream);
-                    memoryStream.Position = 0;
-                }
-
-                var uploadParams = new RawUploadParams
-                {
-                    File = new FileDescription(fileName + extension, memoryStream),
+                    File = new FileDescription(attachment.FileName, stream),
                     Folder = $"saas-barbearia/{parent}",
                     PublicId = fileName
                 };
