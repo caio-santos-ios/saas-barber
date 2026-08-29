@@ -51,6 +51,7 @@ export class Barbers extends GlobalService implements OnInit {
   }
 
   async loadBarbers() {
+    this.spinnerShow();
     this.loading = true;
     this.cdr.detectChanges();
     try {
@@ -62,6 +63,7 @@ export class Barbers extends GlobalService implements OnInit {
       console.error('Erro ao carregar profissionais', err);
     } finally {
       this.loading = false;
+      this.spinnerHide();
       this.cdr.detectChanges();
     }
   }

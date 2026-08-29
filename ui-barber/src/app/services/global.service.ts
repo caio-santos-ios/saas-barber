@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 
@@ -6,8 +6,23 @@ import { ToastrService } from 'ngx-toastr';
   providedIn: 'root'
 })
 export class GlobalService {
-  protected toastrNotification = inject(ToastrService);
+  protected toastr = inject(ToastrService);
+  protected toastrNotification = this.toastr;
   protected router = inject(Router);
+
+  static isLoading = signal<boolean>(false);
+
+  get loadingState() {
+    return GlobalService.isLoading();
+  }
+
+  spinnerShow() {
+    GlobalService.isLoading.set(true);
+  }
+  
+  spinnerHide() {
+    GlobalService.isLoading.set(false);
+  }
 
   errorNotification(err: any) {
     if (!err) return;
@@ -21,7 +36,9 @@ export class GlobalService {
 
     if (status === 401) {
       this.toastrNotification.warning('Sessão finalizada', 'Atenção');
+      const theme = localStorage.getItem('theme');
       localStorage.clear();
+      if (theme) localStorage.setItem('theme', theme);
       this.router.navigate(['/login']);
       return;
     }

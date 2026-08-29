@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { api } from '../../services/api';
 import Chart from 'chart.js/auto';
+import { GlobalService } from '../../services/global.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -11,7 +12,7 @@ import Chart from 'chart.js/auto';
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.css']
 })
-export class Dashboard implements OnInit, OnDestroy {
+export class Dashboard extends GlobalService implements OnInit, OnDestroy {
   appointments: any[] = [];
   metrics: any = null;
   loading = true;
@@ -27,9 +28,12 @@ export class Dashboard implements OnInit, OnDestroy {
   private statusChartInstance: Chart | null = null;
   private barberChartInstance: Chart | null = null;
 
-  constructor(private cdr: ChangeDetectorRef, private ngZone: NgZone) {}
+  constructor(private cdr: ChangeDetectorRef, private ngZone: NgZone) {
+    super();
+  }
 
   ngOnInit() {
+    this.spinnerShow();
     const start = new Date();
     start.setDate(start.getDate() - 30);
     const end = new Date();
@@ -39,6 +43,8 @@ export class Dashboard implements OnInit, OnDestroy {
     this.endDate = end.toISOString().split('T')[0];
 
     this.fetchData();
+    // this.spinnerHide();
+    console.log("teste")
   }
 
   ngOnDestroy() {
@@ -69,6 +75,7 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   fetchData() {
+    this.spinnerShow();
     this.loading = true;
     this.error = '';
     Promise.all([
@@ -113,6 +120,7 @@ export class Dashboard implements OnInit, OnDestroy {
         this.metrics = metricsRes.data?.data || null;
         this.error = '';
         this.loading = false;
+        this.spinnerHide();
 
         if (this.metrics && this.metrics.totalAppointments === 0) {
            this.metrics.isEmpty = true;
@@ -123,9 +131,11 @@ export class Dashboard implements OnInit, OnDestroy {
       });
     }).catch((err: any) => {
       this.ngZone.run(() => {
+        this.errorNotification(err);
         console.error(err);
         this.error = 'Erro ao carregar dados do dashboard. Verifique sua conexão ou se a API está rodando.';
         this.loading = false;
+        this.spinnerHide();
         this.cdr.detectChanges();
       });
     });

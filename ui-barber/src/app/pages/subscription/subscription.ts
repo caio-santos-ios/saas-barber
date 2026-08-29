@@ -7,6 +7,8 @@ import { NgxMaskDirective } from 'ngx-mask';
 import { Auth } from '../../services/auth';
 import { Router } from '@angular/router';
 
+import { GlobalService } from '../../services/global.service';
+
 @Component({
   selector: 'app-subscription',
   standalone: true,
@@ -14,7 +16,7 @@ import { Router } from '@angular/router';
   templateUrl: './subscription.html',
   styleUrls: ['./subscription.css']
 })
-export class Subscription implements OnInit {
+export class Subscription extends GlobalService implements OnInit {
   plans: any[] = [];
   loading = true;
   processing = false;
@@ -37,17 +39,18 @@ export class Subscription implements OnInit {
   };
 
   constructor(
-    private toastr: ToastrService,
     private cdr: ChangeDetectorRef,
-    public auth: Auth,
-    private router: Router
-  ) {}
+    public auth: Auth
+  ) {
+    super();
+  }
 
   ngOnInit() {
     this.loadPlans();
   }
 
   async loadPlans() {
+    this.spinnerShow();
     this.loading = true;
     this.cdr.detectChanges();
     try {
@@ -66,9 +69,11 @@ export class Subscription implements OnInit {
 
       await this.loadInvoices();
     } catch (err) {
+      this.errorNotification(err);
       console.error('Erro ao carregar planos', err);
     } finally {
       this.loading = false;
+      this.spinnerHide();
       this.cdr.detectChanges();
     }
   }

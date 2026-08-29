@@ -7,6 +7,7 @@ import { NgxMaskDirective } from 'ngx-mask';
 import { ChangeDetectorRef } from '@angular/core';
 
 import { RouterLink } from '@angular/router';
+import { GlobalService } from '../../services/global.service';
 
 @Component({
   selector: 'app-customers',
@@ -15,7 +16,7 @@ import { RouterLink } from '@angular/router';
   templateUrl: './customers.html',
   styleUrls: ['./customers.css']
 })
-export class Customers implements OnInit {
+export class Customers extends GlobalService implements OnInit {
   customers: any[] = [];
   loading = true;
 
@@ -34,15 +35,17 @@ export class Customers implements OnInit {
   };
 
   constructor(
-    private toastr: ToastrService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) {
+    super();
+  }
 
   ngOnInit() {
     this.loadCustomers();
   }
 
   async loadCustomers() {
+    this.spinnerShow();
     this.loading = true;
     this.cdr.detectChanges();
     try {
@@ -50,9 +53,11 @@ export class Customers implements OnInit {
       const response = await api.get(`/users/customers?deleted=false&barbershopId=${barbershopId}`);
       this.customers = response.data.data || [];
     } catch (err) {
+      this.errorNotification(err);
       console.error('Erro ao carregar clientes', err);
     } finally {
       this.loading = false;
+      this.spinnerHide();
       this.cdr.detectChanges();
     }
   }

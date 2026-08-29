@@ -15,7 +15,7 @@ import { GlobalService } from '../../services/global.service';
   templateUrl: './services.html',
   styleUrls: ['./services.css']
 })
-export class Services implements OnInit {
+export class Services extends GlobalService implements OnInit {
   services: any[] = [];
   loading = true;
 
@@ -36,16 +36,17 @@ export class Services implements OnInit {
   };
 
   constructor(
-    private toastr: ToastrService,
-    private cdr: ChangeDetectorRef,
-    private globalService: GlobalService
-  ) {}
+    private cdr: ChangeDetectorRef
+  ) {
+    super();
+  }
 
   ngOnInit() {
     this.loadServices();
   }
 
   async loadServices() {
+    this.spinnerShow();
     this.loading = true;
     this.cdr.detectChanges();
     try {
@@ -53,9 +54,11 @@ export class Services implements OnInit {
       const response = await api.get(`/services_types?deleted=false&barbershopId=${barbershopId}`);
       this.services = response.data.data || [];
     } catch (err) {
+      this.errorNotification(err);
       console.error('Erro ao carregar serviços', err);
     } finally {
       this.loading = false;
+      this.spinnerHide();
       this.cdr.detectChanges();
     }
   }
@@ -78,7 +81,7 @@ export class Services implements OnInit {
       const response = await api.get(`/services_types/${serviceId}`);
       this.formData = { ...response.data.data };
     } catch (error) {
-      this.globalService.errorNotification(error);
+      this.errorNotification(error);
     }
   }
 
@@ -146,8 +149,7 @@ export class Services implements OnInit {
       this.closeModal();
       await this.loadServices();
     } catch (err) {
-      this.globalService.errorNotification(err);
-      this.toastr.error('Erro ao salvar serviço. Tente novamente.', 'Erro');
+      this.errorNotification(err);
     } finally {
       this.isSaving = false;
       this.cdr.detectChanges();

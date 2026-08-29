@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { api } from '../../services/api';
 import { ToastrService } from 'ngx-toastr';
 
+import { GlobalService } from '../../services/global.service';
+
 @Component({
   selector: 'app-agenda',
   standalone: true,
@@ -11,7 +13,7 @@ import { ToastrService } from 'ngx-toastr';
   templateUrl: './agenda.html',
   styleUrls: ['./agenda.css']
 })
-export class Agenda implements OnInit {
+export class Agenda extends GlobalService implements OnInit {
   selectedDate: Date = new Date();
   appointments: any[] = [];
   activeStatusDropdownId: string | null = null;
@@ -31,7 +33,9 @@ export class Agenda implements OnInit {
     hour: ''
   };
 
-  constructor(private toastr: ToastrService, private cdr: ChangeDetectorRef) {}
+  constructor(private cdr: ChangeDetectorRef) {
+    super();
+  }
 
   ngOnInit() {
     this.loadAppointments();
@@ -39,6 +43,7 @@ export class Agenda implements OnInit {
   }
 
   async loadAppointments() {
+    this.spinnerShow();
     try {
       const barbershopId = localStorage.getItem('barbershopId') || '';
       const [aptsRes, usersRes] = await Promise.all([
@@ -86,7 +91,10 @@ export class Agenda implements OnInit {
 
       this.cdr.detectChanges();
     } catch (err) {
+      this.errorNotification(err);
       console.error('Erro ao carregar agendamentos', err);
+    } finally {
+      this.spinnerHide();
     }
   }
 

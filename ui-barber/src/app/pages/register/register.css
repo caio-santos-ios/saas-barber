@@ -69,6 +69,17 @@
   cursor: pointer;
   font-weight: 400;
   font-size: 13px;
+  flex-wrap: wrap;
+}
+
+.terms-link {
+  color: var(--accent-primary, #dca311);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.terms-link:hover {
+  color: var(--accent-hover, #b8860b);
 }
 
 .auth-footer {

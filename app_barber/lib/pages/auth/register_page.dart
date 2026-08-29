@@ -7,6 +7,7 @@ import 'package:brasil_fields/brasil_fields.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class RegisterPage extends StatefulWidget {
   final String? barbershopId;
@@ -135,6 +136,19 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
+  Future<void> _launchLegalUrl(String urlString) async {
+    final Uri uri = Uri.parse(urlString);
+    try {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Não foi possível abrir a página.'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authBox = Hive.box('auth');
@@ -142,8 +156,12 @@ class _RegisterPageState extends State<RegisterPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Criar Conta'),
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -275,7 +293,6 @@ class _RegisterPageState extends State<RegisterPage> {
                 
                 CheckboxListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Aceito os Termos e Condições', style: TextStyle(fontSize: 14)),
                   value: _acceptTerms,
                   onChanged: (value) {
                     setState(() {
@@ -284,6 +301,37 @@ class _RegisterPageState extends State<RegisterPage> {
                   },
                   controlAffinity: ListTileControlAffinity.leading,
                   activeColor: Theme.of(context).colorScheme.primary,
+                  title: Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      const Text('Li e concordo com os ', style: TextStyle(fontSize: 13)),
+                      GestureDetector(
+                        onTap: () => _launchLegalUrl('https://saas-barber-xi.vercel.app/termos-de-uso'),
+                        child: Text(
+                          'Termos de Uso',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.primary,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                      const Text(' e a ', style: TextStyle(fontSize: 13)),
+                      GestureDetector(
+                        onTap: () => _launchLegalUrl('https://saas-barber-xi.vercel.app/politica-de-privacidade'),
+                        child: Text(
+                          'Política de Privacidade',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Theme.of(context).colorScheme.primary,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 32),
                 

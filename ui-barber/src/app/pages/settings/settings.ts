@@ -5,6 +5,8 @@ import { api } from '../../services/api';
 import { ToastrService } from 'ngx-toastr';
 import { NgxMaskDirective } from 'ngx-mask';
 
+import { GlobalService } from '../../services/global.service';
+
 @Component({
   selector: 'app-settings',
   standalone: true,
@@ -12,7 +14,7 @@ import { NgxMaskDirective } from 'ngx-mask';
   templateUrl: './settings.html',
   styleUrls: ['./settings.css']
 })
-export class Settings implements OnInit {
+export class Settings extends GlobalService implements OnInit {
   loading = true;
   saving = false;
   
@@ -34,15 +36,17 @@ export class Settings implements OnInit {
   };
 
   constructor(
-    private toastr: ToastrService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) {
+    super();
+  }
 
   ngOnInit() {
     this.loadSettings();
   }
 
   async loadSettings() {
+    this.spinnerShow();
     this.loading = true;
     this.cdr.detectChanges();
     try {
@@ -69,9 +73,11 @@ export class Settings implements OnInit {
         };
       }
     } catch (err) {
+      this.errorNotification(err);
       console.error('Erro ao carregar configurações', err);
     } finally {
       this.loading = false;
+      this.spinnerHide();
       this.cdr.detectChanges();
     }
   }

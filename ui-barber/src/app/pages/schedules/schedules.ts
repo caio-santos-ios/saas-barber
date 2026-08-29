@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { api } from '../../services/api';
 import { ToastrService } from 'ngx-toastr';
 
+import { GlobalService } from '../../services/global.service';
+
 @Component({
   selector: 'app-schedules',
   standalone: true,
@@ -11,7 +13,7 @@ import { ToastrService } from 'ngx-toastr';
   templateUrl: './schedules.html',
   styleUrls: ['./schedules.css']
 })
-export class Schedules implements OnInit {
+export class Schedules extends GlobalService implements OnInit {
   schedules: any[] = [];
   barbers: any[] = [];
   loading = true;
@@ -61,15 +63,17 @@ export class Schedules implements OnInit {
   };
 
   constructor(
-    private toastr: ToastrService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) {
+    super();
+  }
 
   ngOnInit() {
     this.loadInitialData();
   }
 
   async loadInitialData() {
+    this.spinnerShow();
     this.loading = true;
     this.cdr.detectChanges();
     try {
@@ -82,9 +86,11 @@ export class Schedules implements OnInit {
       this.schedules = schedRes.data.data || [];
       this.barbers = barbRes.data.data || [];
     } catch (err) {
+      this.errorNotification(err);
       console.error('Erro ao carregar dados', err);
     } finally {
       this.loading = false;
+      this.spinnerHide();
       this.cdr.detectChanges();
     }
   }
