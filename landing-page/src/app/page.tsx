@@ -481,6 +481,46 @@ export default function Home() {
           </div>
         </section>
 
+        <section className="section-shell app-showcase-section" aria-labelledby="barber-app-title">
+          <div className="section-heading split-heading">
+            <div>
+              <p className="section-eyebrow">App do profissional</p>
+              <h2 id="barber-app-title">A rotina do barbeiro na palma da mão.</h2>
+            </div>
+            <p>Da escolha da barbearia à agenda do dia, o profissional acompanha seus horários e atendimentos sem depender de planilhas ou mensagens soltas.</p>
+          </div>
+          <div className="barber-app-gallery">
+            <figure className="barber-app-shot barber-app-shot-feature">
+              <div className="barber-app-device"><Image src="/app-barbeiro/minha-agenda.jpg" alt="Tela Minha Agenda do app do barbeiro Na Régua" width={1080} height={2340} sizes="(max-width: 760px) 48vw, 220px" loading="lazy" /></div>
+              <figcaption><strong>Minha agenda</strong><span>Visualize os horários do dia e os detalhes de cada atendimento.</span></figcaption>
+            </figure>
+            <figure className="barber-app-shot">
+              <div className="barber-app-device"><Image src="/app-barbeiro/servicos.jpg" alt="Tela de serviços do app do barbeiro Na Régua" width={1080} height={2340} sizes="(max-width: 760px) 48vw, 220px" loading="lazy" /></div>
+              <figcaption><strong>Serviços</strong><span>Consulte os serviços disponíveis e organize o atendimento.</span></figcaption>
+            </figure>
+            <figure className="barber-app-shot">
+              <div className="barber-app-device"><Image src="/app-barbeiro/financeiro.jpg" alt="Tela de acompanhamento de resultados do app do barbeiro Na Régua" width={1080} height={2340} sizes="(max-width: 760px) 48vw, 220px" loading="lazy" /></div>
+              <figcaption><strong>Resultados</strong><span>Acompanhe o resumo dos serviços concluídos.</span></figcaption>
+            </figure>
+            <figure className="barber-app-shot">
+              <div className="barber-app-device"><Image src="/app-barbeiro/profile.jpg" alt="Tela de perfil profissional do app do barbeiro Na Régua" width={1080} height={2340} sizes="(max-width: 760px) 48vw, 220px" loading="lazy" /></div>
+              <figcaption><strong>Perfil profissional</strong><span>Mantenha seus dados e preferências organizados.</span></figcaption>
+            </figure>
+            <figure className="barber-app-shot">
+              <div className="barber-app-device"><Image src="/app-barbeiro/selecionar-barbearia.jpg" alt="Tela de seleção de barbearia do app do barbeiro Na Régua" width={1080} height={2340} sizes="(max-width: 760px) 48vw, 220px" loading="lazy" /></div>
+              <figcaption><strong>Acesso à barbearia</strong><span>Entre na operação correta com poucos passos.</span></figcaption>
+            </figure>
+            <figure className="barber-app-shot">
+              <div className="barber-app-device"><Image src="/app-barbeiro/selecionar-barbearia-codigo.jpg" alt="Tela de código da barbearia do app do barbeiro Na Régua" width={1080} height={2340} sizes="(max-width: 760px) 48vw, 220px" loading="lazy" /></div>
+              <figcaption><strong>Código da barbearia</strong><span>Conecte-se à equipe usando o código disponibilizado.</span></figcaption>
+            </figure>
+            <figure className="barber-app-shot">
+              <div className="barber-app-device"><Image src="/app-barbeiro/login.jpg" alt="Tela de login profissional do app do barbeiro Na Régua" width={1080} height={2340} sizes="(max-width: 760px) 48vw, 220px" loading="lazy" /></div>
+              <figcaption><strong>Login profissional</strong><span>Acesse sua rotina com segurança pelo mesmo aplicativo.</span></figcaption>
+            </figure>
+          </div>
+        </section>
+
         <section id="beneficios" className="section-shell benefits-section">
           <div className="section-heading centered-heading">
             <p className="section-eyebrow">Feito para a rotina real</p>

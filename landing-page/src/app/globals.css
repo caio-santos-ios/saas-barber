@@ -567,3 +567,19 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .legal-footer { padding-top: 24px; color: var(--muted-deep); font-size: 13px; }
 .legal-footer a { color: #b7bec9; text-decoration: none; }
 @media (max-width: 640px) { .legal-page { padding: 18px 12px 30px; } .legal-page-topbar { padding: 4px 4px 18px; } .legal-back { font-size: 12px; } .legal-card { padding: 24px 18px; border-radius: 18px; } .legal-content { font-size: 15px; line-height: 1.65; } .legal-content table { display: block; overflow-x: auto; white-space: normal; } .legal-content th, .legal-content td { min-width: 150px; padding: 9px 10px; } .legal-footer { align-items: flex-start; flex-direction: column; gap: 8px; } }
+
+
+/* App showcase */
+.app-showcase-section { padding-top: 126px; padding-bottom: 126px; border-top: 1px solid var(--line-soft); }
+.barber-app-gallery { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; align-items: start; }
+.barber-app-shot { min-width: 0; }
+.barber-app-device { overflow: hidden; border: 1px solid rgba(239,195,93,.2); border-radius: 22px; background: #0b0d12; box-shadow: 0 22px 48px rgba(0,0,0,.28); transition: transform 180ms ease, border-color 180ms ease; }
+.barber-app-device:hover { border-color: rgba(239,195,93,.55); transform: translateY(-4px); }
+.barber-app-device img { display: block; width: 100%; height: auto; }
+.barber-app-shot figcaption { display: grid; gap: 5px; padding: 16px 4px 0; }
+.barber-app-shot figcaption strong { color: var(--ink); font-family: 'Manrope', sans-serif; font-size: 15px; }
+.barber-app-shot figcaption span { color: var(--muted); font-size: 12px; line-height: 1.5; }
+.barber-app-shot-feature { grid-column: span 2; }
+.barber-app-shot-feature .barber-app-device { max-width: 270px; margin: 0 auto; }
+@media (max-width: 900px) { .barber-app-gallery { grid-template-columns: repeat(3, minmax(0, 1fr)); } .barber-app-shot-feature { grid-column: span 3; } }
+@media (max-width: 640px) { .app-showcase-section { padding-top: 88px; padding-bottom: 88px; } .barber-app-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 10px; } .barber-app-shot-feature { grid-column: span 2; } .barber-app-shot-feature .barber-app-device { max-width: 230px; } .barber-app-device { border-radius: 16px; } .barber-app-shot figcaption { padding-top: 10px; } .barber-app-shot figcaption strong { font-size: 13px; } .barber-app-shot figcaption span { font-size: 11px; } }
