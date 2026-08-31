@@ -255,6 +255,16 @@ namespace api_barber.Services
         {
             try
             {
+                if (!string.IsNullOrWhiteSpace(request.WhatsApp))
+                {
+                    request.WhatsApp = ValidationUtils.CleanDigits(request.WhatsApp);
+                }
+
+                if (!string.IsNullOrWhiteSpace(request.Document))
+                {
+                    request.Document = ValidationUtils.CleanDigits(request.Document);
+                }
+
                 if (!string.IsNullOrWhiteSpace(request.Email))
                 {
                     if (!ValidationUtils.IsValidEmail(request.Email))
@@ -335,6 +345,16 @@ namespace api_barber.Services
             {
                 User existedUser = await repository.GetByIdAsync(request.Id);
                 if (existedUser is null) return new(null, 404, "Usuário não encontrado");
+
+                if (!string.IsNullOrWhiteSpace(request.WhatsApp))
+                {
+                    request.WhatsApp = ValidationUtils.CleanDigits(request.WhatsApp);
+                }
+
+                if (!string.IsNullOrWhiteSpace(request.Document))
+                {
+                    request.Document = ValidationUtils.CleanDigits(request.Document);
+                }
 
                 if (!string.IsNullOrWhiteSpace(request.Email))
                 {

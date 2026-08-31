@@ -54,7 +54,7 @@ class _BarberProfilePageState extends ConsumerState<BarberProfilePage> {
         final user = User.fromJson(response.data['data']);
         _nameController.text = user.name;
         _emailController.text = user.email;
-        _whatsappController.text = user.whatsapp;
+        _whatsappController.text = user.whatsapp.isNotEmpty ? UtilBrasilFields.obterTelefone(user.whatsapp) : '';
         if (user.photo.isNotEmpty) {
           _photo = user.photo;
           await authBox.put('photo', _photo);
@@ -75,7 +75,7 @@ class _BarberProfilePageState extends ConsumerState<BarberProfilePage> {
         'id': barberService.getUserId(),
         'name': _nameController.text.trim(),
         'email': _emailController.text.trim(),
-        'whatsapp': _whatsappController.text.trim(),
+        'whatsapp': UtilBrasilFields.removerSimbolos(_whatsappController.text.trim()),
         'photo': _photo,
         'barbershopId': barberService.getBarbershopId()
       };

@@ -4,6 +4,7 @@ using api_barber.Requests.Barbershop;
 using api_barber.src.Interfaces;
 using api_barber.src.Requests;
 using api_barber.src.Utils;
+using api_barber.Utils;
 using MongoDB.Bson;
 
 namespace api_barber.Services
@@ -96,6 +97,14 @@ namespace api_barber.Services
         {
             try
             {
+                if (!string.IsNullOrEmpty(request.Document)) request.Document = ValidationUtils.CleanDigits(request.Document);
+                if (!string.IsNullOrEmpty(request.Phone)) request.Phone = ValidationUtils.CleanDigits(request.Phone);
+                if (!string.IsNullOrEmpty(request.WhatsApp)) request.WhatsApp = ValidationUtils.CleanDigits(request.WhatsApp);
+                if (request.Address != null && !string.IsNullOrEmpty(request.Address.ZipCode))
+                {
+                    request.Address.ZipCode = ValidationUtils.CleanDigits(request.Address.ZipCode);
+                }
+
                 Barbershop entity = ObjectMapper.Map<CreateBarbershopRequest, Barbershop>(request);
                 var created = await repository.CreateAsync(entity);
                 return new(created, 201, "Criado com sucesso");
@@ -121,13 +130,20 @@ namespace api_barber.Services
                 if (existed is null) return new(null, 404, "Não encontrado");
 
                 if (!string.IsNullOrEmpty(request.Name)) existed.Name = request.Name;
-                if (!string.IsNullOrEmpty(request.Document)) existed.Document = request.Document;
-                if (!string.IsNullOrEmpty(request.Phone)) existed.Phone = request.Phone;
-                if (!string.IsNullOrEmpty(request.WhatsApp)) existed.WhatsApp = request.WhatsApp;
+                if (!string.IsNullOrEmpty(request.Document)) existed.Document = ValidationUtils.CleanDigits(request.Document);
+                if (!string.IsNullOrEmpty(request.Phone)) existed.Phone = ValidationUtils.CleanDigits(request.Phone);
+                if (!string.IsNullOrEmpty(request.WhatsApp)) existed.WhatsApp = ValidationUtils.CleanDigits(request.WhatsApp);
                 if (!string.IsNullOrEmpty(request.Email)) existed.Email = request.Email;
                 if (!string.IsNullOrEmpty(request.Logo)) existed.Logo = request.Logo;
                 if (!string.IsNullOrEmpty(request.Code)) existed.Code = request.Code;
-                if (request.Address != null) existed.Address = request.Address;
+                if (request.Address != null)
+                {
+                    if (!string.IsNullOrEmpty(request.Address.ZipCode))
+                    {
+                        request.Address.ZipCode = ValidationUtils.CleanDigits(request.Address.ZipCode);
+                    }
+                    existed.Address = request.Address;
+                }
 
                 existed.UpdatedAt = DateTime.Now;
                 existed.UpdatedBy = request.UpdatedBy;

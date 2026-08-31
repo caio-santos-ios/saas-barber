@@ -110,8 +110,8 @@ export class Settings extends GlobalService implements OnInit {
       const payload = {
         id: this.formData.id,
         name: this.formData.name,
-        document: this.formData.document,
-        phone: this.formData.phone,
+        document: this.formData.document ? this.formData.document.replace(/\D/g, '') : '',
+        phone: this.formData.phone ? this.formData.phone.replace(/\D/g, '') : '',
         address: {
           street: this.formData.address.street,
           number: this.formData.address.number,
@@ -119,7 +119,7 @@ export class Settings extends GlobalService implements OnInit {
           neighborhood: this.formData.address.neighborhood,
           city: this.formData.address.city,
           state: this.formData.address.state,
-          zipCode: this.formData.address.zipCode,
+          zipCode: this.formData.address.zipCode ? this.formData.address.zipCode.replace(/\D/g, '') : '',
           country: "Brasil"
         }
       };

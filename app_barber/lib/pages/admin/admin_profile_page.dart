@@ -59,7 +59,7 @@ class _AdminProfilePageState extends ConsumerState<AdminProfilePage> {
         final user = User.fromJson(response.data['data']);
         _nameCtrl.text = user.name;
         _emailCtrl.text = user.email;
-        _whatsCtrl.text = user.whatsapp;
+        _whatsCtrl.text = user.whatsapp.isNotEmpty ? UtilBrasilFields.obterTelefone(user.whatsapp) : '';
         if (user.photo.isNotEmpty) {
           _photo = user.photo;
           await authBox.put('photo', _photo);

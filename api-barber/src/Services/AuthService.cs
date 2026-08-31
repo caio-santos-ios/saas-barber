@@ -123,6 +123,11 @@ namespace api_barber.Services
         {
             try
             {
+                if (!string.IsNullOrWhiteSpace(request.WhatsApp))
+                {
+                    request.WhatsApp = ValidationUtils.CleanDigits(request.WhatsApp);
+                }
+
                 if (!ValidationUtils.IsValidEmail(request.Email)) return new(null, 400, "E-mail inválido.");
                 if (!ValidationUtils.IsValidPhone(request.WhatsApp)) return new(null, 400, "WhatsApp/Telefone inválido.");
 
@@ -199,6 +204,16 @@ namespace api_barber.Services
         {
             try
             {
+                if (!string.IsNullOrWhiteSpace(request.WhatsApp))
+                {
+                    request.WhatsApp = ValidationUtils.CleanDigits(request.WhatsApp);
+                }
+
+                if (!string.IsNullOrWhiteSpace(request.Document))
+                {
+                    request.Document = ValidationUtils.CleanDigits(request.Document);
+                }
+
                 if (!ValidationUtils.IsValidEmail(request.Email)) return new(null, 400, "E-mail inválido.");
                 if (!ValidationUtils.IsValidDocument(request.Document)) return new(null, 400, "Documento (CPF/CNPJ) inválido.");
                 if (!ValidationUtils.IsValidPhone(request.WhatsApp)) return new(null, 400, "WhatsApp/Telefone inválido.");

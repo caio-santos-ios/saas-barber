@@ -68,9 +68,15 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
 
       if (shop != null) {
         _shopNameCtrl.text = shop.name;
-        _shopDocCtrl.text = shop.document;
-        _shopPhoneCtrl.text = shop.phone;
-        _shopZipCtrl.text = shop.address.zipCode;
+        _shopDocCtrl.text = shop.document.isNotEmpty
+            ? (shop.document.length == 14
+                ? UtilBrasilFields.obterCnpj(shop.document)
+                : (shop.document.length == 11
+                    ? UtilBrasilFields.obterCpf(shop.document)
+                    : shop.document))
+            : '';
+        _shopPhoneCtrl.text = shop.phone.isNotEmpty ? UtilBrasilFields.obterTelefone(shop.phone) : '';
+        _shopZipCtrl.text = shop.address.zipCode.isNotEmpty ? UtilBrasilFields.obterCep(shop.address.zipCode) : '';
         _shopStreetCtrl.text = shop.address.street;
         _shopNumberCtrl.text = shop.address.number;
         _shopComplementCtrl.text = shop.address.complement;
@@ -79,7 +85,6 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
         _shopStateCtrl.text = shop.address.state;
       }
     } catch (_) {
-      // silently ignore
     }
 
     if (mounted) setState(() => _isLoading = false);
@@ -154,7 +159,7 @@ class _AdminSettingsPageState extends State<AdminSettingsPage> {
                   const SizedBox(height: 12),
                   _buildTextField('CNPJ / CPF', _shopDocCtrl,
                       keyboardType: TextInputType.number,
-                      formatters: [FilteringTextInputFormatter.digitsOnly, CnpjInputFormatter()]),
+                      formatters: [FilteringTextInputFormatter.digitsOnly, CpfOuCnpjFormatter()]),
                   const SizedBox(height: 12),
                   _buildTextField('Telefone', _shopPhoneCtrl,
                       keyboardType: TextInputType.phone,

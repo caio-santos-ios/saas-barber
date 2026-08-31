@@ -33,8 +33,18 @@ class _AdminTeamPageState extends State<AdminTeamPage> {
   void _openForm({User? barber}) {
     final nameCtrl = TextEditingController(text: barber?.name ?? '');
     final emailCtrl = TextEditingController(text: barber?.email ?? '');
-    final whatsCtrl = TextEditingController(text: barber?.whatsapp ?? '');
-    final docCtrl = TextEditingController(text: barber?.document ?? '');
+    final whatsCtrl = TextEditingController(
+      text: (barber != null && barber.whatsapp.isNotEmpty)
+          ? UtilBrasilFields.obterTelefone(barber.whatsapp)
+          : '',
+    );
+    final docCtrl = TextEditingController(
+      text: (barber != null && barber.document.isNotEmpty)
+          ? (barber.document.length == 14
+              ? UtilBrasilFields.obterCnpj(barber.document)
+              : UtilBrasilFields.obterCpf(barber.document))
+          : '',
+    );
     final passCtrl = TextEditingController();
     bool isSaving = false;
 
@@ -370,7 +380,7 @@ class _AdminTeamPageState extends State<AdminTeamPage> {
                 Text(barber.email, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
                 if (barber.whatsapp.isNotEmpty) ...[
                   const SizedBox(height: 2),
-                  Text(barber.whatsapp, style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+                  Text(UtilBrasilFields.obterTelefone(barber.whatsapp), style: TextStyle(fontSize: 12, color: Colors.grey[500])),
                 ],
               ],
             ),

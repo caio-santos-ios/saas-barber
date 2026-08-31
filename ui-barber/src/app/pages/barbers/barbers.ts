@@ -3,14 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { api } from '../../services/api';
 import { ToastrService } from 'ngx-toastr';
-import { NgxMaskDirective } from 'ngx-mask';
+import { NgxMaskDirective, NgxMaskPipe } from 'ngx-mask';
 import { ChangeDetectorRef } from '@angular/core';
 import { GlobalService } from '../../services/global.service';
 
 @Component({
   selector: 'app-barbers',
   standalone: true,
-  imports: [CommonModule, FormsModule, NgxMaskDirective],
+  imports: [CommonModule, FormsModule, NgxMaskDirective, NgxMaskPipe],
   templateUrl: './barbers.html',
   styleUrls: ['./barbers.css']
 })
@@ -92,7 +92,7 @@ export class Barbers extends GlobalService implements OnInit {
         id: data.id,
         name: data.name || '',
         email: data.email || '',
-        whatsApp: data.whatsApp || '',
+        whatsApp: data.whatsApp || data.whatsapp || '',
         document: data.document || '',
         password: ''
       };
@@ -134,6 +134,8 @@ export class Barbers extends GlobalService implements OnInit {
     try {
       const payload: any = {
         ...this.formData,
+        whatsApp: this.formData.whatsApp ? this.formData.whatsApp.replace(/\D/g, '') : '',
+        document: this.formData.document ? this.formData.document.replace(/\D/g, '') : '',
         role: 'Barber'
       };
 
