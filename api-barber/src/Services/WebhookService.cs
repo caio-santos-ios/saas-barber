@@ -30,9 +30,9 @@ namespace api_barber.Services
                 }
                 return new(null, 200, "Webhook processado");
             }
-            catch
+            catch(Exception ex)
             {
-                return new(null, 400, "Erro ao processar webhook");
+                return new(null, 400, $"Erro ao processar webhook - {ex.Message}");
             }
         }
     }
