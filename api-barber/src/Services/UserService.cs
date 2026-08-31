@@ -38,6 +38,7 @@ namespace api_barber.Services
                         {"email", 1},
                         {"whatsapp", 1},
                         {"role", 1},
+                        {"photo", new BsonDocument("$ifNull", new BsonArray { "$photo", "" })},
                         {"active", new BsonDocument("$ifNull", new BsonArray { "$active", true })},
                         {"createdAt", 1}
                     }),
@@ -217,6 +218,7 @@ namespace api_barber.Services
                         {"email", 1},
                         {"whatsapp", 1},
                         {"document", 1},
+                        {"photo", new BsonDocument("$ifNull", new BsonArray { "$photo", "" })},
                         {"active", new BsonDocument("$ifNull", new BsonArray { "$active", true })},
                         {"createdAt", 1},
                     }),

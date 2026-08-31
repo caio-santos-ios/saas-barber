@@ -23,8 +23,9 @@
           <tr *ngFor="let b of barbers">
             <td>
               <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="width: 40px; height: 40px; background-color: var(--accent-primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px;">
-                  {{ b.name ? b.name.charAt(0).toUpperCase() : 'P' }}
+                <div class="avatar-circle">
+                  <img *ngIf="b.photo" [src]="b.photo" [alt]="b.name" (error)="b.photo = ''" />
+                  <span *ngIf="!b.photo">{{ b.name ? b.name.charAt(0).toUpperCase() : 'P' }}</span>
                 </div>
                 <div>
                   <div style="font-weight: 600; color: var(--text-main);">{{ b.name || 'Sem Nome' }}</div>
@@ -62,8 +63,9 @@
       <div class="mobile-data-card" *ngFor="let b of barbers">
         <div class="mobile-card-header">
           <div style="display: flex; align-items: center; gap: 12px;">
-            <div style="width: 40px; height: 40px; background-color: var(--accent-primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; flex-shrink: 0;">
-              {{ b.name ? b.name.charAt(0).toUpperCase() : 'P' }}
+            <div class="avatar-circle">
+              <img *ngIf="b.photo" [src]="b.photo" [alt]="b.name" (error)="b.photo = ''" />
+              <span *ngIf="!b.photo">{{ b.name ? b.name.charAt(0).toUpperCase() : 'P' }}</span>
             </div>
             <div>
               <div style="font-weight: 600; color: var(--text-main); font-size: 15px;">{{ b.name || 'Sem Nome' }}</div>
