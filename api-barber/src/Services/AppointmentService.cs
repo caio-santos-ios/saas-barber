@@ -387,6 +387,8 @@ namespace api_barber.Services
                     }
 
                     DateTime appointmentUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(appointmentLocal, DateTimeKind.Unspecified), brTz);
+                    DateTime nowLocal = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, brTz);
+                    bool isToday = entity.Date.Date == nowLocal.Date;
 
                     List<CreateNotificationRequest> notifications = [];
 
@@ -406,17 +408,20 @@ namespace api_barber.Services
                                 SendAt = DateTime.UtcNow.AddMinutes(2)
                             });
 
-                            notifications.Add(new CreateNotificationRequest
+                            if (!isToday)
                             {
-                                BarbershopId = request.BarbershopId,
-                                CreatedBy = request.CreatedBy,
-                                UserId = request.CustomerId,
-                                Title = "Lembrete de Agendamento",
-                                Message = $"Faltam 24h para o agendamento em {entity.Date:dd/MM/yyyy} às {entity.Hour}.",
-                                Read = false,
-                                Send = false,
-                                SendAt = appointmentUtc.AddDays(-1)
-                            });
+                                notifications.Add(new CreateNotificationRequest
+                                {
+                                    BarbershopId = request.BarbershopId,
+                                    CreatedBy = request.CreatedBy,
+                                    UserId = request.CustomerId,
+                                    Title = "Lembrete de Agendamento",
+                                    Message = $"Faltam 24h para o agendamento em {entity.Date:dd/MM/yyyy} às {entity.Hour}.",
+                                    Read = false,
+                                    Send = false,
+                                    SendAt = appointmentUtc.AddDays(-1)
+                                });
+                            }
 
                             notifications.Add(new CreateNotificationRequest
                             {
@@ -481,17 +486,20 @@ namespace api_barber.Services
 
                         if (!string.IsNullOrEmpty(request.CustomerId))
                         {
-                            notifications.Add(new CreateNotificationRequest
+                            if (!isToday)
                             {
-                                BarbershopId = request.BarbershopId,
-                                CreatedBy = request.CreatedBy,
-                                UserId = request.CustomerId,
-                                Title = "Lembrete de Agendamento",
-                                Message = $"Faltam 24h para o agendamento em {entity.Date:dd/MM/yyyy} às {entity.Hour}.",
-                                Read = false,
-                                Send = false,
-                                SendAt = appointmentUtc.AddDays(-1)
-                            });
+                                notifications.Add(new CreateNotificationRequest
+                                {
+                                    BarbershopId = request.BarbershopId,
+                                    CreatedBy = request.CreatedBy,
+                                    UserId = request.CustomerId,
+                                    Title = "Lembrete de Agendamento",
+                                    Message = $"Faltam 24h para o agendamento em {entity.Date:dd/MM/yyyy} às {entity.Hour}.",
+                                    Read = false,
+                                    Send = false,
+                                    SendAt = appointmentUtc.AddDays(-1)
+                                });
+                            }
 
                             notifications.Add(new CreateNotificationRequest
                             {
