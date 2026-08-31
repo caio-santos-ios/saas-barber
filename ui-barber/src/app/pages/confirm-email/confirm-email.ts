@@ -15,6 +15,7 @@ export class ConfirmEmail implements OnInit {
   code = '';
   state: 'loading' | 'success' | 'error' = 'loading';
   errorMessage = '';
+  userRole = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -42,14 +43,17 @@ export class ConfirmEmail implements OnInit {
     this.cdr.detectChanges();
 
     try {
-      await api.post('/auth/confirm-email', { code: this.code });
+      const response = await api.post('/auth/confirm-email', { code: this.code });
+      this.userRole = response.data?.data?.role || response.data?.role || '';
       this.state = 'success';
       this.toastr.success('Sua conta foi confirmada e ativada com sucesso!', 'Bem-vindo');
       this.cdr.detectChanges();
 
-      setTimeout(() => {
-        this.router.navigate(['/login']);
-      }, 2000);
+      if (this.userRole.toLowerCase() === 'admin') {
+        setTimeout(() => {
+          this.router.navigate(['/login']);
+        }, 2000);
+      }
     } catch (err: any) {
       this.state = 'error';
       this.errorMessage = err.response?.data?.message || 'Link de confirmação inválido ou expirado. Por favor, solicite um novo link ou entre em contato com o suporte.';

@@ -1,4 +1,4 @@
-﻿<div class="auth-container">
+<div class="auth-container">
   <div class="auth-card confirm-card">
     <div class="auth-header">
       <img src="/logo.png" alt="Na Régua" class="auth-logo" />
@@ -17,10 +17,21 @@
         <i class="fa-solid fa-circle-check"></i>
       </div>
       <h2>Conta Confirmada!</h2>
-      <p>Sua conta foi confirmada e ativada com sucesso. Redirecionando para o login...</p>
-      <button type="button" class="btn-primary auth-btn mt-4" (click)="goToLogin()">
-        Acessar Painel
-      </button>
+      
+      <div *ngIf="userRole.toLowerCase() === 'admin'">
+        <p>Sua conta de administrador foi ativada com sucesso. Redirecionando para o painel web...</p>
+        <button type="button" class="btn-primary auth-btn mt-4" (click)="goToLogin()">
+          Acessar Painel Web
+        </button>
+      </div>
+
+      <div *ngIf="userRole.toLowerCase() !== 'admin'">
+        <p>Sua conta foi confirmada com sucesso! Agora você já pode abrir o aplicativo <strong>Na Régua</strong> no seu celular para fazer login.</p>
+        <div class="mt-4 p-3 app-notice" style="background: rgba(212, 175, 55, 0.1); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 12px;">
+          <i class="fa-solid fa-mobile-screen-button" style="font-size: 28px; color: var(--accent-primary); margin-bottom: 8px; display: block;"></i>
+          <span style="font-size: 14px; color: var(--text-main); font-weight: 600;">Abra o app <strong>Na Régua</strong> no seu aparelho para entrar.</span>
+        </div>
+      </div>
     </div>
 
     <div *ngIf="state === 'error'" class="status-content text-center">
@@ -29,7 +40,7 @@
       </div>
       <h2>Falha na Confirmação</h2>
       <p>{{ errorMessage }}</p>
-      <button type="button" class="btn-primary auth-btn mt-4" (click)="goToLogin()">
+      <button *ngIf="userRole.toLowerCase() === 'admin'" type="button" class="btn-primary auth-btn mt-4" (click)="goToLogin()">
         Voltar para o Login
       </button>
     </div>

@@ -28,7 +28,27 @@ namespace api_barber.Services
             message.Body = new TextPart("html") { Text = htmlBody };
 
             using var client = new SmtpClient();
-            await client.ConnectAsync(host, port, SecureSocketOptions.StartTls);
+            client.Timeout = 10000;
+            client.ServerCertificateValidationCallback = (s, c, h, e) => true;
+
+            var secureOption = port == 465 ? SecureSocketOptions.SslOnConnect : (port == 587 ? SecureSocketOptions.StartTls : SecureSocketOptions.Auto);
+
+            try
+            {
+                await client.ConnectAsync(host, port, secureOption);
+            }
+            catch
+            {
+                if (port == 587)
+                {
+                    await client.ConnectAsync(host, 465, SecureSocketOptions.SslOnConnect);
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
             await client.AuthenticateAsync(username, password);
             await client.SendAsync(message);
             await client.DisconnectAsync(true);

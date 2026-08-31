@@ -1,4 +1,5 @@
 using api_barber.Requests.User;
+using api_barber.Requests.Notification;
 using api_barber.Interfaces;
 using api_barber.Models;
 using api_barber.Models.Enums;
@@ -11,7 +12,7 @@ using System.Security.Claims;
 using System.Text;
 namespace api_barber.Services
 {
-    public class AuthService(IConfiguration _config, IBarbershopService _barbershopService, IAsaasService _asaasService, IUserService _userService, MailHandler MailHandler) : IAuthService
+    public class AuthService(IConfiguration _config, IBarbershopService _barbershopService, IAsaasService _asaasService, IUserService _userService, INotificationService _notificationService, MailHandler MailHandler) : IAuthService
     {
         public string GenerateJwtToken(string userId, string role, string barbershopId, string name = "")
         {
@@ -171,13 +172,39 @@ namespace api_barber.Services
                 string userId = createdUserRes.Data?.Id ?? user.Id;
 
                 string confirmToken = GenerateEmailConfirmationToken(userId, user.Email);
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await SendWelcomeConfirmationEmailAsync(user.Email, user.Name, confirmToken, request.OriginUrl);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Erro ao enviar e-mail de confirmação: {ex.Message}");
+                    }
+                });
+
                 try
                 {
-                    await SendWelcomeConfirmationEmailAsync(user.Email, user.Name, confirmToken, request.OriginUrl);
+                    ResponseApi<User> admin = await _userService.GetAdminAsync(user.BarbershopId);
+                    if (admin.Data is not null && !string.IsNullOrEmpty(admin.Data.Id))
+                    {
+                        await _notificationService.CreateAsync(new CreateNotificationRequest
+                        {
+                            BarbershopId = user.BarbershopId,
+                            CreatedBy = userId,
+                            UserId = admin.Data.Id,
+                            Title = "Novo Cliente Cadastrado",
+                            Message = $"{user.Name} acabou de se cadastrar na sua barbearia.",
+                            Read = false,
+                            Send = false,
+                            SendAt = DateTime.UtcNow
+                        });
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Erro ao enviar e-mail de confirmação: {ex.Message}");
+                    Console.WriteLine($"Erro ao criar notificação para o admin: {ex.Message}");
                 }
 
                 var barbershopResponse = await _barbershopService.GetByIdAsync(user.BarbershopId);
@@ -294,14 +321,17 @@ namespace api_barber.Services
                 string adminUserId = createdAdminRes.Data?.Id ?? user.Id;
 
                 string confirmToken = GenerateEmailConfirmationToken(adminUserId, user.Email);
-                try
+                _ = Task.Run(async () =>
                 {
-                    await SendWelcomeConfirmationEmailAsync(user.Email, user.Name, confirmToken, request.OriginUrl);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Erro ao enviar e-mail de confirmação: {ex.Message}");
-                }
+                    try
+                    {
+                        await SendWelcomeConfirmationEmailAsync(user.Email, user.Name, confirmToken, request.OriginUrl);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Erro ao enviar e-mail de confirmação: {ex.Message}");
+                    }
+                });
 
                 AuthResponse authResponse = new()
                 {
@@ -612,7 +642,7 @@ namespace api_barber.Services
 
                 await _userService.ConfirmEmailAsync(userRes.Data.Id);
 
-                return new(null, 200, "Conta confirmada e ativada com sucesso!");
+                return new(new { role = userRes.Data.Role.ToString() }, 200, "Conta confirmada e ativada com sucesso!");
             }
             catch (Exception ex)
             {
