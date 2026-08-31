@@ -96,7 +96,39 @@ class AppointmentRepository {
           'status': status,
         },
       );
-      print(response.data);
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> startAppointment(String appointmentId) async {
+    try {
+      final response = await apiClient.dio.put('/appointments/$appointmentId/start');
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> finishAppointment(String appointmentId) async {
+    try {
+      final response = await apiClient.dio.put('/appointments/$appointmentId/finish');
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> rateAppointment(String appointmentId, int rating, String comment) async {
+    try {
+      final response = await apiClient.dio.post(
+        '/appointments/$appointmentId/rate',
+        data: {
+          'rating': rating,
+          'comment': comment,
+        },
+      );
       return response.statusCode == 200;
     } catch (e) {
       return false;

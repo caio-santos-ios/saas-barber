@@ -78,6 +78,30 @@ namespace api_barber.Controllers
             return StatusCode(response.Status, new { response.Data, response.Message });
         }
 
+        [HttpPut("{id}/start")]
+        public async Task<IActionResult> Start(string id)
+        {
+            string userId = GetUserId();
+            ResponseApi<Appointment> response = await service.StartAppointmentAsync(id, userId);
+            return StatusCode(response.Status, new { response.Data, response.Message });
+        }
+
+        [HttpPut("{id}/finish")]
+        public async Task<IActionResult> Finish(string id)
+        {
+            string userId = GetUserId();
+            ResponseApi<Appointment> response = await service.FinishAppointmentAsync(id, userId);
+            return StatusCode(response.Status, new { response.Data, response.Message });
+        }
+
+        [HttpPost("{id}/rate")]
+        public async Task<IActionResult> Rate(string id, [FromBody] RateAppointmentRequest request)
+        {
+            string userId = GetUserId();
+            ResponseApi<Appointment> response = await service.RateAppointmentAsync(id, request.Rating, request.Comment, userId);
+            return StatusCode(response.Status, new { response.Data, response.Message });
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {

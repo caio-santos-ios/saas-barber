@@ -58,7 +58,6 @@ class _BarberDashboardPageState extends State<BarberDashboardPage> {
     
     setState(() => _isLoading = true);
     final success = await _appointmentRepo.updateAppointmentStatus(appt.id, newStatus, barbershopId);
-    print(success);
     if (!success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Erro ao atualizar o agendamento.')),
@@ -67,12 +66,46 @@ class _BarberDashboardPageState extends State<BarberDashboardPage> {
     _loadData();
   }
 
+  Future<void> _startAppointment(Appointment appt) async {
+    setState(() => _isLoading = true);
+    final success = await _appointmentRepo.startAppointment(appt.id);
+    if (mounted) {
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Atendimento iniciado com sucesso! ✂️'), backgroundColor: Colors.green),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erro ao iniciar atendimento.'), backgroundColor: Colors.red),
+        );
+      }
+    }
+    _loadData();
+  }
+
+  Future<void> _finishAppointment(Appointment appt) async {
+    setState(() => _isLoading = true);
+    final success = await _appointmentRepo.finishAppointment(appt.id);
+    if (mounted) {
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Atendimento finalizado com sucesso! ⭐'), backgroundColor: Colors.green),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erro ao finalizar atendimento.'), backgroundColor: Colors.red),
+        );
+      }
+    }
+    _loadData();
+  }
+
   void _showConcludeDialog(Appointment appt) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Concluir Agendamento'),
-        content: const Text('Deseja marcar este serviço como concluído? Isso irá registrar o valor no seu financeiro.'),
+        title: const Text('Finalizar Atendimento'),
+        content: const Text('Deseja marcar este serviço como concluído? O cliente receberá a notificação para avaliação.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -81,10 +114,10 @@ class _BarberDashboardPageState extends State<BarberDashboardPage> {
           ElevatedButton(
             onPressed: () {
               Navigator.pop(context);
-              _updateStatus(appt, 2);
+              _finishAppointment(appt);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-            child: const Text('Sim, concluir', style: TextStyle(color: Colors.white)),
+            child: const Text('Sim, finalizar', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -96,7 +129,7 @@ class _BarberDashboardPageState extends State<BarberDashboardPage> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Cancelar Agendamento'),
-        content: const Text('Tem certeza que deseja cancelar este agendamento? (No-show / Cliente faltou)'),
+        content: const Text('Tem certeza que deseja cancelar este agendamento?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -276,10 +309,16 @@ class _BarberDashboardPageState extends State<BarberDashboardPage> {
         statusColor = Colors.orange;
         statusText = 'Não Realizado';
         break;
+      case 4:
+        statusColor = Colors.purpleAccent;
+        statusText = 'Em Andamento ✂️';
+        break;
       default:
         statusColor = Colors.blue;
         statusText = 'Agendado';
     }
+
+    final isInProgress = appt.status == 4;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -287,9 +326,16 @@ class _BarberDashboardPageState extends State<BarberDashboardPage> {
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Theme.of(context).dividerColor),
+        border: Border.all(
+          color: isInProgress ? Colors.purpleAccent : Theme.of(context).dividerColor,
+          width: isInProgress ? 2 : 1,
+        ),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: isInProgress ? Colors.purpleAccent.withOpacity(0.15) : Colors.black.withOpacity(0.05),
+            blurRadius: isInProgress ? 12 : 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Column(
@@ -347,27 +393,10 @@ class _BarberDashboardPageState extends State<BarberDashboardPage> {
               ),
             ],
           ),
-          Builder(
-            builder: (context) {
-              final parts = appt.hour.split(':');
-              final apptDateTime = DateTime(
-                appt.date.year,
-                appt.date.month,
-                appt.date.day,
-                int.parse(parts[0]),
-                int.parse(parts[1]),
-              );
-              final now = DateTime.now();
-              final showButtons = (appt.status == 1 || appt.status == 0) &&
-                  now.isAfter(apptDateTime.subtract(const Duration(minutes: 10)));
-              
-              if (!showButtons) return const SizedBox.shrink();
-              
-              return Column(
-                children: [
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
+          if (appt.status == 4) ...[
+            const SizedBox(height: 16),
+            Row(
+              children: [
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => _showCancelDialog(appt),
@@ -381,21 +410,48 @@ class _BarberDashboardPageState extends State<BarberDashboardPage> {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: ElevatedButton(
+                  child: ElevatedButton.icon(
                     onPressed: () => _showConcludeDialog(appt),
+                    icon: const Icon(Icons.check, color: Colors.white),
+                    label: const Text('Finalizar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    child: const Text('Concluir', style: TextStyle(color: Colors.white)),
                   ),
                 ),
               ],
             ),
-                ],
-              );
-            },
-          ),
+          ] else if (appt.status == 0) ...[
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => _showCancelDialog(appt),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.red,
+                      side: const BorderSide(color: Colors.red),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text('Cancelar'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _startAppointment(appt),
+                    icon: const Icon(Icons.play_arrow, color: Colors.white),
+                    label: const Text('Iniciar', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );

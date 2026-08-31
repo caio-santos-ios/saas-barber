@@ -95,6 +95,13 @@ namespace api_barber.Services
                         {"notes", 1},
                         {"cancelNotes", new BsonDocument("$ifNull", new BsonArray { "$cancel_notes", "$cancelNotes", "" })},
                         {"paymentStatus", new BsonDocument("$ifNull", new BsonArray { "$payment_status", "$paymentStatus", "" })},
+                        {"startedAt", new BsonDocument("$ifNull", new BsonArray { "$started_at", "$startedAt", BsonNull.Value })},
+                        {"finishedAt", new BsonDocument("$ifNull", new BsonArray { "$finished_at", "$finishedAt", BsonNull.Value })},
+                        {"rating", new BsonDocument("$ifNull", new BsonArray { "$rating", "$rating", BsonNull.Value })},
+                        {"ratingComment", new BsonDocument("$ifNull", new BsonArray { "$rating_comment", "$ratingComment", "" })},
+                        {"barberPhoto", new BsonDocument("$first", "$barbers.photo")},
+                        {"customerPhoto", new BsonDocument("$first", "$customers.photo")},
+                        {"barberPhone", new BsonDocument("$first", "$barbers.whatsapp")},
                         {"createdAt", 1}
                     }),
                     new("$sort", new BsonDocument { { "date", 1 }, { "hour", 1 } } )
@@ -572,6 +579,120 @@ namespace api_barber.Services
                 if (updated is null) return new(null, 400, "Falha ao atualizar status do agendamento");
 
                 return new(updated, 200, "Status atualizado com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
+            }
+        }
+
+        public async Task<ResponseApi<Appointment>> StartAppointmentAsync(string id, string userId)
+        {
+            try
+            {
+                Appointment existed = await repository.GetByIdAsync(id);
+                if (existed is null) return new(null, 404, "Agendamento não encontrado");
+
+                existed.Status = AppointmentStatusEnum.EmAndamento;
+                existed.StartedAt = DateTime.UtcNow;
+                existed.UpdatedAt = DateTime.UtcNow;
+                existed.UpdatedBy = userId;
+
+                Appointment updated = await repository.UpdateAsync(existed);
+                if (updated is null) return new(null, 400, "Falha ao iniciar atendimento");
+
+                if (!string.IsNullOrEmpty(existed.CustomerId))
+                {
+                    try
+                    {
+                        await notificationService.CreateAsync(new CreateNotificationRequest
+                        {
+                            BarbershopId = existed.BarbershopId,
+                            CreatedBy = userId,
+                            UserId = existed.CustomerId,
+                            Title = "Atendimento Iniciado ✂️",
+                            Message = "Seu atendimento foi iniciado! Relaxe e aproveite a experiência.",
+                            Read = false,
+                            Send = false,
+                            SendAt = DateTime.UtcNow
+                        });
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+
+                return new(updated, 200, "Atendimento iniciado com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
+            }
+        }
+
+        public async Task<ResponseApi<Appointment>> FinishAppointmentAsync(string id, string userId)
+        {
+            try
+            {
+                Appointment existed = await repository.GetByIdAsync(id);
+                if (existed is null) return new(null, 404, "Agendamento não encontrado");
+
+                existed.Status = AppointmentStatusEnum.Finalizado;
+                existed.FinishedAt = DateTime.UtcNow;
+                existed.UpdatedAt = DateTime.UtcNow;
+                existed.UpdatedBy = userId;
+
+                Appointment updated = await repository.UpdateAsync(existed);
+                if (updated is null) return new(null, 400, "Falha ao finalizar atendimento");
+
+                if (!string.IsNullOrEmpty(existed.CustomerId))
+                {
+                    try
+                    {
+                        await notificationService.CreateAsync(new CreateNotificationRequest
+                        {
+                            BarbershopId = existed.BarbershopId,
+                            CreatedBy = userId,
+                            UserId = existed.CustomerId,
+                            Title = "Atendimento Finalizado ⭐",
+                            Message = "Seu atendimento foi finalizado. Que tal avaliar seu corte no aplicativo?",
+                            Read = false,
+                            Send = false,
+                            SendAt = DateTime.UtcNow
+                        });
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+
+                return new(updated, 200, "Atendimento finalizado com sucesso");
+            }
+            catch (Exception ex)
+            {
+                return new(null, 500, $"Ocorreu um erro inesperado. Por favor, tente novamente mais tarde - {ex.Message}");
+            }
+        }
+
+        public async Task<ResponseApi<Appointment>> RateAppointmentAsync(string id, int rating, string? comment, string customerId)
+        {
+            try
+            {
+                Appointment existed = await repository.GetByIdAsync(id);
+                if (existed is null) return new(null, 404, "Agendamento não encontrado");
+
+                if (rating < 1) rating = 1;
+                if (rating > 5) rating = 5;
+
+                existed.Rating = rating;
+                existed.RatingComment = comment ?? string.Empty;
+                existed.UpdatedAt = DateTime.UtcNow;
+                existed.UpdatedBy = customerId;
+
+                Appointment updated = await repository.UpdateAsync(existed);
+                if (updated is null) return new(null, 400, "Falha ao salvar avaliação");
+
+                return new(updated, 200, "Avaliação registrada com sucesso");
             }
             catch (Exception ex)
             {

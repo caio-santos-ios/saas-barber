@@ -100,7 +100,7 @@ class _CustomerProfilePageState extends ConsumerState<CustomerProfilePage> {
         'id': _userId,
         'name': _nameController.text.trim(),
         'email': _emailController.text.trim(),
-        'whatsapp': UtilBrasilFields.removerSimbolos(_whatsappController.text.trim()),
+        'whatsapp': _whatsappController.text.replaceAll(RegExp(r'\D'), ''),
         'photo': _photo,
         'role': 'Customer',
         'barbershopId': _barbershopId

@@ -12,6 +12,9 @@ namespace api_barber.Interfaces
         Task<ResponseApi<Appointment>> CreateAsync(CreateAppointmentRequest request);
         Task<ResponseApi<Appointment>> UpdateAsync(UpdateAppointmentRequest request);
         Task<ResponseApi<Appointment>> UpdateStatusAsync(UpdateAppointmentStatusRequest request);
+        Task<ResponseApi<Appointment>> StartAppointmentAsync(string id, string userId);
+        Task<ResponseApi<Appointment>> FinishAppointmentAsync(string id, string userId);
+        Task<ResponseApi<Appointment>> RateAppointmentAsync(string id, int rating, string? comment, string customerId);
         Task<ResponseApi<Appointment>> DeleteAsync(DeleteRequest request);
     }
 }

@@ -5,7 +5,8 @@ namespace api_barber.Models.Enums
         Marcado,
         Cancelado,
         Finalizado,
-        NaoRealizado
+        NaoRealizado,
+        EmAndamento
     }
 }
 

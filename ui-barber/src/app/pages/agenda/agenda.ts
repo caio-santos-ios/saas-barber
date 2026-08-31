@@ -59,6 +59,9 @@ export class Agenda extends GlobalService implements OnInit {
       const dateString = this.selectedDate.toISOString().split('T')[0];
       const getStatusInfo = (status: any) => {
         const s = typeof status === 'string' ? status.trim().toLowerCase() : status;
+        if (s === 4 || s === '4' || s === 'emandamento' || s === 'em andamento') {
+          return { label: 'EM ANDAMENTO', code: 'in-progress' };
+        }
         if (s === 0 || s === '0' || s === 'marcado' || s === 'agendado') {
           return { label: 'AGENDADO', code: 'scheduled' };
         }

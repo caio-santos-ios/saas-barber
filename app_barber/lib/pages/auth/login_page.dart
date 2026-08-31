@@ -12,6 +12,8 @@ import 'package:app_barber/pages/auth/update_password_page.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:local_auth_android/local_auth_android.dart';
+import 'package:local_auth_darwin/local_auth_darwin.dart';
 import 'package:hive/hive.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
@@ -68,7 +70,17 @@ class _LoginPageState extends State<LoginPage> {
 
         if (canCheck || isSupported) {
           final bool didAuthenticate = await _localAuth.authenticate(
-            localizedReason: 'Por favor, confirme sua identidade para entrar',
+            localizedReason: 'Por favor, autentique-se para fazer login',
+            biometricOnly: true,
+            persistAcrossBackgrounding: true,
+            authMessages: [
+              AndroidAuthMessages(
+                signInTitle: 'Autenticação necessária',
+                cancelButton: 'Cancelar',
+                signInHint: '',
+              ),
+              IOSAuthMessages(cancelButton: 'Cancelar'),
+            ],
           );
 
           if (didAuthenticate && mounted) {

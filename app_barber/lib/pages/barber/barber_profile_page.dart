@@ -75,7 +75,7 @@ class _BarberProfilePageState extends ConsumerState<BarberProfilePage> {
         'id': barberService.getUserId(),
         'name': _nameController.text.trim(),
         'email': _emailController.text.trim(),
-        'whatsapp': UtilBrasilFields.removerSimbolos(_whatsappController.text.trim()),
+        'whatsapp': _whatsappController.text.replaceAll(RegExp(r'\D'), ''),
         'photo': _photo,
         'barbershopId': barberService.getBarbershopId()
       };

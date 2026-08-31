@@ -171,6 +171,109 @@ class _CustomerAppointmentsPageState extends State<CustomerAppointmentsPage> {
     );
   }
 
+  void _showRatingModal(Appointment appt) {
+    int selectedRating = 5;
+    final commentCtrl = TextEditingController();
+    bool isSubmitting = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) => SafeArea(
+          top: false,
+          child: Padding(
+            padding: EdgeInsets.only(
+              left: 24, right: 24, top: 24,
+              bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(2)),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Como foi seu atendimento?',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Avalie seu serviço com ${appt.barberName}',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(5, (index) {
+                    final star = index + 1;
+                    return IconButton(
+                      iconSize: 38,
+                      icon: Icon(
+                        star <= selectedRating ? Icons.star : Icons.star_border,
+                        color: Colors.amber,
+                      ),
+                      onPressed: () {
+                        setSheetState(() => selectedRating = star);
+                      },
+                    );
+                  }),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: commentCtrl,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    hintText: 'Deixe um comentário sobre o atendimento (opcional)',
+                    filled: true,
+                    fillColor: Theme.of(context).cardColor,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: isSubmitting
+                        ? null
+                        : () async {
+                            setSheetState(() => isSubmitting = true);
+                            final ok = await _appointmentRepo.rateAppointment(
+                              appt.id,
+                              selectedRating,
+                              commentCtrl.text.trim(),
+                            );
+                            if (mounted) {
+                              Navigator.pop(ctx);
+                              if (ok) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Avaliação enviada com sucesso! ⭐'), backgroundColor: Colors.green),
+                                );
+                                _loadData();
+                              }
+                            }
+                          },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: isSubmitting
+                        ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : const Text('Enviar Avaliação', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildAppointmentCard(Appointment appt) {
     Color statusColor;
     String statusText;
@@ -188,6 +291,10 @@ class _CustomerAppointmentsPageState extends State<CustomerAppointmentsPage> {
         statusColor = Colors.orange;
         statusText = 'Não Realizado';
         break;
+      case 4:
+        statusColor = Colors.purpleAccent;
+        statusText = 'Em Andamento ✂️';
+        break;
       default:
         statusColor = Colors.blue;
         statusText = 'Agendado';
@@ -199,9 +306,16 @@ class _CustomerAppointmentsPageState extends State<CustomerAppointmentsPage> {
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Theme.of(context).dividerColor),
+        border: Border.all(
+          color: appt.status == 4 ? Colors.purpleAccent : Theme.of(context).dividerColor,
+          width: appt.status == 4 ? 2 : 1,
+        ),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: appt.status == 4 ? Colors.purpleAccent.withOpacity(0.15) : Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Column(
@@ -257,7 +371,38 @@ class _CustomerAppointmentsPageState extends State<CustomerAppointmentsPage> {
               ),
             ],
           ),
-          if (_canCancel(appt)) ...[
+          if (appt.status == 2 && (appt.rating == null || appt.rating == 0)) ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => _showRatingModal(appt),
+                icon: const Icon(Icons.star, color: Colors.white, size: 18),
+                label: const Text('Avaliar Atendimento', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.amber[800],
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ),
+          ] else if (appt.rating != null && appt.rating! > 0) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                ...List.generate(5, (index) => Icon(
+                  index < appt.rating! ? Icons.star : Icons.star_border,
+                  color: Colors.amber,
+                  size: 18,
+                )),
+                const SizedBox(width: 8),
+                Text(
+                  'Avaliado (${appt.rating} estrelas)',
+                  style: const TextStyle(color: Colors.grey, fontSize: 12),
+                ),
+              ],
+            ),
+          ] else if (_canCancel(appt)) ...[
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
@@ -270,7 +415,7 @@ class _CustomerAppointmentsPageState extends State<CustomerAppointmentsPage> {
                 child: const Text('Cancelar Agendamento'),
               ),
             ),
-          ] else if (appt.status == 1 || appt.status == 0) ...[
+          ] else if (appt.status == 0) ...[
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(12),

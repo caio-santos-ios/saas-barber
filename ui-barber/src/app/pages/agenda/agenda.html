@@ -51,6 +51,7 @@
               <div class="status-dropdown-container" [class.is-active]="activeStatusDropdownId === apt.id">
                 <button type="button" class="status-badge status-btn"
                   [class.status-scheduled]="apt.statusCode === 'scheduled'" 
+                  [class.status-in-progress]="apt.statusCode === 'in-progress'"
                   [class.status-completed]="apt.statusCode === 'completed'"
                   [class.status-cancelled]="apt.statusCode === 'cancelled'"
                   [class.status-not-done]="apt.statusCode === 'not-done'"
@@ -64,6 +65,11 @@
                     <span class="status-dot dot-scheduled"></span>
                     <span>AGENDADO</span>
                     <i *ngIf="getStatusNumeric(apt.status) === 0" class="fa-solid fa-check check-icon"></i>
+                  </div>
+                  <div class="status-dropdown-item item-in-progress" (click)="selectStatus($event, apt, 4)">
+                    <span class="status-dot dot-in-progress"></span>
+                    <span>EM ANDAMENTO</span>
+                    <i *ngIf="getStatusNumeric(apt.status) === 4" class="fa-solid fa-check check-icon"></i>
                   </div>
                   <div class="status-dropdown-item item-completed" (click)="selectStatus($event, apt, 2)">
                     <span class="status-dot dot-completed"></span>
@@ -103,6 +109,7 @@
           <div class="status-dropdown-container" [class.is-active]="activeStatusDropdownId === apt.id">
             <button type="button" class="status-badge status-btn"
               [class.status-scheduled]="apt.statusCode === 'scheduled'" 
+              [class.status-in-progress]="apt.statusCode === 'in-progress'"
               [class.status-completed]="apt.statusCode === 'completed'"
               [class.status-cancelled]="apt.statusCode === 'cancelled'"
               [class.status-not-done]="apt.statusCode === 'not-done'"
@@ -116,6 +123,11 @@
                 <span class="status-dot dot-scheduled"></span>
                 <span>AGENDADO</span>
                 <i *ngIf="getStatusNumeric(apt.status) === 0" class="fa-solid fa-check check-icon"></i>
+              </div>
+              <div class="status-dropdown-item item-in-progress" (click)="selectStatus($event, apt, 4)">
+                <span class="status-dot dot-in-progress"></span>
+                <span>EM ANDAMENTO</span>
+                <i *ngIf="getStatusNumeric(apt.status) === 4" class="fa-solid fa-check check-icon"></i>
               </div>
               <div class="status-dropdown-item item-completed" (click)="selectStatus($event, apt, 2)">
                 <span class="status-dot dot-completed"></span>

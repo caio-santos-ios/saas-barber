@@ -98,7 +98,7 @@ class _RegisterPageState extends State<RegisterPage> {
         final request = RegisterRequest(
           name: _nameController.text.trim(),
           email: _emailController.text.trim(),
-          whatsapp: UtilBrasilFields.removerSimbolos(_whatsappController.text),
+          whatsapp: _whatsappController.text.replaceAll(RegExp(r'\D'), ''),
           password: _passwordController.text,
           passwordConfirm: _passwordConfirmController.text,
           barbershopId: currentBarbershopId,

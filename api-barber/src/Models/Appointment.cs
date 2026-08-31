@@ -33,6 +33,14 @@ namespace api_barber.Models
         public string PaymentStatus { get; set; } = string.Empty;
         [BsonElement("asaas_payment_id")]
         public string AsaasPaymentId { get; set; } = string.Empty;
+        [BsonElement("started_at")]
+        public DateTime? StartedAt { get; set; }
+        [BsonElement("finished_at")]
+        public DateTime? FinishedAt { get; set; }
+        [BsonElement("rating")]
+        public int? Rating { get; set; }
+        [BsonElement("rating_comment")]
+        public string? RatingComment { get; set; }
     }
 }
 

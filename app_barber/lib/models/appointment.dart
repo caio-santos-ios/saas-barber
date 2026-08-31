@@ -15,6 +15,13 @@ class Appointment {
   final String barbershopId;
   final double value;
   final String paymentStatus;
+  final DateTime? startedAt;
+  final DateTime? finishedAt;
+  final int? rating;
+  final String ratingComment;
+  final String barberPhoto;
+  final String customerPhoto;
+  final String barberPhone;
 
   Appointment({
     required this.id,
@@ -33,6 +40,13 @@ class Appointment {
     required this.barbershopId,
     required this.value,
     required this.paymentStatus,
+    this.startedAt,
+    this.finishedAt,
+    this.rating,
+    this.ratingComment = '',
+    this.barberPhoto = '',
+    this.customerPhoto = '',
+    this.barberPhone = '',
   });
 
   static int _parseStatus(dynamic status) {
@@ -45,7 +59,12 @@ class Appointment {
         case 'naorealizado':
         case 'não realizado':
         case 'nao realizado': return 3;
-        default: return 0;
+        case 'emandamento':
+        case 'em andamento': return 4;
+        default:
+          final parsed = int.tryParse(status);
+          if (parsed != null) return parsed;
+          return 0;
       }
     }
     return 0;
@@ -58,6 +77,30 @@ class Appointment {
       val = valRaw.toDouble();
     } else if (valRaw is String) {
       val = double.tryParse(valRaw.replaceAll(RegExp(r'[^0-9\.]'), '')) ?? 0.0;
+    }
+
+    DateTime? sAt;
+    if (json['startedAt'] != null || json['started_at'] != null) {
+      try {
+        sAt = DateTime.parse(json['startedAt'] ?? json['started_at']);
+      } catch (_) {}
+    }
+
+    DateTime? fAt;
+    if (json['finishedAt'] != null || json['finished_at'] != null) {
+      try {
+        fAt = DateTime.parse(json['finishedAt'] ?? json['finished_at']);
+      } catch (_) {}
+    }
+
+    int? rat;
+    final rRaw = json['rating'];
+    if (rRaw is int) {
+      rat = rRaw;
+    } else if (rRaw is num) {
+      rat = rRaw.toInt();
+    } else if (rRaw is String) {
+      rat = int.tryParse(rRaw);
     }
 
     return Appointment(
@@ -77,6 +120,13 @@ class Appointment {
       barbershopId: json['barbershopId'] ?? json['barbershop_id'] ?? '',
       value: val,
       paymentStatus: json['paymentStatus'] ?? json['payment_status'] ?? '',
+      startedAt: sAt,
+      finishedAt: fAt,
+      rating: rat,
+      ratingComment: json['ratingComment'] ?? json['rating_comment'] ?? '',
+      barberPhoto: json['barberPhoto'] ?? json['barber_photo'] ?? '',
+      customerPhoto: json['customerPhoto'] ?? json['customer_photo'] ?? '',
+      barberPhone: json['barberPhone'] ?? json['barber_phone'] ?? json['barberWhatsapp'] ?? '',
     );
   }
 }
