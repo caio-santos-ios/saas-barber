@@ -83,6 +83,7 @@ export class Barbers extends GlobalService implements OnInit {
 
   async getById(id: string) {
     try {
+      this.spinnerShow();
       this.isModalOpen = true;
       const response = await api.get(`/users/${id}`);
       const data = response.data.data;
@@ -98,6 +99,8 @@ export class Barbers extends GlobalService implements OnInit {
       this.cdr.detectChanges();
     } catch (error) {
       this.toastrNotification.error('Erro ao buscar dados do profissional', 'Erro');
+    } finally {
+      this.spinnerHide();
     }
   }
 

@@ -76,6 +76,7 @@ export class Customers extends GlobalService implements OnInit {
 
   async getById(id: string) {
     try {
+      this.spinnerShow();
       this.isModalOpen = true;
       const response = await api.get(`/users/${id}`);
       const data = response.data.data;
@@ -88,6 +89,8 @@ export class Customers extends GlobalService implements OnInit {
       this.cdr.detectChanges();
     } catch (error) {
       this.toastr.error('Erro ao buscar dados do cliente', 'Erro');
+    } finally {
+      this.spinnerHide();
     }
   }
 

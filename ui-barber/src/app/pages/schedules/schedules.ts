@@ -170,6 +170,7 @@ export class Schedules extends GlobalService implements OnInit {
 
   async getById(id: string) {
     try {
+      this.spinnerShow();
       this.isModalOpen = true;
       const response = await api.get(`/schedules/${id}`);
       const sched = response.data.data;
@@ -187,6 +188,8 @@ export class Schedules extends GlobalService implements OnInit {
       this.cdr.detectChanges();
     } catch (error) {
       this.toastr.error('Erro ao buscar dados da escala', 'Erro');
+    } finally {
+      this.spinnerHide();
     }
   }
 

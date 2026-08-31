@@ -449,32 +449,34 @@ class _LoginPageState extends State<LoginPage> {
                       ],
                     ],
                   ),
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        'Ainda não é cliente?',
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          final authBox = Hive.box('auth');
-                          final currentBarbershopId = authBox.get('barbershopId', defaultValue: '') as String;
-                          Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => RegisterPage(barbershopId: currentBarbershopId)),
-                          );
-                        },
-                        child: Text(
-                          'Cadastre-se',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.bold,
+                  if (_selectedRole == 'Customer') ...[
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Ainda não é cliente?',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            final authBox = Hive.box('auth');
+                            final currentBarbershopId = authBox.get('barbershopId', defaultValue: '') as String;
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (_) => RegisterPage(barbershopId: currentBarbershopId)),
+                            );
+                          },
+                          child: Text(
+                            'Cadastre-se',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),

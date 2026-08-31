@@ -165,6 +165,7 @@ export class Agenda extends GlobalService implements OnInit {
 
   async getById(id: string) {
     try {
+      this.spinnerShow();
       this.isModalOpen = true;
       const response = await api.get(`/appointments/${id}`);
       const apt = response.data.data;
@@ -181,6 +182,8 @@ export class Agenda extends GlobalService implements OnInit {
       this.cdr.detectChanges();
     } catch (error) {
       this.toastr.error('Erro ao buscar dados do agendamento', 'Erro');
+    } finally {
+      this.spinnerHide();
     }
   }
 
