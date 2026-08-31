@@ -8,6 +8,7 @@ namespace api_barber.Interfaces
         Task<ResponseApi<List<dynamic>>> GetAllAsync(string barbershopId);
         Task<ResponseApi<Barbershop>> GetByIdAsync(string id);
         Task<ResponseApi<Barbershop>> GetByCodeAsync(string code);
+        Task<ResponseApi<Barbershop>> GetByAsaasCustomerIdAsync(string asaasCustomerId);
         Task<ResponseApi<Barbershop>> CreateEntityAsync(Barbershop entity);
         Task<ResponseApi<Barbershop>> CreateAsync(CreateBarbershopRequest request);
         Task<ResponseApi<Barbershop>> UpdateAsync(UpdateBarbershopRequest request);

@@ -22,6 +22,10 @@ namespace api_barber.src.Repositories
         {
             return await appDbContext.Barbershops.Find(x => !x.Deleted && x.Code.Equals(code)).FirstOrDefaultAsync();
         }
+        public async Task<Barbershop?> GetByAsaasCustomerIdAsync(string asaasCustomerId)
+        {
+            return await appDbContext.Barbershops.Find(x => !x.Deleted && x.AsaasCustomerId.Equals(asaasCustomerId)).FirstOrDefaultAsync();
+        }
         public async Task<List<Barbershop>> GetAllEntitiesAsync(string barbershopId) 
         { 
             return await appDbContext.Barbershops.Find(x => !x.Deleted).ToListAsync(); 
