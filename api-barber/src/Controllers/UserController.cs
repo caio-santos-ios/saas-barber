@@ -43,6 +43,7 @@ namespace api_barber.Controllers
         {
             request.BarbershopId = User.FindFirst("barbershopId")?.Value ?? "";
             request.CreatedBy = User.FindFirst("userId")?.Value ?? "";
+            request.EmailConfirmed = true;
             ResponseApi<User> response = await service.CreateAsync(request);
             return StatusCode(response.Status, new { response.Data, response.Message });
         }

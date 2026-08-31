@@ -12,8 +12,14 @@ namespace api_barber.Services
             var port = int.Parse(Environment.GetEnvironmentVariable("SMTP_PORT") ?? config["Smtp:Port"] ?? "587");
             var username = Environment.GetEnvironmentVariable("SMTP_USERNAME") ?? config["Smtp:Username"] ?? "";
             var password = Environment.GetEnvironmentVariable("SMTP_PASSWORD") ?? config["Smtp:Password"] ?? "";
-            var fromName = Environment.GetEnvironmentVariable("SMTP_FROM_NAME") ?? config["Smtp:FromName"] ?? "SaaS Barbearia";
+            var fromName = Environment.GetEnvironmentVariable("SMTP_FROM_NAME") ?? config["Smtp:FromName"] ?? "Na Régua";
             var fromEmail = Environment.GetEnvironmentVariable("SMTP_FROM_EMAIL") ?? config["Smtp:FromEmail"] ?? username;
+
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            {
+                Console.WriteLine($"[SMTP WARNING] SMTP_USERNAME ou SMTP_PASSWORD não configurados no .env. E-mail para {toEmail} não foi enviado.");
+                return;
+            }
 
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress(fromName, fromEmail));

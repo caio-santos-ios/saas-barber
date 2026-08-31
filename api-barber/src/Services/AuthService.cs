@@ -88,6 +88,11 @@ namespace api_barber.Services
                     return new(null, 400, "E-mail ou senha inválidos.");
                 }
 
+                if (!user.EmailConfirmed)
+                {
+                    return new(null, 403, "Sua conta ainda não foi confirmada. Verifique o link de ativação enviado para o seu e-mail.");
+                }
+
                 if (!string.IsNullOrWhiteSpace(request.TokenFCM) && user.TokenFCM != request.TokenFCM)
                 {
                     await _userService.UpdateTokenFcmAsync(user.Id, request.TokenFCM.Trim());
@@ -149,7 +154,8 @@ namespace api_barber.Services
                     Document = user.Document,
                     Photo = user.Photo,
                     Password = user.Password,
-                    BarbershopId = user.BarbershopId
+                    BarbershopId = user.BarbershopId,
+                    EmailConfirmed = false
                 });
 
                 if (createdUserRes.Data is null)
@@ -173,17 +179,16 @@ namespace api_barber.Services
                 var barbershop = barbershopResponse.Data;
                 var subscriptionStatus = barbershop != null ? barbershop.SubscriptionStatus.ToString() : "Ativa";
 
-                var jwt = GenerateJwtToken(userId, user.Role.ToString(), user.BarbershopId, user.Name);
                 var authResponse = new AuthResponse
                 {
-                    Token = jwt,
+                    Token = string.Empty,
                     Role = user.Role.ToString(),
                     BarbershopId = user.BarbershopId,
                     SubscriptionStatus = subscriptionStatus,
                     Name = user.Name,
                     Photo = user.Photo
                 };
-                return new(authResponse, 201, "Cadastro realizado com sucesso");
+                return new(authResponse, 201, "Cadastro realizado com sucesso! Enviamos um link de confirmação para o seu e-mail.");
             }
             catch (Exception ex)
             {
@@ -267,7 +272,8 @@ namespace api_barber.Services
                     Document = user.Document,
                     Photo = user.Photo,
                     Password = user.Password,
-                    BarbershopId = barbershop.Id
+                    BarbershopId = barbershop.Id,
+                    EmailConfirmed = false
                 });
 
                 string adminUserId = createdAdminRes.Data?.Id ?? user.Id;
@@ -282,10 +288,9 @@ namespace api_barber.Services
                     Console.WriteLine($"Erro ao enviar e-mail de confirmação: {ex.Message}");
                 }
 
-                string jwt = GenerateJwtToken(adminUserId, user.Role.ToString(), user.BarbershopId, user.Name);
                 AuthResponse authResponse = new()
                 {
-                    Token = jwt,
+                    Token = string.Empty,
                     Role = user.Role.ToString(),
                     BarbershopId = user.BarbershopId,
                     SubscriptionStatus = createdBarbershop.SubscriptionStatus.ToString(),
@@ -293,7 +298,7 @@ namespace api_barber.Services
                     Photo = user.Photo
                 };
 
-                return new(authResponse, 201, "Cadastro de barbearia realizado com sucesso");
+                return new(authResponse, 201, "Cadastro de barbearia realizado com sucesso! Enviamos um link de confirmação para o seu e-mail.");
             }
             catch (Exception ex)
             {

@@ -1,4 +1,4 @@
-﻿using api_barber.Models.Enums;
+using api_barber.Models.Enums;
 using api_barber.src.Requests;
 namespace api_barber.Requests.User
 {
@@ -12,6 +12,7 @@ namespace api_barber.Requests.User
         public DateTime? DateOfBirth { get; set; }
         public string Document { get; set; } = string.Empty;
         public string Photo { get; set; } = string.Empty;
+        public bool EmailConfirmed { get; set; } = false;
     }
 }
 
