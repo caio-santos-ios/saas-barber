@@ -92,9 +92,9 @@ export class Login {
       }
     } catch (err: any) {
       console.error(err);
-      const apiError = err.response?.data?.error || err.response?.data?.title;
+      const apiError = err.response?.data?.message || err.response?.data?.error || err.response?.data?.title;
       if (apiError) {
-        this.toastr.error(`Erro na API: ${apiError}`, 'Falha de Login');
+        this.toastr.error(apiError, 'Atenção');
       } else {
         this.toastr.error('Credenciais inválidas ou erro ao conectar com o servidor.', 'Erro de Login');
       }

@@ -310,6 +310,20 @@ export class Subscription extends GlobalService implements OnInit {
     return map[status] || status;
   }
 
+  getStatusClass(status: string): string {
+    const s = (status || '').toUpperCase();
+    if (['RECEIVED', 'CONFIRMED', 'RECEIVED_IN_CASH'].includes(s)) {
+      return 'active';
+    }
+    if (['PENDING'].includes(s)) {
+      return 'pending';
+    }
+    if (['OVERDUE', 'REFUNDED', 'CHARGEBACK_REQUESTED', 'CANCELLED'].includes(s)) {
+      return 'inactive';
+    }
+    return 'pending';
+  }
+
   translateBillingType(type: string): string {
     const map: Record<string, string> = {
       'BOLETO': 'Boleto',

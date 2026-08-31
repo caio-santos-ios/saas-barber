@@ -194,9 +194,12 @@ class _LoginPageState extends State<LoginPage> {
         }
       } on DioException catch (e) {
         if (mounted) {
+          final errorMsg = e.response?.data is Map 
+              ? (e.response?.data["message"] ?? e.response?.data["error"] ?? 'E-mail ou senha inválidos.')
+              : (e.response?.data?.toString() ?? 'E-mail ou senha inválidos.');
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(e.response?.data["message"]),
+              content: Text(errorMsg.toString()),
               backgroundColor: Colors.red,
             ),
           );

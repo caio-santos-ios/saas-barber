@@ -20,6 +20,8 @@
   --status-active-bg: #dcfce7;
   --status-inactive: #ef4444;
   --status-inactive-bg: #fee2e2;
+  --status-pending: #d97706;
+  --status-pending-bg: #fef3c7;
 
   --sidebar-width: 260px;
 }
@@ -46,6 +48,8 @@
   --status-active-bg: rgba(74, 222, 128, 0.15);
   --status-inactive: #f87171;
   --status-inactive-bg: rgba(248, 113, 113, 0.15);
+  --status-pending: #fbbf24;
+  --status-pending-bg: rgba(251, 191, 36, 0.15);
 }
 
 [data-theme="dark"] .form-control,
@@ -288,6 +292,11 @@ button[disabled],
 .status-badge.active {
   background-color: var(--status-active-bg);
   color: var(--status-active);
+}
+
+.status-badge.pending {
+  background-color: var(--status-pending-bg);
+  color: var(--status-pending);
 }
 
 .status-badge.inactive {
