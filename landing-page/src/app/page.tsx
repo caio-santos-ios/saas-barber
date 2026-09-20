@@ -307,6 +307,37 @@ export default function Home() {
           </div>
         </section>
 
+        <section className="demo-section section-shell" aria-labelledby="demo-title">
+          <div className="demo-copy">
+            <p className="section-eyebrow">Veja na prática</p>
+            <h2 id="demo-title">Agendamento simples para sua barbearia.</h2>
+            <p>O cliente escolhe o barbeiro, o serviço, a data e o horário pelo app. A equipe acompanha tudo em uma agenda organizada, sem depender de várias mensagens no WhatsApp.</p>
+            <TrackedLink
+              href={primaryDestination}
+              className="btn-primary"
+              target={adminBaseUrl ? undefined : "_blank"}
+              rel={adminBaseUrl ? undefined : "noopener noreferrer"}
+              eventName="cta_click"
+              eventParams={{ cta_location: "demo-video", cta_destination: adminBaseUrl ? "signup" : "whatsapp" }}
+            >
+              Criar minha conta <span aria-hidden="true">→</span>
+            </TrackedLink>
+          </div>
+          <div className="demo-video-wrap">
+            <video
+              className="demo-video"
+              controls
+              playsInline
+              preload="metadata"
+              poster="/videos/demo-agendamento-poster.jpg"
+              aria-label="Demonstração do agendamento pelo app Na Régua"
+            >
+              <source src="/videos/demo-agendamento.mp4" type="video/mp4" />
+              Seu navegador não suporta a reprodução de vídeos.
+            </video>
+          </div>
+        </section>
+
         <section className="problem-strip">
           <div className="section-shell problem-inner">
             <p className="section-eyebrow">Se você se reconhece aqui, o SaaS foi feito para você</p>
