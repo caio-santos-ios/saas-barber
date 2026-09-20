@@ -574,14 +574,14 @@ export default function Home() {
             <p className="section-eyebrow">Condição especial de lançamento</p>
             <h2>Comece agora com uma condição especial de lançamento.</h2>
             <p>Use o sistema completo por uma condição especial durante os 6 primeiros meses e ajude a construir a próxima fase do produto.</p>
-            <div className="pricing-notes"><span>✓ R$ 29,90 nos 6 primeiros meses</span><span>✓ Agendamentos e profissionais ilimitados</span><span>✓ Configuração acompanhada</span></div>
+            <div className="pricing-notes"><span>✓ R$ 29,90 nos 6 primeiros meses</span><span>✓ Agendamentos e profissionais ilimitados</span><span>✓ Configuração acompanhada</span><span>✓ Sem contrato de fidelidade</span><span>✓ Suporte pelo WhatsApp</span></div>
           </div>
           <div className="pricing-card">
             <div className="pricing-card-top"><span className="plan-badge">PLANO FUNDADOR</span><span className="plan-note">10 vagas</span></div>
             <div className="price">R$ 29<span>,90</span><small>/mês</small></div>
-            <p className="price-description">Condição especial durante os 6 primeiros meses.</p>
+            <p className="price-description">Condição especial durante os 6 primeiros meses para as primeiras barbearias.</p>
             <p className="price-regular">Preço oficial depois: <strong>R$ 39,99/mês</strong></p>
-            <ul className="plan-features"><li>Dashboard financeiro e operacional</li><li>Agenda da equipe e escalas</li><li>Serviços, profissionais e comissões</li><li>App para barbeiros e clientes</li><li>Notificações e suporte em português</li></ul>
+            <ul className="plan-features"><li>Dashboard financeiro e operacional</li><li>Agenda da equipe e escalas</li><li>Serviços, profissionais e comissões</li><li>App para barbeiros e clientes</li><li>Notificações e suporte em português</li><li>Sem contrato de fidelidade</li><li>Cancelamento quando quiser</li><li>Suporte direto pelo WhatsApp</li></ul>
             <TrackedLink
               href={pricingDestination}
               className="btn-primary full-width"
@@ -592,7 +592,7 @@ export default function Home() {
             >
               {signupLabel} <span aria-hidden="true">→</span>
             </TrackedLink>
-            <small className="pricing-footnote">Válido para as 10 primeiras barbearias. Cancele quando quiser.</small>
+            <small className="pricing-footnote">Crie sua conta sem compromisso para conhecer o sistema. Válido para as 10 primeiras barbearias. Cancele quando quiser.</small>
           </div>
         </section>
 
