@@ -110,7 +110,7 @@ builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 builder.Services.AddHttpClient<IAsaasService, AsaasService>();
 builder.Services.AddScoped<IWebhookService, WebhookService>();
 builder.Services.AddSingleton<FirebaseAuthHandler>();
-builder.Services.AddSingleton<MailHandler>();
+builder.Services.AddHttpClient<MailHandler>();
 
 var cloudinaryCloudName = Environment.GetEnvironmentVariable("CLOUDINARY_CLOUD_NAME") ?? "";
 var cloudinaryApiKey = Environment.GetEnvironmentVariable("CLOUDINARY_API_KEY") ?? "";

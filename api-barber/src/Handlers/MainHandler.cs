@@ -1,57 +1,38 @@
-using MailKit.Net.Smtp;
-using MailKit.Security;
-using MimeKit;
-
 namespace api_barber.Services
 {
-    public class MailHandler(IConfiguration config)
+    public class MailHandler(HttpClient http)
     {
-        public async Task SendAsync(string toEmail, string toName, string subject, string htmlBody)
+        private readonly string apiKey = Environment.GetEnvironmentVariable("RESEND_API_KEY") ?? "";
+        private readonly string fromEmail = Environment.GetEnvironmentVariable("RESEND_EMAIL") ?? "";
+
+        public async Task<string> SendMail(string recipient, string subject, string body)
         {
-            var host = Environment.GetEnvironmentVariable("SMTP_HOST") ?? config["Smtp:Host"] ?? "smtp.gmail.com";
-            var port = int.Parse(Environment.GetEnvironmentVariable("SMTP_PORT") ?? config["Smtp:Port"] ?? "587");
-            var username = Environment.GetEnvironmentVariable("SMTP_USERNAME") ?? config["Smtp:Username"] ?? "";
-            var password = Environment.GetEnvironmentVariable("SMTP_PASSWORD") ?? config["Smtp:Password"] ?? "";
-            var fromName = Environment.GetEnvironmentVariable("SMTP_FROM_NAME") ?? config["Smtp:FromName"] ?? "Na Régua";
-            var fromEmail = Environment.GetEnvironmentVariable("SMTP_FROM_EMAIL") ?? config["Smtp:FromEmail"] ?? username;
-
-            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
-            {
-                Console.WriteLine($"[SMTP WARNING] SMTP_USERNAME ou SMTP_PASSWORD não configurados no .env. E-mail para {toEmail} não foi enviado.");
-                return;
-            }
-
-            var message = new MimeMessage();
-            message.From.Add(new MailboxAddress(fromName, fromEmail));
-            message.To.Add(new MailboxAddress(toName, toEmail));
-            message.Subject = subject;
-            message.Body = new TextPart("html") { Text = htmlBody };
-
-            using var client = new SmtpClient();
-            client.Timeout = 10000;
-            client.ServerCertificateValidationCallback = (s, c, h, e) => true;
-
-            var secureOption = port == 465 ? SecureSocketOptions.SslOnConnect : (port == 587 ? SecureSocketOptions.StartTls : SecureSocketOptions.Auto);
-
             try
             {
-                await client.ConnectAsync(host, port, secureOption);
-            }
-            catch
-            {
-                if (port == 587)
+                var payload = new
                 {
-                    await client.ConnectAsync(host, 465, SecureSocketOptions.SslOnConnect);
-                }
-                else
-                {
-                    throw;
-                }
-            }
+                    from = fromEmail,
+                    to = new[] { recipient },
+                    subject,
+                    html = body
+                };
 
-            await client.AuthenticateAsync(username, password);
-            await client.SendAsync(message);
-            await client.DisconnectAsync(true);
+                var req = new HttpRequestMessage(HttpMethod.Post, "https://api.resend.com/emails")
+                {
+                    Content = JsonContent.Create(payload)
+                };
+                req.Headers.Authorization = new("Bearer", apiKey);
+
+                var res = await http.SendAsync(req);
+                if (!res.IsSuccessStatusCode)
+                    return await res.Content.ReadAsStringAsync();
+
+                return "";
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
         }
     }
 }
