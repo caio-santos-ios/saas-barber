@@ -5,7 +5,7 @@ namespace api_barber.Services
         private readonly string apiKey = Environment.GetEnvironmentVariable("RESEND_API_KEY") ?? "";
         private readonly string fromEmail = Environment.GetEnvironmentVariable("RESEND_EMAIL") ?? "";
 
-        public async Task<string> SendMail(string recipient, string subject, string body)
+        public async Task<string> SendAsync(string recipient, string subject, string body)
         {
             try
             {

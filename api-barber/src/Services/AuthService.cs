@@ -12,7 +12,7 @@ using System.Security.Claims;
 using System.Text;
 namespace api_barber.Services
 {
-    public class AuthService(IConfiguration _config, IBarbershopService _barbershopService, IAsaasService _asaasService, IUserService _userService, INotificationService _notificationService, MailHandler MailHandler) : IAuthService
+    public class AuthService(IConfiguration _config, IBarbershopService _barbershopService, IAsaasService _asaasService, IUserService _userService, INotificationService _notificationService, MailHandler mailHandler) : IAuthService
     {
         public string GenerateJwtToken(string userId, string role, string barbershopId, string name = "")
         {
@@ -396,7 +396,7 @@ namespace api_barber.Services
                     </div>
                 """;
 
-                await MailHandler.SendAsync(user.Email, user.Name, "Redefinição de Senha - Na Régua", html);
+                await mailHandler.SendAsync(user.Email, "Redefinição de Senha - Na Régua", html);
 
                 return new(null, 200, "Link de redefinição enviado para o seu e-mail.");
             }
@@ -549,7 +549,7 @@ namespace api_barber.Services
             Console.WriteLine($"[EMAIL CONFIRMATION LINK] Link para {email}: {link}");
             try
             {
-                await MailHandler.SendAsync(email, name, "Bem-vindo ao Na Régua - Confirme seu E-mail", html);
+                await mailHandler.SendAsync(email, "Bem-vindo ao Na Régua - Confirme seu E-mail", html);
             }
             catch (Exception ex)
             {
